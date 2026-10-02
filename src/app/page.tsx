@@ -1,12 +1,73 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { generateTacticalPdf, TacticalDietData } from '@/lib/pdfGenerator';
 import confetti from 'canvas-confetti';
 
 export default function Home() {
   const [showResult, setShowResult] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  // 0. Autenticação Kiwify / Acesso de Aluno
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const [loginEmail, setLoginEmail] = useState('');
+  const [activeUser, setActiveUser] = useState<{ email: string; name: string; role?: string } | null>(null);
+  const [authError, setAuthError] = useState<string | null>(null);
+  const [authLoading, setAuthLoading] = useState(false);
+
+  useEffect(() => {
+    const savedEmail = localStorage.getItem('qg_user_email');
+    if (savedEmail) {
+      verifyEmailAccess(savedEmail, true);
+    } else {
+      setIsAuthenticated(false);
+    }
+  }, []);
+
+  const verifyEmailAccess = async (emailToVerify: string, isSilent = false) => {
+    const cleanEmail = emailToVerify.trim().toLowerCase();
+    if (!cleanEmail) return;
+
+    if (!isSilent) setAuthLoading(true);
+    setAuthError(null);
+
+    try {
+      const res = await fetch('/api/auth/verify-access', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: cleanEmail }),
+      });
+
+      const data = await res.json();
+
+      if (data.authorized) {
+        localStorage.setItem('qg_user_email', cleanEmail);
+        setActiveUser({
+          email: cleanEmail,
+          name: data.name || 'Aluno Oficial',
+          role: data.role,
+        });
+        setIsAuthenticated(true);
+      } else {
+        localStorage.removeItem('qg_user_email');
+        setIsAuthenticated(false);
+        setAuthError(data.message || 'Acesso não encontrado para este e-mail.');
+      }
+    } catch {
+      if (!isSilent) setAuthError('Erro ao conectar ao servidor de autenticação. Tente novamente.');
+      setIsAuthenticated(false);
+    } finally {
+      if (!isSilent) setAuthLoading(false);
+    }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('qg_user_email');
+    setIsAuthenticated(false);
+    setActiveUser(null);
+    setLoginEmail('');
+    setAuthError(null);
+  };
 
   // 1. Inputs do Usuário (Requisitos de Interface)
   const [age, setAge] = useState<number | ''>(28);
@@ -380,13 +441,172 @@ export default function Home() {
     generateTacticalPdf(pdfData);
   };
 
+  // 1. Tela de Carregamento inicial da autenticação
+  if (isAuthenticated === null) {
+    return (
+      <div className="container" style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div className="card" style={{ textAlign: 'center', padding: '30px', maxWidth: '400px', width: '100%' }}>
+          <p style={{ color: 'var(--primary)', fontFamily: "'Montserrat', sans-serif", fontSize: '13px', margin: 0, letterSpacing: '1px' }}>
+            VERIFICANDO LICENÇA...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // 2. Tela de Bloqueio por E-mail (Apenas compradores da Kiwify entram)
+  if (!isAuthenticated) {
+    return (
+      <div className="container">
+        <div className="header">
+          <h2>
+            Acesso <span>Restrito</span>
+          </h2>
+          <p>Área exclusiva para compradores e membros oficiais do QG.</p>
+        </div>
+
+        <div className="card" id="form-card">
+          <div style={{ textAlign: 'center', marginBottom: '22px' }}>
+            <div
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '56px',
+                height: '56px',
+                borderRadius: '50%',
+                background: '#161616',
+                border: '1px solid #333',
+                fontSize: '24px',
+                marginBottom: '12px',
+              }}
+            >
+              🔒
+            </div>
+            <h3 style={{ margin: 0, fontFamily: "'Montserrat', sans-serif", fontSize: '18px', color: '#fff', textTransform: 'uppercase' }}>
+              Identificação do Comprador
+            </h3>
+            <p style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '6px', lineHeight: 1.4 }}>
+              Digite o e-mail que você utilizou no checkout da sua compra na Kiwify para liberar sua licença.
+            </p>
+          </div>
+
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              verifyEmailAccess(loginEmail);
+            }}
+          >
+            <div className="form-group">
+              <label>Seu E-mail da Compra (Kiwify)</label>
+              <input
+                type="email"
+                required
+                value={loginEmail}
+                onChange={(e) => {
+                  setLoginEmail(e.target.value);
+                  setAuthError(null);
+                }}
+                className="form-control"
+                placeholder="Ex: seunome@email.com"
+                autoFocus
+              />
+            </div>
+
+            {authError && (
+              <div
+                style={{
+                  background: 'rgba(255, 51, 51, 0.1)',
+                  border: '1px solid #ff3333',
+                  borderRadius: '6px',
+                  padding: '10px 12px',
+                  color: '#ff6666',
+                  fontSize: '12px',
+                  marginBottom: '15px',
+                  lineHeight: 1.4,
+                }}
+              >
+                ⚠️ {authError}
+              </div>
+            )}
+
+            <button
+              type="submit"
+              className="btn btn-primary"
+              disabled={authLoading || !loginEmail}
+              style={{ width: '100%' }}
+            >
+              {authLoading ? 'VALIDANDO COMPRA NA KIWIFY...' : '🔓 LIBERAR MEU ACESSO'}
+            </button>
+          </form>
+
+          <div
+            style={{
+              marginTop: '25px',
+              paddingTop: '20px',
+              borderTop: '1px solid #222',
+              textAlign: 'center',
+              fontSize: '12px',
+              color: 'var(--muted)',
+            }}
+          >
+            <span>Ainda não possui sua licença oficial?</span>
+            <br />
+            <span style={{ color: 'var(--primary)', fontWeight: 'bold', display: 'inline-block', marginTop: '6px' }}>
+              Adquira na Kiwify para liberação imediata
+            </span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 3. Aplicação Liberada para Aluno Autenticado
   return (
     <div className="container">
+      {/* Barra Superior do Aluno Conectado */}
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          background: '#111',
+          border: '1px solid #222',
+          borderRadius: '6px',
+          padding: '8px 12px',
+          marginBottom: '15px',
+          fontSize: '11px',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#ccc' }}>
+          <span style={{ color: 'var(--primary)', fontWeight: 'bold' }}>● LICENÇA ATIVA:</span>
+          <span style={{ color: '#fff' }}>{activeUser?.name || activeUser?.email}</span>
+          {activeUser?.role === 'admin' && (
+            <span style={{ background: '#222', color: '#FFD700', padding: '2px 6px', borderRadius: '4px', fontSize: '10px', fontWeight: 'bold' }}>
+              ADMIN
+            </span>
+          )}
+        </div>
+        <button
+          onClick={handleLogout}
+          style={{
+            background: 'transparent',
+            border: 'none',
+            color: '#888',
+            fontSize: '11px',
+            cursor: 'pointer',
+            textDecoration: 'underline',
+          }}
+        >
+          Sair / Trocar e-mail
+        </button>
+      </div>
+
       <div className="header">
         <h2>
           Gerador de <span>Dieta</span>
         </h2>
-        <p>Amostra gratuita de inteligência nutricional do QG.</p>
+        <p>Inteligência Nutricional & Protocolo Operacional QG.</p>
       </div>
 
       {!showResult ? (

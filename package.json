@@ -13,6 +13,7 @@
     "@remotion/media-utils": "4.0.521",
     "@remotion/tailwind-v4": "4.0.521",
     "@remotion/zod-types": "4.0.521",
+    "@upstash/redis": "^1.39.0",
     "canvas-confetti": "^1.9.4",
     "jspdf": "^4.2.1",
     "jspdf-autotable": "^5.0.8",
