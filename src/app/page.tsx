@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { generateTacticalPdf, TacticalDietData } from '@/lib/pdfGenerator';
+import { getProteinPortion, getCarbPortion, getHealthyFatPortion } from '@/lib/foodCalculations';
 import confetti from 'canvas-confetti';
 
 export default function Home() {
@@ -77,7 +78,75 @@ export default function Home() {
   const [activity, setActivity] = useState<number>(1.55); // 1.2 a 1.9
   const [goal, setGoal] = useState<'hipertrofia' | 'emagrecimento' | 'emagrecimento_agressivo' | 'recomposicao'>('emagrecimento');
   const [mealsCount, setMealsCount] = useState<number>(4);
-  const [preferences, setPreferences] = useState<string>('peito de frango, patinho moído, tilápia, ovos, arroz, aveia');
+  const [selectedProteins, setSelectedProteins] = useState<string>('peito de frango, filé mignon, tilápia, moela, ovos');
+  const [selectedCarbs, setSelectedCarbs] = useState<string>('arroz, feijão, batata-doce, batata inglesa, macarrão');
+
+  // Checklist Diário Operacional (Água & Refeições)
+  const todayKey = new Date().toISOString().slice(0, 10);
+  const [waterCups, setWaterCups] = useState<number>(0);
+  const [checkedMeals, setCheckedMeals] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedWater = localStorage.getItem(`qg_water_${todayKey}`);
+      if (savedWater) setWaterCups(Number(savedWater));
+
+      const savedMeals = localStorage.getItem(`qg_meals_${todayKey}`);
+      if (savedMeals) {
+        try {
+          setCheckedMeals(JSON.parse(savedMeals));
+        } catch {}
+      }
+    }
+  }, [todayKey]);
+
+  const toggleWaterCup = (index: number) => {
+    const newCups = waterCups === index + 1 ? index : index + 1;
+    setWaterCups(newCups);
+    localStorage.setItem(`qg_water_${todayKey}`, String(newCups));
+  };
+
+  const toggleMealCheck = (mealKey: string) => {
+    const updated = { ...checkedMeals, [mealKey]: !checkedMeals[mealKey] };
+    setCheckedMeals(updated);
+    localStorage.setItem(`qg_meals_${todayKey}`, JSON.stringify(updated));
+  };
+
+  // Tags Rápidas de Proteína
+  const quickProteinTags = [
+    'Peito de Frango',
+    'Filé Mignon',
+    'Tilápia',
+    'Moela',
+    'Patinho Moído',
+    'Ovos Inteiros',
+    'Lombo Suíno',
+    'Atum',
+  ];
+
+  const addProteinTag = (tag: string) => {
+    if (!selectedProteins.toLowerCase().includes(tag.toLowerCase())) {
+      setSelectedProteins((prev) => (prev ? `${prev}, ${tag}` : tag));
+    }
+  };
+
+  // Tags Rápidas de Carboidrato
+  const quickCarbTags = [
+    'Arroz Branco',
+    'Feijão Carioca',
+    'Batata-Doce',
+    'Batata Inglesa',
+    'Macarrão',
+    'Mandioca/Aipim',
+    'Aveia em Flocos',
+    'Pão Integral',
+  ];
+
+  const addCarbTag = (tag: string) => {
+    if (!selectedCarbs.toLowerCase().includes(tag.toLowerCase())) {
+      setSelectedCarbs((prev) => (prev ? `${prev}, ${tag}` : tag));
+    }
+  };
 
   // 2. Resultados Calculados
   const [calcData, setCalcData] = useState<{
@@ -98,15 +167,6 @@ export default function Home() {
       mealsList: { name: string; time: string; desc: string }[];
     }[];
   } | null>(null);
-
-  // Tags rápidas de clique
-  const quickTags = ['Peito de Frango', 'Patinho Moído', 'Tilápia', 'Ovos', 'Arroz', 'Aveia', 'Batata-Doce', 'Evitar Lactose'];
-
-  const addTag = (tag: string) => {
-    if (!preferences.toLowerCase().includes(tag.toLowerCase())) {
-      setPreferences((prev) => (prev ? `${prev}, ${tag}` : tag));
-    }
-  };
 
   // 3. Lógica Estrita de Cálculo Solicitada:
   // 1. Calcule as Calorias Totais (GET) conforme o objetivo (Hipertrofia, Emagrecimento, etc).
@@ -167,17 +227,24 @@ export default function Home() {
     const pMeal = protGrams / mealsCount;
     const cMeal = carbGrams / mealsCount;
 
-    // Pesos na Balança (Alimento já preparado/cozido)
-    // Fontes prioritárias de proteína: peito de frango, patinho moído, tilápia e ovos
-    const meatG = Math.round(pMeal * 3.3);
-    const riceG = Math.round(cMeal * 0.6 * 3.3);
-    const beansG = Math.round(cMeal * 0.4 * 5.0);
-    const sweetPotatoG = Math.round(cMeal * 4.0);
-    const oatsG = Math.max(20, Math.round(cMeal * 1.4));
-    const eggsCount = Math.max(2, Math.round(pMeal / 6));
+    // Sanitização das proteínas e carboidratos selecionados pelo usuário
+    const userProteinsList = selectedProteins
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
+    const userCarbsList = selectedCarbs
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
 
-    const prefsLower = preferences.toLowerCase();
-    const hasLactoseFree = prefsLower.includes('lactose');
+    const safeProteins =
+      userProteinsList.length > 0
+        ? userProteinsList
+        : ['Peito de Frango', 'Filé Mignon', 'Tilápia', 'Moela', 'Ovos'];
+    const safeCarbs =
+      userCarbsList.length > 0
+        ? userCarbsList
+        : ['Arroz Branco', 'Feijão', 'Batata-Doce', 'Batata Inglesa', 'Macarrão'];
 
     // Chamar backend /api/generate-diet para integrar a LLM com o prompt solicitado
     let generatedOptions: {
@@ -207,8 +274,10 @@ export default function Home() {
           activityLevel: activityMap[activity] || 'moderado',
           goal,
           mealsCount,
-          preferences: preferences.split(',').map((p) => p.trim()),
-          customNotes: preferences,
+          proteins: safeProteins,
+          carbs: safeCarbs,
+          preferences: [...safeProteins, ...safeCarbs],
+          customNotes: `Proteínas informadas: ${safeProteins.join(', ')}. Carboidratos informados: ${safeCarbs.join(', ')}. Gorduras: azeite, castanhas e gemas para bater ${fatGrams}g.`,
         }),
       });
 
@@ -235,12 +304,12 @@ export default function Home() {
         }
       }
     } catch (err) {
-      console.log('Utilizando fallback matemático local com as metas travadas:', err);
+      console.log('Utilizando gerador matemático com os alimentos informados:', err);
     }
 
-    // Se a IA estiver sem chave ou falhar, o fallback segue rigorosamente as metas travadas
+    // Se a IA estiver sem chave ou falhar, o fallback segue rigorosamente os alimentos escolhidos e as metas travadas
     if (generatedOptions.length === 0) {
-      const optNames = ['Opção 1: Combate Padrão', 'Opção 2: Rotação Tática', 'Opção 3: Ração de Fogo'];
+      const optNames = ['Opção 1: Operação Padrão', 'Opção 2: Variação Tática', 'Opção 3: Rotação de Combate'];
       const optColors = ['var(--primary)', '#FFD700', '#ff3333'];
       const optRgb: [number, number, number][] = [
         [0, 255, 0],
@@ -248,118 +317,104 @@ export default function Home() {
         [255, 51, 51],
       ];
 
-      generatedOptions = [1, 2, 3].map((opt, optIdx) => {
+      generatedOptions = [0, 1, 2].map((optIdx) => {
         let mealsList: { name: string; time: string; desc: string }[] = [];
+
+        // Rotação dinâmica com os alimentos escolhidos pelo cliente
+        const getFoodPair = (mealIndex: number, shift: number) => {
+          const protItem = safeProteins[(mealIndex + shift) % safeProteins.length] || 'Peito de Frango';
+          const carbItem = safeCarbs[(mealIndex + shift) % safeCarbs.length] || 'Arroz Branco';
+          const protCalc = getProteinPortion(protItem, pMeal);
+          const carbCalc = getCarbPortion(carbItem, cMeal);
+          const fatCalc = getHealthyFatPortion(fatGrams, mealIndex + shift);
+          return { protCalc, carbCalc, fatCalc };
+        };
 
         if (mealsCount === 3) {
           // Protocolo de Jejum 16/8
+          const m1 = getFoodPair(0, optIdx);
+          const m2 = getFoodPair(1, optIdx);
+          const m3 = getFoodPair(2, optIdx);
+
           mealsList = [
             {
               name: 'Almoço (Quebra do Jejum 16h)',
               time: '12:00',
-              desc:
-                opt === 1
-                  ? `${Math.round(meatG * 1.2)}g de Peito de Frango Grelhado<br>${Math.round(riceG * 1.2)}g de Arroz Branco + ${beansG}g de Feijão + 2 Ovos cozidos na balança.`
-                  : opt === 2
-                  ? `${Math.round(meatG * 1.2)}g de Carne Moída (Patinho)<br>${Math.round(riceG * 1.2)}g de Arroz Branco + ${beansG}g de Feijão + Couve refogada no azeite.`
-                  : `${Math.round(meatG * 1.3)}g de Filé de Tilápia Grelhado<br>${Math.round(riceG * 1.2)}g de Arroz + 2 Ovos mexidos + Salada com azeite.`,
+              desc: `<strong>${m1.protCalc.name}:</strong> ${m1.protCalc.portion}<br><strong>${m1.carbCalc.name}:</strong> ${m1.carbCalc.portion}<br>Salada verde fresca + ${m1.fatCalc}`,
             },
             {
               name: 'Lanche da Tarde',
               time: '16:00',
-              desc:
-                opt === 1
-                  ? `${Math.round(oatsG * 1.1)}g de Aveia + 2 Ovos inteiros mexidos + 15g de Castanhas do Pará + café sem açúcar.`
-                  : opt === 2
-                  ? `Crepioca (${eggsCount} Ovos + 25g de tapioca) + 1 fruta média (maçã ou mamão).`
-                  : hasLactoseFree
-                  ? `Shake proteico vegetal com água + 20g de Castanhas + 1 banana.`
-                  : `${Math.round(meatG * 0.9)}g de Frango Desfiado + ${sweetPotatoG}g de Batata-Doce cozida.`,
+              desc: `<strong>${m2.protCalc.name}:</strong> ${m2.protCalc.portion}<br><strong>${m2.carbCalc.name}:</strong> ${m2.carbCalc.portion}<br>${m2.fatCalc}`,
             },
             {
               name: 'Jantar (Fechamento da Janela)',
               time: '20:00',
-              desc:
-                opt === 1
-                  ? `${meatG}g de Carne Moída (Patinho) + ${sweetPotatoG}g de Batata-Doce + Brócolis no vapor com azeite extravirgem.`
-                  : opt === 2
-                  ? `${Math.round(meatG * 1.15)}g de Filé de Tilápia + ${riceG}g de Arroz Branco + Salada colorida.`
-                  : `${meatG}g de Peito de Frango Grelhado + ${sweetPotatoG}g de Mandioca cozida + Legumes no vapor.`,
+              desc: `<strong>${m3.protCalc.name}:</strong> ${m3.protCalc.portion}<br><strong>${m3.carbCalc.name}:</strong> ${m3.carbCalc.portion}<br>Legumes no vapor com azeite + ${m3.fatCalc}`,
             },
           ];
         } else if (mealsCount === 5) {
           // 5 Refeições Fracionadas
+          const m1 = getFoodPair(0, optIdx);
+          const m2 = getFoodPair(1, optIdx);
+          const m3 = getFoodPair(2, optIdx);
+          const m4 = getFoodPair(3, optIdx);
+          const m5 = getFoodPair(4, optIdx);
+
           mealsList = [
             {
               name: 'Café da Manhã',
               time: '07:00',
-              desc: `${Math.max(2, eggsCount - 1)} Ovos inteiros mexidos no azeite + ${Math.round(oatsG * 0.8)}g de Aveia com canela.`,
+              desc: `<strong>${m1.protCalc.name}:</strong> ${m1.protCalc.portion}<br><strong>${m1.carbCalc.name}:</strong> ${m1.carbCalc.portion}<br>${m1.fatCalc}`,
             },
             {
               name: 'Lanche da Manhã',
               time: '10:00',
-              desc: '1 Maçã média ou 1 fatia de mamão (120g) + 12g de Castanhas de Caju.',
+              desc: `<strong>${m2.protCalc.name}:</strong> ${m2.protCalc.portion}<br><strong>${m2.carbCalc.name}:</strong> ${m2.carbCalc.portion}<br>Café sem açúcar ou 1 fruta pequena`,
             },
             {
               name: 'Almoço',
               time: '13:00',
-              desc: `${meatG}g de Proteína magra (Frango, Patinho ou Tilápia)<br>${riceG}g de Arroz Branco + ${beansG}g de Feijão + Salada verde com azeite.`,
+              desc: `<strong>${m3.protCalc.name}:</strong> ${m3.protCalc.portion}<br><strong>${m3.carbCalc.name}:</strong> ${m3.carbCalc.portion}<br>Salada verde à vontade + ${m3.fatCalc}`,
             },
             {
               name: 'Lanche da Tarde',
               time: '16:30',
-              desc: `${Math.round(meatG * 0.7)}g de Peito de Frango Desfiado ou 2 Ovos cozidos + ${Math.round(sweetPotatoG * 0.7)}g de Batata-Doce.`,
+              desc: `<strong>${m4.protCalc.name}:</strong> ${m4.protCalc.portion}<br><strong>${m4.carbCalc.name}:</strong> ${m4.carbCalc.portion}<br>${m4.fatCalc}`,
             },
             {
               name: 'Jantar',
               time: '20:00',
-              desc: `${meatG}g de Carne moída ou Filé de Peixe + Legumes no vapor + ${Math.round(riceG * 0.8)}g de Arroz ou Batata-doce.`,
+              desc: `<strong>${m5.protCalc.name}:</strong> ${m5.protCalc.portion}<br><strong>${m5.carbCalc.name}:</strong> ${m5.carbCalc.portion}<br>Legumes e vegetais + ${m5.fatCalc}`,
             },
           ];
         } else {
           // 4 Refeições Padrão
+          const m1 = getFoodPair(0, optIdx);
+          const m2 = getFoodPair(1, optIdx);
+          const m3 = getFoodPair(2, optIdx);
+          const m4 = getFoodPair(3, optIdx);
+
           mealsList = [
             {
               name: 'Café da Manhã',
               time: '07:30',
-              desc:
-                opt === 1
-                  ? `${eggsCount} Ovos Inteiros mexidos com 1 colher de chá de azeite + 1 fatia de mamão (100g).`
-                  : opt === 2
-                  ? `Crepioca (${eggsCount - 1} Ovos + 20g de goma de tapioca) + café preto sem açúcar.`
-                  : `Mingau com ${oatsG}g de Aveia e canela + ${eggsCount} Ovos cozidos na balança.`,
+              desc: `<strong>${m1.protCalc.name}:</strong> ${m1.protCalc.portion}<br><strong>${m1.carbCalc.name}:</strong> ${m1.carbCalc.portion}<br>${m1.fatCalc}`,
             },
             {
               name: 'Almoço',
               time: '12:30',
-              desc:
-                opt === 1
-                  ? `${meatG}g de Peito de Frango Grelhado<br>${riceG}g de Arroz Branco cozido + ${beansG}g de Feijão cozido + Salada verde à vontade com azeite.`
-                  : opt === 2
-                  ? `${meatG}g de Carne Moída (Patinho refogado com alho e cebola)<br>${riceG}g de Arroz Branco + ${beansG}g de Feijão + Couve refogada.`
-                  : `${Math.round(meatG * 1.15)}g de Filé de Tilápia Grelhado<br>${Math.round(riceG * 1.1)}g de Arroz Branco + Salada colorida com azeite.`,
+              desc: `<strong>${m2.protCalc.name}:</strong> ${m2.protCalc.portion}<br><strong>${m2.carbCalc.name}:</strong> ${m2.carbCalc.portion}<br>Salada verde à vontade + ${m2.fatCalc}`,
             },
             {
-              name: 'Lanche',
+              name: 'Lanche da Tarde',
               time: '16:30',
-              desc:
-                opt === 1
-                  ? `${Math.round(meatG * 0.8)}g de Peito de Frango Desfiado + 15g de Castanhas do Pará.`
-                  : opt === 2
-                  ? `${eggsCount} Ovos Cozidos na balança + 1 maçã média com canela.`
-                  : hasLactoseFree
-                  ? `Shake de proteína vegetal/isolada com água + 15g de Castanhas do Pará + 1 banana média.`
-                  : `${Math.round(meatG * 0.8)}g de Peito de Frango Grelhado + ${Math.round(sweetPotatoG * 0.8)}g de Batata-Doce cozida.`,
+              desc: `<strong>${m3.protCalc.name}:</strong> ${m3.protCalc.portion}<br><strong>${m3.carbCalc.name}:</strong> ${m3.carbCalc.portion}<br>${m3.fatCalc}`,
             },
             {
               name: 'Jantar',
               time: '20:00',
-              desc:
-                opt === 1
-                  ? `${meatG}g de Carne Moída (Patinho) + ${sweetPotatoG}g de Batata-Doce cozida + Brócolis no vapor com azeite.`
-                  : opt === 2
-                  ? `${Math.round(meatG * 1.15)}g de Filé de Tilápia Grelhado + ${riceG + beansG}g de Arroz Branco + Salada de tomate e pepino.`
-                  : `${meatG}g de Peito de Frango Grelhado + ${sweetPotatoG}g de Mandioca ou Batata inglesa cozida + Azeite extravirgem.`,
+              desc: `<strong>${m4.protCalc.name}:</strong> ${m4.protCalc.portion}<br><strong>${m4.carbCalc.name}:</strong> ${m4.carbCalc.portion}<br>Legumes no vapor + ${m4.fatCalc}`,
             },
           ];
         }
@@ -426,7 +481,10 @@ export default function Home() {
       activityLevel: calcData.activityLabel,
       mealsCount: calcData.mealsCount,
       fastingProtocol: calcData.mealsCount === 3,
-      preferences: preferences.split(',').map((p) => p.trim()),
+      preferences: [
+        ...selectedProteins.split(',').map((p) => p.trim()).filter(Boolean),
+        ...selectedCarbs.split(',').map((c) => c.trim()).filter(Boolean),
+      ],
       options: calcData.options.map((m) => ({
         title: m.title,
         color: m.rgbColor,
@@ -736,27 +794,34 @@ export default function Home() {
             )}
           </div>
 
-          {/* Linha 5: Preferências Alimentares */}
+          {/* 1. Seleção de Proteínas */}
           <div className="form-group">
-            <label>Preferências Alimentares & Restrições</label>
+            <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span>🥩 1. Fontes de Proteína (O que você quer comer)</span>
+              <span style={{ fontSize: '11px', color: 'var(--primary)', fontWeight: 'normal' }}>Balança exata</span>
+            </label>
+            <p style={{ fontSize: '11px', color: 'var(--muted)', margin: '2px 0 6px 0' }}>
+              Digite as carnes e ovos que você deseja comer. O app calcula o peso exato na balança para bater sua meta.
+            </p>
             <input
               type="text"
-              value={preferences}
-              onChange={(e) => setPreferences(e.target.value)}
+              value={selectedProteins}
+              onChange={(e) => setSelectedProteins(e.target.value)}
               className="form-control"
-              placeholder="Ex: frango, patinho moído, tilápia, ovos, evitar lactose"
+              placeholder="Ex: peito de frango, filé mignon, tilápia, moela, ovos"
             />
-            {/* Tags rápidas de clique */}
+            {/* Tags rápidas de clique para proteína */}
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '8px' }}>
-              {quickTags.map((tag) => (
+              {quickProteinTags.map((tag) => (
                 <button
                   key={tag}
                   type="button"
-                  onClick={() => addTag(tag)}
+                  onClick={() => addProteinTag(tag)}
                   style={{
                     background: '#161616',
                     border: '1px solid #333',
-                    color: '#888',
+                    color: selectedProteins.toLowerCase().includes(tag.toLowerCase()) ? 'var(--primary)' : '#888',
+                    borderColor: selectedProteins.toLowerCase().includes(tag.toLowerCase()) ? 'var(--primary)' : '#333',
                     fontSize: '11px',
                     padding: '4px 8px',
                     borderRadius: '4px',
@@ -767,6 +832,67 @@ export default function Home() {
                 </button>
               ))}
             </div>
+          </div>
+
+          {/* 2. Seleção de Carboidratos */}
+          <div className="form-group" style={{ marginTop: '16px' }}>
+            <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span>🥔 2. Fontes de Carboidrato (O que você quer comer)</span>
+              <span style={{ fontSize: '11px', color: 'var(--primary)', fontWeight: 'normal' }}>Balança exata</span>
+            </label>
+            <p style={{ fontSize: '11px', color: 'var(--muted)', margin: '2px 0 6px 0' }}>
+              Digite os carboidratos da sua rotina (arroz, batata, macarrão, etc.) para montar seus pratos.
+            </p>
+            <input
+              type="text"
+              value={selectedCarbs}
+              onChange={(e) => setSelectedCarbs(e.target.value)}
+              className="form-control"
+              placeholder="Ex: arroz, feijão, batata-doce, batata inglesa, macarrão"
+            />
+            {/* Tags rápidas de clique para carboidrato */}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '8px' }}>
+              {quickCarbTags.map((tag) => (
+                <button
+                  key={tag}
+                  type="button"
+                  onClick={() => addCarbTag(tag)}
+                  style={{
+                    background: '#161616',
+                    border: '1px solid #333',
+                    color: selectedCarbs.toLowerCase().includes(tag.toLowerCase()) ? 'var(--primary)' : '#888',
+                    borderColor: selectedCarbs.toLowerCase().includes(tag.toLowerCase()) ? 'var(--primary)' : '#333',
+                    fontSize: '11px',
+                    padding: '4px 8px',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                  }}
+                >
+                  + {tag}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* 3. Gorduras Boas: Alocação Automática do QG */}
+          <div
+            style={{
+              background: 'rgba(255, 255, 255, 0.02)',
+              border: '1px solid #222',
+              borderRadius: '6px',
+              padding: '12px 14px',
+              marginTop: '16px',
+              marginBottom: '10px',
+              fontSize: '12px',
+              lineHeight: '1.45',
+            }}
+          >
+            <strong style={{ color: '#00d0ff', display: 'block', marginBottom: '4px', fontSize: '12px' }}>
+              🥑 3. Gorduras Boas: Alocação Automática de Precisão (0.9g/kg)
+            </strong>
+            <span style={{ color: '#a0a0a0' }}>
+              Você não precisa escolher as gorduras! Nosso sistema distribui automaticamente fontes nobres (Azeite Extravirgem, Castanhas e Gemas) nas suas refeições para fechar sua meta com máxima precisão.
+            </span>
           </div>
 
           <button
@@ -869,6 +995,281 @@ export default function Home() {
                   </p>
                 </div>
               )}
+
+              {/* CHECKLIST DIÁRIO OPERACIONAL (ÁGUA & REFEIÇÕES) */}
+              {(() => {
+                const totalWaterBottles = Math.max(1, Math.ceil((calcData.waterL * 1000) / 500));
+                const completedBottles = Math.min(waterCups, totalWaterBottles);
+                const waterPercent = Math.min(100, Math.round((completedBottles / totalWaterBottles) * 100));
+                const checkedMealsCount = Array.from({ length: calcData.mealsCount }).filter(
+                  (_, i) => checkedMeals[`meal_${todayKey}_${i + 1}`]
+                ).length;
+                const mealsPercent = Math.round((checkedMealsCount / calcData.mealsCount) * 100);
+                const totalTasks = totalWaterBottles + calcData.mealsCount;
+                const totalDone = completedBottles + checkedMealsCount;
+                const overallPercent = Math.round((totalDone / totalTasks) * 100);
+
+                return (
+                  <div
+                    style={{
+                      background: '#121212',
+                      border: '1px solid #262626',
+                      borderRadius: '8px',
+                      padding: '16px',
+                      marginBottom: '20px',
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        flexWrap: 'wrap',
+                        gap: '8px',
+                        marginBottom: '12px',
+                        borderBottom: '1px solid #222',
+                        paddingBottom: '10px',
+                      }}
+                    >
+                      <div>
+                        <h4
+                          style={{
+                            margin: 0,
+                            fontFamily: "'Montserrat', sans-serif",
+                            fontSize: '14px',
+                            color: '#fff',
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.5px',
+                          }}
+                        >
+                          📋 Checklist Operacional Diário
+                        </h4>
+                        <span style={{ fontSize: '11px', color: 'var(--muted)' }}>
+                          Hoje: {todayKey} • Progresso salvo automaticamente
+                        </span>
+                      </div>
+                      <div
+                        style={{
+                          background: overallPercent === 100 ? 'rgba(0, 255, 0, 0.2)' : '#1a1a1a',
+                          border: `1px solid ${overallPercent === 100 ? 'var(--primary)' : '#333'}`,
+                          padding: '4px 10px',
+                          borderRadius: '12px',
+                          fontSize: '11px',
+                          color: overallPercent === 100 ? 'var(--primary)' : '#fff',
+                          fontWeight: 'bold',
+                        }}
+                      >
+                        {overallPercent}% CUMPRIDO
+                      </div>
+                    </div>
+
+                    {/* Barra de Progresso Geral */}
+                    <div
+                      style={{
+                        width: '100%',
+                        height: '6px',
+                        background: '#222',
+                        borderRadius: '3px',
+                        overflow: 'hidden',
+                        marginBottom: '16px',
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: `${overallPercent}%`,
+                          height: '100%',
+                          background: 'linear-gradient(90deg, #00d0ff, var(--primary))',
+                          transition: 'width 0.3s ease',
+                        }}
+                      />
+                    </div>
+
+                    {overallPercent === 100 && (
+                      <div
+                        style={{
+                          background: 'rgba(0, 255, 0, 0.1)',
+                          border: '1px solid var(--primary)',
+                          borderRadius: '6px',
+                          padding: '10px 12px',
+                          marginBottom: '16px',
+                          textAlign: 'center',
+                          color: 'var(--primary)',
+                          fontSize: '12px',
+                          fontWeight: 'bold',
+                        }}
+                      >
+                        🎖️ EXCELENTE! 100% DA MISSÃO CUMPRIDA HOJE! DISCIPLINA ABSOLUTA!
+                      </div>
+                    )}
+
+                    {/* Bloco 1: Água */}
+                    <div style={{ marginBottom: '16px' }}>
+                      <div
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          marginBottom: '6px',
+                        }}
+                      >
+                        <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#00d0ff' }}>
+                          💧 Hidratação ({calcData.waterL}L / dia)
+                        </span>
+                        <span style={{ fontSize: '11px', color: 'var(--muted)' }}>
+                          {(completedBottles * 0.5).toFixed(1)}L de {calcData.waterL}L ({waterPercent}%)
+                        </span>
+                      </div>
+
+                      <div
+                        style={{
+                          display: 'grid',
+                          gridTemplateColumns: 'repeat(auto-fill, minmax(105px, 1fr))',
+                          gap: '6px',
+                          marginTop: '6px',
+                        }}
+                      >
+                        {Array.from({ length: totalWaterBottles }).map((_, bIdx) => {
+                          const isDrank = bIdx < waterCups;
+                          return (
+                            <button
+                              key={bIdx}
+                              type="button"
+                              onClick={() => toggleWaterCup(bIdx)}
+                              style={{
+                                background: isDrank ? 'rgba(0, 208, 255, 0.12)' : '#181818',
+                                border: `1px solid ${isDrank ? '#00d0ff' : '#282828'}`,
+                                color: isDrank ? '#00d0ff' : '#777',
+                                borderRadius: '6px',
+                                padding: '8px 6px',
+                                fontSize: '11px',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                gap: '3px',
+                                transition: 'all 0.2s',
+                              }}
+                            >
+                              <span style={{ fontSize: '14px' }}>{isDrank ? '💧' : '⚪'}</span>
+                              <span style={{ fontWeight: 'bold' }}>500ml</span>
+                              <span style={{ fontSize: '9px', opacity: 0.8 }}>Garrafa #{bIdx + 1}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Bloco 2: Refeições */}
+                    <div>
+                      <div
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          marginBottom: '8px',
+                        }}
+                      >
+                        <span style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--primary)' }}>
+                          🍽️ Refeições ({calcData.mealsCount} refeições / dia)
+                        </span>
+                        <span style={{ fontSize: '11px', color: 'var(--muted)' }}>
+                          {checkedMealsCount} de {calcData.mealsCount} ({mealsPercent}%)
+                        </span>
+                      </div>
+
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                        {Array.from({ length: calcData.mealsCount }).map((_, mIdx) => {
+                          const mealKey = `meal_${todayKey}_${mIdx + 1}`;
+                          const isDone = !!checkedMeals[mealKey];
+
+                          const mealName =
+                            calcData.mealsCount === 3
+                              ? mIdx === 0
+                                ? 'Almoço (Quebra do Jejum 12:00)'
+                                : mIdx === 1
+                                ? 'Lanche da Tarde (16:00)'
+                                : 'Jantar (Fechamento da Janela 20:00)'
+                              : calcData.mealsCount === 5
+                              ? mIdx === 0
+                                ? 'Café da Manhã (07:00)'
+                                : mIdx === 1
+                                ? 'Lanche da Manhã (10:00)'
+                                : mIdx === 2
+                                ? 'Almoço (13:00)'
+                                : mIdx === 3
+                                ? 'Lanche da Tarde (16:30)'
+                                : 'Jantar (20:00)'
+                              : mIdx === 0
+                              ? 'Café da Manhã (07:30)'
+                              : mIdx === 1
+                              ? 'Almoço (12:30)'
+                              : mIdx === 2
+                              ? 'Lanche da Tarde (16:30)'
+                              : 'Jantar (20:00)';
+
+                          return (
+                            <div
+                              key={mIdx}
+                              onClick={() => toggleMealCheck(mealKey)}
+                              style={{
+                                background: isDone ? 'rgba(0, 255, 0, 0.08)' : '#181818',
+                                border: `1px solid ${isDone ? 'var(--primary)' : '#282828'}`,
+                                borderRadius: '6px',
+                                padding: '10px 12px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s',
+                              }}
+                            >
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                <div
+                                  style={{
+                                    width: '18px',
+                                    height: '18px',
+                                    borderRadius: '4px',
+                                    border: `2px solid ${isDone ? 'var(--primary)' : '#555'}`,
+                                    background: isDone ? 'var(--primary)' : 'transparent',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    color: '#000',
+                                    fontSize: '11px',
+                                    fontWeight: 'bold',
+                                  }}
+                                >
+                                  {isDone && '✓'}
+                                </div>
+                                <span
+                                  style={{
+                                    fontSize: '12px',
+                                    color: isDone ? '#fff' : '#ccc',
+                                    textDecoration: isDone ? 'line-through' : 'none',
+                                    opacity: isDone ? 0.8 : 1,
+                                  }}
+                                >
+                                  <strong>Refeição {mIdx + 1}:</strong> {mealName}
+                                </span>
+                              </div>
+                              <span
+                                style={{
+                                  fontSize: '10px',
+                                  textTransform: 'uppercase',
+                                  fontWeight: 'bold',
+                                  color: isDone ? 'var(--primary)' : '#555',
+                                }}
+                              >
+                                {isDone ? 'CONCLUÍDA' : 'PENDENTE'}
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
 
               {/* As 3 Opções de Cardápios */}
               <div id="menus-container">

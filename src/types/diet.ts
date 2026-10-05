@@ -17,6 +17,8 @@ export interface UserDietInput {
   activityLevel: ActivityLevel;
   goal: DietGoal;
   mealsCount?: number; // 3, 4 ou 5 refeições
+  proteins?: string[]; // Proteínas escolhidas pelo usuário
+  carbs?: string[]; // Carboidratos escolhidos pelo usuário
   preferences: string[];
   customNotes?: string;
 }

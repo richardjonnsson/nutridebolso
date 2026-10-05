@@ -13,6 +13,8 @@ export async function POST(req: NextRequest) {
     const gender = body.gender;
     const activityLevel = body.activityLevel;
     const goal = body.goal;
+    const proteins = Array.isArray(body.proteins) ? body.proteins : [];
+    const carbs = Array.isArray(body.carbs) ? body.carbs : [];
     const preferences = Array.isArray(body.preferences) ? body.preferences : [];
     const customNotes = typeof body.customNotes === 'string' ? body.customNotes.trim() : '';
 
@@ -46,6 +48,8 @@ export async function POST(req: NextRequest) {
       activityLevel,
       goal,
       mealsCount,
+      proteins,
+      carbs,
       preferences,
       customNotes,
     };

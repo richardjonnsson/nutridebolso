@@ -171,18 +171,20 @@ export function generateTacticalPdf(data: TacticalDietData): void {
   }
 
   doc.setFillColor(20, 20, 20);
-  doc.roundedRect(14, currentY, 182, 34, 2, 2, 'F');
+  doc.roundedRect(14, currentY, 182, 42, 2, 2, 'F');
   doc.setFontSize(9);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(...neonGreen);
-  doc.text('DIRETRIZES OPERACIONAIS & EQUIVALÊNCIAS NA BALANÇA', 18, currentY + 7);
+  doc.text('CHECKLIST DIÁRIO OPERACIONAL & CONTROLE NA BALANÇA', 18, currentY + 7);
 
   doc.setFontSize(8);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(...lightText);
-  doc.text('• Substituições de Proteínas: 100g Frango = 100g Patinho moído = 120g Tilápia/Pescada = 4 Ovos inteiros.', 18, currentY + 14);
-  doc.text('• Substituições de Carbos: 100g Arroz branco = 100g Arroz integral = 120g Batata-doce = 140g Mandioca = 60g Aveia.', 18, currentY + 20);
-  doc.text('• Saladas Verdes: Alface, rúcula, espinafre, pepino e tomate são livres em todas as refeições principais.', 18, currentY + 26);
+  doc.text(`• Checklist de Água (${data.waterL}L): [ ] 500ml   [ ] 1.0L   [ ] 1.5L   [ ] 2.0L   [ ] 2.5L   [ ] 3.0L`, 18, currentY + 14);
+  doc.text(`• Checklist de Refeições: ${Array.from({ length: data.mealsCount }).map((_, i) => `[ ] Refeição ${i + 1}`).join('     ')}`, 18, currentY + 20);
+  doc.text('• Equivalência Proteínas: 100g Frango = 100g Mignon/Patinho = 120g Tilápia = 110g Moela = 4 Ovos.', 18, currentY + 26);
+  doc.text('• Equivalência Carbos: 100g Arroz = 120g Batata-Doce = 150g Batata Inglesa = 100g Macarrão = 60g Aveia.', 18, currentY + 32);
+  doc.text('• Saladas Verdes: Alface, rúcula, espinafre e pepino são livres para saciedade máxima.', 18, currentY + 38);
 
   // Rodapé
   doc.setFontSize(8);

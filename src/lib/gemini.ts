@@ -18,7 +18,8 @@ export async function generateDietPlan(
 
   try {
     const ai = new GoogleGenAI({ apiKey });
-    const userPrefs = input.preferences.length > 0 ? input.preferences.join(', ') : 'Sem restrições declaradas';
+    const userProteins = input.proteins && input.proteins.length > 0 ? input.proteins.join(', ') : 'Peito de frango, patinho moído, ovos, tilápia';
+    const userCarbs = input.carbs && input.carbs.length > 0 ? input.carbs.join(', ') : 'Arroz branco, feijão, batata-doce, aveia';
     const customNotes = input.customNotes ? ` (Observações adicionais: ${input.customNotes})` : '';
     const mealsCount = input.mealsCount || 4;
     const fastingDirective =
@@ -26,13 +27,22 @@ export async function generateDietPlan(
         ? 'Como o usuário optou por 3 refeições, utilize o protocolo de Jejum Intermitente 16/8 (16h em jejum das 20:00 às 12:00, e 8h de janela alimentar: 12:00 Almoço/Quebra de Jejum, 16:00 Lanche da Tarde e 20:00 Jantar).'
         : `Divida harmoniosamente em ${mealsCount} refeições ao longo do dia.`;
 
-    const prompt = `Você é um nutricionista esportivo. Crie 3 opções de cardápio diário batendo EXATAMENTE estas metas:
+    const prompt = `Você é um nutricionista esportivo de elite. Monte 3 opções de cardápio diário batendo EXATAMENTE estas metas:
 - Calorias Totais: ${targets.targetCalories} kcal
 - Proteína: ${targets.proteinGrams}g
 - Carboidrato: ${targets.carbsGrams}g
 - Gordura: ${targets.fatsGrams}g
 
-As fontes prioritárias de proteína devem ser (se o usuário não tiver restrição): peito de frango, patinho moído, tilápia e ovos. Adapte ao gosto do usuário: ${userPrefs}${customNotes}. Divida em ${mealsCount} refeições e mostre as gramaturas aproximadas ao lado de cada alimento para fechar a matemática. ${fastingDirective}
+O CLIENTE ESCOLHEU ESPECIFICAMENTE OS SEGUINTES ALIMENTOS PARA O CARDÁPIO DELE:
+- Fontes de Proteína selecionadas: ${userProteins}
+- Fontes de Carboidrato selecionadas: ${userCarbs}
+- Gorduras boas: Distribua automaticamente azeite de oliva extravirgem, castanhas e gemas dos ovos para bater com perfeição ${targets.fatsGrams}g de gordura.
+${customNotes ? `Observações adicionais: ${customNotes}` : ''}
+
+REGRAS:
+1. Utilize prioritariamente ou exclusivamente os alimentos informados pelo cliente em cada refeição.
+2. Divida em ${mealsCount} refeições. ${fastingDirective}
+3. Mostre as gramaturas aproximadas na balança (peso do alimento já cozido/preparado) ao lado de cada item para fechar a matemática dos macros com rigor.
 
 RETORNE ESTRITAMENTE UM JSON VÁLIDO no seguinte formato (sem blocos de texto antes ou depois):
 [
