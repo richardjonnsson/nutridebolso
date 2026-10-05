@@ -16,6 +16,16 @@ export interface MealRequest {
   userFoods: string;
 }
 
+export interface MealOptionPlan {
+  optionNumber: 1 | 2 | 3;
+  meals: {
+    mealIndex: number;
+    name: string;
+    timeSuggestion?: string;
+    userFoods: string;
+  }[];
+}
+
 export interface UserDietInput {
   age: number;
   weight: number; // em kg
@@ -27,6 +37,7 @@ export interface UserDietInput {
   proteins?: string[]; // Proteínas escolhidas pelo usuário
   carbs?: string[]; // Carboidratos escolhidos pelo usuário
   mealRequests?: MealRequest[]; // Alimentos especificados para cada refeição
+  optionPlans?: MealOptionPlan[]; // As 3 opções personalizadas de cardápio completo
   preferences: string[];
   customNotes?: string;
 }

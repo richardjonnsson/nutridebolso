@@ -10,8 +10,8 @@ export interface MealSlotConfig {
   name: string;
   time: string;
   icon: string;
-  defaultText: string;
-  placeholder: string;
+  defaultOptions: [string, string, string];
+  placeholders: [string, string, string];
   quickTags: string[];
 }
 
@@ -23,17 +23,33 @@ export const getMealSlotsForCount = (count: number): MealSlotConfig[] => {
         name: 'Almoço (Quebra do Jejum 16h)',
         time: '12:00',
         icon: '🍗',
-        defaultText: 'Peito de frango grelhado, arroz branco, feijão, salada',
-        placeholder: 'Ex: filé mignon, arroz branco, feijão, salada',
-        quickTags: ['Peito de Frango', 'Filé Mignon', 'Tilápia', 'Moela', 'Arroz Branco', 'Feijão', 'Batata-Doce', 'Salada Verde'],
+        defaultOptions: [
+          'Peito de frango grelhado, arroz branco, feijão carioca, salada verde',
+          'Filé mignon ou carne moída (patinho), batata-doce, salada',
+          'Filé de tilápia grelhado, macarrão ou mandioca, brócolis com azeite',
+        ],
+        placeholders: [
+          'Opção 1: Ex: peito de frango, arroz, feijão, salada',
+          'Opção 2: Ex: filé mignon, batata-doce, legumes',
+          'Opção 3: Ex: tilápia grelhada, macarrão, brócolis',
+        ],
+        quickTags: ['Peito de Frango', 'Filé Mignon', 'Tilápia', 'Moela', 'Patinho Moído', 'Arroz Branco', 'Feijão', 'Batata-Doce', 'Salada Verde'],
       },
       {
         id: 1,
         name: 'Café / Lanche da Tarde',
         time: '16:00',
         icon: '☕',
-        defaultText: 'Ovos inteiros mexidos, aveia em flocos, 1 fruta',
-        placeholder: 'Ex: ovos mexidos, aveia em flocos, banana',
+        defaultOptions: [
+          'Ovos inteiros mexidos, aveia em flocos, 1 fruta fresca',
+          'Frango desfiado na balança, pão integral ou tapioca, 1 maçã',
+          'Crepioca (ovos + tapioca), castanhas do Pará, 1 banana',
+        ],
+        placeholders: [
+          'Opção 1: Ex: ovos mexidos, aveia em flocos, fruta',
+          'Opção 2: Ex: frango desfiado, pão integral, maçã',
+          'Opção 3: Ex: crepioca, castanhas, banana',
+        ],
         quickTags: ['Ovos Mexidos', 'Aveia em Flocos', 'Banana', 'Pão Integral', 'Frango Desfiado', 'Castanhas'],
       },
       {
@@ -41,9 +57,17 @@ export const getMealSlotsForCount = (count: number): MealSlotConfig[] => {
         name: 'Jantar (Fechamento da Janela)',
         time: '20:00',
         icon: '🥩',
-        defaultText: 'Patinho moído refogado, mandioca ou batata inglesa, legumes',
-        placeholder: 'Ex: patinho moído, tilápia, batata inglesa, legumes',
-        quickTags: ['Patinho Moído', 'Tilápia', 'Moela', 'Batata Inglesa', 'Macarrão', 'Mandioca', 'Legumes no vapor'],
+        defaultOptions: [
+          'Patinho moído refogado, arroz branco, legumes no vapor',
+          'Filé de tilápia grelhado, batata inglesa cozida, salada colorida',
+          'Moela cozida ou peito de frango, mandioca na balança, legumes',
+        ],
+        placeholders: [
+          'Opção 1: Ex: patinho moído, arroz, legumes no vapor',
+          'Opção 2: Ex: tilápia, batata inglesa, salada',
+          'Opção 3: Ex: moela cozida, mandioca, brócolis',
+        ],
+        quickTags: ['Patinho Moído', 'Tilápia', 'Moela', 'Batata Inglesa', 'Mandioca', 'Macarrão', 'Legumes no vapor'],
       },
     ];
   }
@@ -55,8 +79,16 @@ export const getMealSlotsForCount = (count: number): MealSlotConfig[] => {
         name: 'Café da Manhã',
         time: '07:00',
         icon: '🍳',
-        defaultText: 'Ovos inteiros mexidos, aveia em flocos, café sem açúcar',
-        placeholder: 'Ex: ovos mexidos, aveia em flocos, café',
+        defaultOptions: [
+          'Ovos inteiros mexidos, aveia em flocos, café sem açúcar',
+          'Pão integral com ovos mexidos, café preto sem açúcar',
+          'Crepioca (ovos e tapioca), mamão com canela',
+        ],
+        placeholders: [
+          'Opção 1: Ex: ovos mexidos, aveia, café',
+          'Opção 2: Ex: pão integral, ovos mexidos',
+          'Opção 3: Ex: crepioca, fruta com canela',
+        ],
         quickTags: ['Ovos Mexidos', 'Aveia em Flocos', 'Pão Integral', 'Tapioca', 'Fruta'],
       },
       {
@@ -64,8 +96,16 @@ export const getMealSlotsForCount = (count: number): MealSlotConfig[] => {
         name: 'Lanche da Manhã',
         time: '10:00',
         icon: '🍎',
-        defaultText: '1 maçã ou mamão com castanhas de caju',
-        placeholder: 'Ex: fruta com castanhas, shake ou ovos cozidos',
+        defaultOptions: [
+          '1 maçã ou mamão com castanhas de caju na balança',
+          'Ovos cozidos na balança com 1 fruta fresca',
+          'Iogurte natural desnatado com sementes de chia e fruta',
+        ],
+        placeholders: [
+          'Opção 1: Ex: fruta com castanhas de caju',
+          'Opção 2: Ex: ovos cozidos com fruta',
+          'Opção 3: Ex: iogurte com sementes e fruta',
+        ],
         quickTags: ['1 Fruta', 'Castanhas de Caju', 'Ovos Cozidos', 'Shake de Proteína'],
       },
       {
@@ -73,8 +113,16 @@ export const getMealSlotsForCount = (count: number): MealSlotConfig[] => {
         name: 'Almoço Principal',
         time: '13:00',
         icon: '🍗',
-        defaultText: 'Peito de frango grelhado, arroz branco, feijão, salada verde',
-        placeholder: 'Ex: peito de frango, arroz, feijão, salada',
+        defaultOptions: [
+          'Peito de frango grelhado, arroz branco, feijão, salada verde',
+          'Filé mignon ou carne moída (patinho), batata-doce, salada',
+          'Filé de tilápia grelhado, macarrão cozido, legumes no vapor',
+        ],
+        placeholders: [
+          'Opção 1: Ex: peito de frango, arroz, feijão, salada',
+          'Opção 2: Ex: filé mignon, batata-doce, salada',
+          'Opção 3: Ex: tilápia, macarrão, legumes',
+        ],
         quickTags: ['Peito de Frango', 'Filé Mignon', 'Patinho Moído', 'Arroz Branco', 'Feijão', 'Salada Verde'],
       },
       {
@@ -82,8 +130,16 @@ export const getMealSlotsForCount = (count: number): MealSlotConfig[] => {
         name: 'Café / Lanche da Tarde',
         time: '16:30',
         icon: '☕',
-        defaultText: 'Frango desfiado, batata-doce ou ovos cozidos',
-        placeholder: 'Ex: frango desfiado, batata-doce ou ovos',
+        defaultOptions: [
+          'Frango desfiado na balança, batata-doce cozida',
+          'Ovos inteiros cozidos, aveia em flocos, 1 banana',
+          'Shake proteico isolado com aveia em flocos e castanhas',
+        ],
+        placeholders: [
+          'Opção 1: Ex: frango desfiado com batata-doce',
+          'Opção 2: Ex: ovos cozidos com aveia e fruta',
+          'Opção 3: Ex: shake proteico com aveia',
+        ],
         quickTags: ['Frango Desfiado', 'Ovos Cozidos', 'Batata-Doce', 'Aveia em Flocos'],
       },
       {
@@ -91,8 +147,16 @@ export const getMealSlotsForCount = (count: number): MealSlotConfig[] => {
         name: 'Jantar',
         time: '20:00',
         icon: '🥩',
-        defaultText: 'Patinho moído, batata inglesa ou arroz, legumes no vapor',
-        placeholder: 'Ex: patinho moído, legumes no vapor, mandioca',
+        defaultOptions: [
+          'Patinho moído refogado, arroz branco, legumes no vapor',
+          'Filé de tilápia grelhado, batata inglesa cozida, salada',
+          'Moela cozida ou frango, mandioca na balança, brócolis',
+        ],
+        placeholders: [
+          'Opção 1: Ex: patinho moído, arroz, legumes',
+          'Opção 2: Ex: tilápia, batata inglesa, salada',
+          'Opção 3: Ex: moela cozida, mandioca, brócolis',
+        ],
         quickTags: ['Patinho Moído', 'Tilápia', 'Moela', 'Macarrão', 'Legumes no vapor'],
       },
     ];
@@ -105,8 +169,16 @@ export const getMealSlotsForCount = (count: number): MealSlotConfig[] => {
       name: 'Café da Manhã',
       time: '07:30',
       icon: '🍳',
-      defaultText: 'Ovos inteiros mexidos, aveia em flocos, café sem açúcar',
-      placeholder: 'Ex: ovos inteiros, aveia em flocos, café',
+      defaultOptions: [
+        'Ovos inteiros mexidos, aveia em flocos, café sem açúcar',
+        'Pão integral com ovos mexidos, 1 maçã ou mamão',
+        'Crepioca (ovos + goma de tapioca), café preto sem açúcar',
+      ],
+      placeholders: [
+        'Opção 1: Ex: ovos mexidos, aveia em flocos, café',
+        'Opção 2: Ex: pão integral com ovos, fruta',
+        'Opção 3: Ex: crepioca, café preto',
+      ],
       quickTags: ['Ovos Inteiros', 'Aveia em Flocos', 'Pão Integral', '1 Banana', 'Café sem açúcar'],
     },
     {
@@ -114,8 +186,16 @@ export const getMealSlotsForCount = (count: number): MealSlotConfig[] => {
       name: 'Almoço Principal',
       time: '12:30',
       icon: '🍗',
-      defaultText: 'Peito de frango grelhado, arroz branco, feijão carioca, salada verde',
-      placeholder: 'Ex: peito de frango, filé mignon, arroz, feijão, salada',
+      defaultOptions: [
+        'Peito de frango grelhado, arroz branco, feijão carioca, salada verde',
+        'Filé mignon ou carne moída (patinho), batata-doce na balança, salada',
+        'Filé de tilápia grelhado, arroz branco ou macarrão, brócolis no vapor',
+      ],
+      placeholders: [
+        'Opção 1: Ex: peito de frango, arroz, feijão, salada',
+        'Opção 2: Ex: filé mignon, batata-doce, salada',
+        'Opção 3: Ex: tilápia grelhada, macarrão, brócolis',
+      ],
       quickTags: ['Peito de Frango', 'Filé Mignon', 'Tilápia', 'Arroz Branco', 'Feijão', 'Salada Verde'],
     },
     {
@@ -123,8 +203,16 @@ export const getMealSlotsForCount = (count: number): MealSlotConfig[] => {
       name: 'Café / Lanche da Tarde',
       time: '16:30',
       icon: '☕',
-      defaultText: 'Frango desfiado ou ovos mexidos, batata-doce na balança',
-      placeholder: 'Ex: frango desfiado, batata-doce ou ovos',
+      defaultOptions: [
+        'Frango desfiado na balança, batata-doce cozida',
+        'Ovos inteiros cozidos, aveia em flocos, 1 fruta fresca',
+        'Shake proteico isolado com aveia e castanhas do Pará',
+      ],
+      placeholders: [
+        'Opção 1: Ex: frango desfiado com batata-doce',
+        'Opção 2: Ex: ovos cozidos com aveia e fruta',
+        'Opção 3: Ex: shake proteico com castanhas',
+      ],
       quickTags: ['Frango Desfiado', 'Ovos Mexidos', 'Batata-Doce', 'Castanhas', 'Aveia em Flocos'],
     },
     {
@@ -132,8 +220,16 @@ export const getMealSlotsForCount = (count: number): MealSlotConfig[] => {
       name: 'Jantar',
       time: '20:00',
       icon: '🥩',
-      defaultText: 'Patinho moído refogado, mandioca ou macarrão, legumes no vapor',
-      placeholder: 'Ex: patinho moído, tilápia, moela, macarrão, legumes',
+      defaultOptions: [
+        'Patinho moído refogado, mandioca ou arroz, legumes no vapor',
+        'Peito de frango grelhado, batata inglesa cozida, legumes',
+        'Moela cozida ou tilápia grelhada, macarrão cozido, salada com azeite',
+      ],
+      placeholders: [
+        'Opção 1: Ex: patinho moído, mandioca, legumes',
+        'Opção 2: Ex: frango grelhado, batata inglesa, salada',
+        'Opção 3: Ex: moela cozida ou tilápia, macarrão',
+      ],
       quickTags: ['Patinho Moído', 'Tilápia', 'Moela', 'Macarrão', 'Mandioca', 'Legumes no vapor'],
     },
   ];
@@ -212,26 +308,54 @@ export default function Home() {
   const [activity, setActivity] = useState<number>(1.55); // 1.2 a 1.9
   const [goal, setGoal] = useState<'hipertrofia' | 'emagrecimento' | 'emagrecimento_agressivo' | 'recomposicao'>('emagrecimento');
   const [mealsCount, setMealsCount] = useState<number>(4);
-  const [mealChoices, setMealChoices] = useState<Record<number, string>>({
-    0: 'Ovos inteiros mexidos, aveia em flocos, café sem açúcar',
-    1: 'Peito de frango grelhado, arroz branco, feijão carioca, salada verde',
-    2: 'Frango desfiado ou ovos mexidos, batata-doce na balança',
-    3: 'Patinho moído refogado, mandioca ou macarrão, legumes no vapor',
-    4: 'Tilápia grelhada, legumes no vapor, arroz branco',
+  const [mealOptionChoices, setMealOptionChoices] = useState<Record<number, [string, string, string]>>({
+    0: [
+      'Ovos inteiros mexidos, aveia em flocos, café sem açúcar',
+      'Pão integral com ovos mexidos, 1 maçã ou mamão',
+      'Crepioca (ovos + goma de tapioca), café preto sem açúcar',
+    ],
+    1: [
+      'Peito de frango grelhado, arroz branco, feijão carioca, salada verde',
+      'Filé mignon ou carne moída (patinho), batata-doce na balança, salada',
+      'Filé de tilápia grelhado, arroz branco ou macarrão, brócolis no vapor',
+    ],
+    2: [
+      'Frango desfiado na balança, batata-doce cozida',
+      'Ovos inteiros cozidos, aveia em flocos, 1 fruta fresca',
+      'Shake proteico isolado com aveia e castanhas do Pará',
+    ],
+    3: [
+      'Patinho moído refogado, mandioca ou arroz, legumes no vapor',
+      'Peito de frango grelhado, batata inglesa cozida, legumes',
+      'Moela cozida ou tilápia grelhada, macarrão cozido, salada com azeite',
+    ],
+    4: [
+      'Patinho moído, legumes no vapor, arroz branco',
+      'Filé de tilápia, batata inglesa, salada',
+      'Moela cozida ou frango, mandioca, brócolis',
+    ],
   });
 
-  const handleMealTextChange = (slotId: number, text: string) => {
-    setMealChoices((prev) => ({ ...prev, [slotId]: text }));
+  const [focusedOptionIdx, setFocusedOptionIdx] = useState<Record<number, 0 | 1 | 2>>({});
+
+  const handleMealOptionChange = (slotId: number, optIdx: 0 | 1 | 2, text: string) => {
+    setMealOptionChoices((prev) => {
+      const current = prev[slotId] || ['', '', ''];
+      const updated: [string, string, string] = [current[0], current[1], current[2]];
+      updated[optIdx] = text;
+      return { ...prev, [slotId]: updated };
+    });
   };
 
-  const handleAddTagToMeal = (slotId: number, tag: string) => {
-    setMealChoices((prev) => {
-      const current = prev[slotId] || '';
-      if (current.toLowerCase().includes(tag.toLowerCase())) return prev;
-      return {
-        ...prev,
-        [slotId]: current ? `${current}, ${tag}` : tag,
-      };
+  const handleAddTagToMealOption = (slotId: number, tag: string) => {
+    const targetIdx = focusedOptionIdx[slotId] !== undefined ? focusedOptionIdx[slotId] : 0;
+    setMealOptionChoices((prev) => {
+      const current = prev[slotId] || ['', '', ''];
+      const text = current[targetIdx] || '';
+      if (text.toLowerCase().includes(tag.toLowerCase())) return prev;
+      const updated: [string, string, string] = [current[0], current[1], current[2]];
+      updated[targetIdx] = text ? `${text}, ${tag}` : tag;
+      return { ...prev, [slotId]: updated };
     });
   };
 
@@ -345,13 +469,20 @@ export default function Home() {
     const pMeal = protGrams / mealsCount;
     const cMeal = carbGrams / mealsCount;
 
-    // Configurações e alimentos escolhidos para cada refeição pelo aluno
+    // Configurações e as 3 opções de cada refeição escolhidas pelo aluno
     const currentSlots = getMealSlotsForCount(mealsCount);
-    const mealRequests = currentSlots.map((slot) => ({
-      mealIndex: slot.id + 1,
-      name: slot.name,
-      timeSuggestion: slot.time,
-      userFoods: (mealChoices[slot.id] !== undefined ? mealChoices[slot.id] : slot.defaultText).trim(),
+    const optionPlans = [0, 1, 2].map((optIdx) => ({
+      optionNumber: (optIdx + 1) as 1 | 2 | 3,
+      meals: currentSlots.map((slot) => ({
+        mealIndex: slot.id + 1,
+        name: slot.name,
+        timeSuggestion: slot.time,
+        userFoods: (
+          mealOptionChoices[slot.id]?.[optIdx] !== undefined
+            ? mealOptionChoices[slot.id][optIdx]
+            : slot.defaultOptions[optIdx]
+        ).trim(),
+      })),
     }));
 
     // Chamar backend /api/generate-diet para integrar a LLM com o prompt solicitado
@@ -382,9 +513,11 @@ export default function Home() {
           activityLevel: activityMap[activity] || 'moderado',
           goal,
           mealsCount,
-          mealRequests,
-          preferences: mealRequests.map((m) => `${m.name}: ${m.userFoods}`),
-          customNotes: mealRequests.map((m) => `${m.name}: ${m.userFoods}`).join(' | '),
+          optionPlans,
+          preferences: optionPlans[0].meals.map((m) => `${m.name}: ${m.userFoods}`),
+          customNotes: optionPlans
+            .map((o) => `Opção ${o.optionNumber}: ` + o.meals.map((m) => `${m.name} [${m.userFoods}]`).join(', '))
+            .join(' | '),
         }),
       });
 
@@ -399,7 +532,7 @@ export default function Home() {
           ];
 
           generatedOptions = data.options.slice(0, 3).map((opt: any, idx: number) => ({
-            title: opt.title || (idx === 0 ? 'Opção 1: Seu Cardápio Oficial Personalizado' : `Opção ${idx + 1}`),
+            title: opt.title || `Opção ${idx + 1}: ${idx === 0 ? 'Cardápio Principal' : idx === 1 ? 'Variação Tática' : 'Rotação Prática'}`,
             color: colors[idx],
             rgbColor: rgb[idx],
             mealsList: (opt.meals || []).map((m: any, mIdx: number) => ({
@@ -411,10 +544,10 @@ export default function Home() {
         }
       }
     } catch (err) {
-      console.log('Utilizando gerador matemático local com as refeições personalizadas:', err);
+      console.log('Utilizando gerador matemático local com as 3 opções de cada refeição:', err);
     }
 
-    // Se a IA estiver sem chave ou em contingência, calculamos com exatidão matemática nas refeições do aluno
+    // Se a IA estiver sem chave ou em contingência, calculamos com exatidão matemática para cada uma das 3 opções do aluno
     if (generatedOptions.length === 0) {
       const optColors = ['var(--primary)', '#FFD700', '#ff3333'];
       const optRgb: [number, number, number][] = [
@@ -422,62 +555,34 @@ export default function Home() {
         [255, 215, 0],
         [255, 51, 51],
       ];
-
-      // Opção 1: Exatamente o que o aluno escolheu em cada refeição com gramaturas na balança
-      const option1Meals = currentSlots.map((slot) => {
-        const userText = (mealChoices[slot.id] !== undefined ? mealChoices[slot.id] : slot.defaultText).trim();
-        const items = parseAndCalculateMealItems(userText, pMeal, cMeal, fatGrams / mealsCount, slot.id);
-        return {
-          name: slot.name,
-          time: slot.time,
-          desc: items.map((it) => `<strong>${it.name}:</strong> ${it.portion}`).join('<br>'),
-        };
-      });
-
-      // Opção 2: Variação Tática (Alternativas ricas em nutrientes com mesmos macros)
-      const option2Meals = currentSlots.map((slot, sIdx) => {
-        const altMeat = sIdx === 0 ? 'Filé Mignon' : sIdx === 1 ? 'Ovos Inteiros' : sIdx === 2 ? 'Tilápia' : 'Patinho Moído';
-        const altCarb = sIdx === 0 ? 'Batata-Doce' : sIdx === 1 ? 'Aveia em Flocos' : sIdx === 2 ? 'Arroz Branco' : 'Macarrão';
-        const items = parseAndCalculateMealItems(`${altMeat}, ${altCarb}`, pMeal, cMeal, fatGrams / mealsCount, sIdx + 1);
-        return {
-          name: slot.name,
-          time: slot.time,
-          desc: items.map((it) => `<strong>${it.name}:</strong> ${it.portion}`).join('<br>'),
-        };
-      });
-
-      // Opção 3: Rotação de Combate & Praticidade
-      const option3Meals = currentSlots.map((slot, sIdx) => {
-        const altMeat = sIdx === 0 ? 'Moela Cozida' : sIdx === 1 ? 'Frango Desfiado' : sIdx === 2 ? 'Patinho Moído' : 'Tilápia Grelhada';
-        const altCarb = sIdx === 0 ? 'Mandioca Cozida' : sIdx === 1 ? 'Pão Integral' : sIdx === 2 ? 'Batata Inglesa' : 'Arroz com Feijão';
-        const items = parseAndCalculateMealItems(`${altMeat}, ${altCarb}`, pMeal, cMeal, fatGrams / mealsCount, sIdx + 2);
-        return {
-          name: slot.name,
-          time: slot.time,
-          desc: items.map((it) => `<strong>${it.name}:</strong> ${it.portion}`).join('<br>'),
-        };
-      });
-
-      generatedOptions = [
-        {
-          title: 'Opção 1: Seu Cardápio Oficial Personalizado',
-          color: optColors[0],
-          rgbColor: optRgb[0],
-          mealsList: option1Meals,
-        },
-        {
-          title: 'Opção 2: Variação Tática de Rotação',
-          color: optColors[1],
-          rgbColor: optRgb[1],
-          mealsList: option2Meals,
-        },
-        {
-          title: 'Opção 3: Rotação Prática de Combate',
-          color: optColors[2],
-          rgbColor: optRgb[2],
-          mealsList: option3Meals,
-        },
+      const optTitles = [
+        'Opção 1: Seu Cardápio Principal (Escolha 1)',
+        'Opção 2: Sua Variação Tática (Escolha 2)',
+        'Opção 3: Sua Rotação Prática (Escolha 3)',
       ];
+
+      generatedOptions = [0, 1, 2].map((optIdx) => {
+        const mealsList = currentSlots.map((slot) => {
+          const userText = (
+            mealOptionChoices[slot.id]?.[optIdx] !== undefined
+              ? mealOptionChoices[slot.id][optIdx]
+              : slot.defaultOptions[optIdx]
+          ).trim();
+          const items = parseAndCalculateMealItems(userText, pMeal, cMeal, fatGrams / mealsCount, slot.id + optIdx);
+          return {
+            name: slot.name,
+            time: slot.time,
+            desc: items.map((it) => `<strong>${it.name}:</strong> ${it.portion}`).join('<br>'),
+          };
+        });
+
+        return {
+          title: optTitles[optIdx],
+          color: optColors[optIdx],
+          rgbColor: optRgb[optIdx],
+          mealsList,
+        };
+      });
     }
 
     const activityLabelMap: Record<number, string> = {
@@ -517,6 +622,7 @@ export default function Home() {
   const handleDownloadPdf = () => {
     if (!calcData) return;
 
+    const currentSlots = getMealSlotsForCount(calcData.mealsCount);
     const pdfData: TacticalDietData = {
       tmb: calcData.tmb,
       get: calcData.get,
@@ -533,9 +639,12 @@ export default function Home() {
       activityLevel: calcData.activityLabel,
       mealsCount: calcData.mealsCount,
       fastingProtocol: calcData.mealsCount === 3,
-      preferences: getMealSlotsForCount(calcData.mealsCount).map(
-        (s) => `${s.name}: ${mealChoices[s.id] || s.defaultText}`
-      ),
+      preferences: currentSlots.map((s) => {
+        const o1 = mealOptionChoices[s.id]?.[0] || s.defaultOptions[0];
+        const o2 = mealOptionChoices[s.id]?.[1] || s.defaultOptions[1];
+        const o3 = mealOptionChoices[s.id]?.[2] || s.defaultOptions[2];
+        return `${s.name}: [Op 1: ${o1}] | [Op 2: ${o2}] | [Op 3: ${o3}]`;
+      }),
       options: calcData.options.map((m) => ({
         title: m.title,
         color: m.rgbColor,
@@ -856,9 +965,21 @@ export default function Home() {
               </p>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               {getMealSlotsForCount(mealsCount).map((slot) => {
-                const currentVal = mealChoices[slot.id] !== undefined ? mealChoices[slot.id] : slot.defaultText;
+                const opt1Val =
+                  mealOptionChoices[slot.id]?.[0] !== undefined
+                    ? mealOptionChoices[slot.id][0]
+                    : slot.defaultOptions[0];
+                const opt2Val =
+                  mealOptionChoices[slot.id]?.[1] !== undefined
+                    ? mealOptionChoices[slot.id][1]
+                    : slot.defaultOptions[1];
+                const opt3Val =
+                  mealOptionChoices[slot.id]?.[2] !== undefined
+                    ? mealOptionChoices[slot.id][2]
+                    : slot.defaultOptions[2];
+
                 return (
                   <div
                     key={slot.id}
@@ -869,8 +990,27 @@ export default function Home() {
                       padding: '14px',
                     }}
                   >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                      <label style={{ fontSize: '13px', fontWeight: 'bold', color: '#fff', margin: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <div
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        marginBottom: '10px',
+                        borderBottom: '1px solid #1c1c1c',
+                        paddingBottom: '8px',
+                      }}
+                    >
+                      <label
+                        style={{
+                          fontSize: '13px',
+                          fontWeight: 'bold',
+                          color: '#fff',
+                          margin: 0,
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                        }}
+                      >
                         <span>{slot.icon}</span>
                         <span>Refeição {slot.id + 1}: {slot.name}</span>
                       </label>
@@ -879,36 +1019,93 @@ export default function Home() {
                       </span>
                     </div>
 
-                    <input
-                      type="text"
-                      value={currentVal}
-                      onChange={(e) => handleMealTextChange(slot.id, e.target.value)}
-                      className="form-control"
-                      placeholder={slot.placeholder}
-                      style={{ marginTop: '4px' }}
-                    />
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                      {/* Opção 1 */}
+                      <div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '3px' }}>
+                          <span style={{ fontSize: '11px', color: 'var(--primary)', fontWeight: 'bold' }}>
+                            🟢 Opção 1 (Cardápio Principal)
+                          </span>
+                        </div>
+                        <input
+                          type="text"
+                          value={opt1Val}
+                          onFocus={() => setFocusedOptionIdx((prev) => ({ ...prev, [slot.id]: 0 }))}
+                          onChange={(e) => handleMealOptionChange(slot.id, 0, e.target.value)}
+                          className="form-control"
+                          placeholder={slot.placeholders[0]}
+                          style={{
+                            borderColor: focusedOptionIdx[slot.id] === 0 ? 'var(--primary)' : '#282828',
+                          }}
+                        />
+                      </div>
+
+                      {/* Opção 2 */}
+                      <div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '3px' }}>
+                          <span style={{ fontSize: '11px', color: '#FFD700', fontWeight: 'bold' }}>
+                            🟡 Opção 2 (Variação Tática)
+                          </span>
+                        </div>
+                        <input
+                          type="text"
+                          value={opt2Val}
+                          onFocus={() => setFocusedOptionIdx((prev) => ({ ...prev, [slot.id]: 1 }))}
+                          onChange={(e) => handleMealOptionChange(slot.id, 1, e.target.value)}
+                          className="form-control"
+                          placeholder={slot.placeholders[1]}
+                          style={{
+                            borderColor: focusedOptionIdx[slot.id] === 1 ? '#FFD700' : '#282828',
+                          }}
+                        />
+                      </div>
+
+                      {/* Opção 3 */}
+                      <div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '3px' }}>
+                          <span style={{ fontSize: '11px', color: '#ff5555', fontWeight: 'bold' }}>
+                            🔴 Opção 3 (Rotação de Praticidade)
+                          </span>
+                        </div>
+                        <input
+                          type="text"
+                          value={opt3Val}
+                          onFocus={() => setFocusedOptionIdx((prev) => ({ ...prev, [slot.id]: 2 }))}
+                          onChange={(e) => handleMealOptionChange(slot.id, 2, e.target.value)}
+                          className="form-control"
+                          placeholder={slot.placeholders[2]}
+                          style={{
+                            borderColor: focusedOptionIdx[slot.id] === 2 ? '#ff5555' : '#282828',
+                          }}
+                        />
+                      </div>
+                    </div>
 
                     {/* Tags Rápidas de Sugestão */}
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px', marginTop: '8px' }}>
-                      {slot.quickTags.map((tag) => (
-                        <button
-                          key={tag}
-                          type="button"
-                          onClick={() => handleAddTagToMeal(slot.id, tag)}
-                          style={{
-                            background: '#1a1a1a',
-                            border: '1px solid #333',
-                            color: currentVal.toLowerCase().includes(tag.toLowerCase()) ? 'var(--primary)' : '#888',
-                            borderColor: currentVal.toLowerCase().includes(tag.toLowerCase()) ? 'var(--primary)' : '#333',
-                            fontSize: '11px',
-                            padding: '4px 8px',
-                            borderRadius: '4px',
-                            cursor: 'pointer',
-                          }}
-                        >
-                          + {tag}
-                        </button>
-                      ))}
+                    <div style={{ marginTop: '10px' }}>
+                      <span style={{ fontSize: '10px', color: '#777', display: 'block', marginBottom: '4px' }}>
+                        Clique para adicionar à opção em foco:
+                      </span>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
+                        {slot.quickTags.map((tag) => (
+                          <button
+                            key={tag}
+                            type="button"
+                            onClick={() => handleAddTagToMealOption(slot.id, tag)}
+                            style={{
+                              background: '#1a1a1a',
+                              border: '1px solid #333',
+                              color: '#999',
+                              fontSize: '11px',
+                              padding: '3px 7px',
+                              borderRadius: '4px',
+                              cursor: 'pointer',
+                            }}
+                          >
+                            + {tag}
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 );
