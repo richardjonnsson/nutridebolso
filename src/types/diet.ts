@@ -9,6 +9,13 @@ export type ActivityLevel =
 
 export type DietGoal = 'hipertrofia' | 'emagrecimento' | 'emagrecimento_agressivo' | 'recomposicao';
 
+export interface MealRequest {
+  mealIndex: number;
+  name: string;
+  timeSuggestion?: string;
+  userFoods: string;
+}
+
 export interface UserDietInput {
   age: number;
   weight: number; // em kg
@@ -19,6 +26,7 @@ export interface UserDietInput {
   mealsCount?: number; // 3, 4 ou 5 refeições
   proteins?: string[]; // Proteínas escolhidas pelo usuário
   carbs?: string[]; // Carboidratos escolhidos pelo usuário
+  mealRequests?: MealRequest[]; // Alimentos especificados para cada refeição
   preferences: string[];
   customNotes?: string;
 }

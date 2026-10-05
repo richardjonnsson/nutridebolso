@@ -27,22 +27,32 @@ export async function generateDietPlan(
         ? 'Como o usuário optou por 3 refeições, utilize o protocolo de Jejum Intermitente 16/8 (16h em jejum das 20:00 às 12:00, e 8h de janela alimentar: 12:00 Almoço/Quebra de Jejum, 16:00 Lanche da Tarde e 20:00 Jantar).'
         : `Divida harmoniosamente em ${mealsCount} refeições ao longo do dia.`;
 
+    let mealDirectives = '';
+    if (input.mealRequests && input.mealRequests.length > 0) {
+      mealDirectives = input.mealRequests
+        .map(
+          (m) =>
+            `- Refeição ${m.mealIndex} (${m.name}${m.timeSuggestion ? ` às ${m.timeSuggestion}` : ''}): O cliente quer comer [${m.userFoods}]. Calcule as quantidades exatas na balança para estes alimentos.`
+        )
+        .join('\n');
+    }
+
     const prompt = `Você é um nutricionista esportivo de elite. Monte 3 opções de cardápio diário batendo EXATAMENTE estas metas:
 - Calorias Totais: ${targets.targetCalories} kcal
 - Proteína: ${targets.proteinGrams}g
 - Carboidrato: ${targets.carbsGrams}g
 - Gordura: ${targets.fatsGrams}g
 
-O CLIENTE ESCOLHEU ESPECIFICAMENTE OS SEGUINTES ALIMENTOS PARA O CARDÁPIO DELE:
-- Fontes de Proteína selecionadas: ${userProteins}
-- Fontes de Carboidrato selecionadas: ${userCarbs}
+O CLIENTE ESCOLHEU ESPECIFICAMENTE O QUE DESEJA COMER EM CADA REFEIÇÃO:
+${mealDirectives || `- Fontes de Proteína selecionadas: ${userProteins}\n- Fontes de Carboidrato selecionadas: ${userCarbs}`}
 - Gorduras boas: Distribua automaticamente azeite de oliva extravirgem, castanhas e gemas dos ovos para bater com perfeição ${targets.fatsGrams}g de gordura.
 ${customNotes ? `Observações adicionais: ${customNotes}` : ''}
 
 REGRAS:
-1. Utilize prioritariamente ou exclusivamente os alimentos informados pelo cliente em cada refeição.
-2. Divida em ${mealsCount} refeições. ${fastingDirective}
-3. Mostre as gramaturas aproximadas na balança (peso do alimento já cozido/preparado) ao lado de cada item para fechar a matemática dos macros com rigor.
+1. NA OPÇÃO 1 (Cardápio Oficial Personalizado): utilize EXATAMENTE os alimentos que o cliente escolheu para cada refeição correspondente, prescrevendo as gramaturas exatas na balança (peso do alimento já pronto/cozido) para bater rigorosamente as metas.
+2. NAS OPÇÕES 2 E 3: monte variações inteligentes com nutrientes equivalentes para rotação em dias alternados.
+3. Divida em ${mealsCount} refeições. ${fastingDirective}
+4. Mostre as gramaturas aproximadas na balança (peso do alimento já cozido/preparado) ao lado de cada item para fechar a matemática dos macros com rigor.
 
 RETORNE ESTRITAMENTE UM JSON VÁLIDO no seguinte formato (sem blocos de texto antes ou depois):
 [

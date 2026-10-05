@@ -112,3 +112,114 @@ export function getHealthyFatPortion(targetFatGrams: number, index: number): str
   ];
   return fatOptions[index % fatOptions.length];
 }
+
+export function parseAndCalculateMealItems(
+  userText: string,
+  targetProteinGrams: number,
+  targetCarbGrams: number,
+  targetFatGrams: number,
+  mealIndex: number
+): { name: string; portion: string }[] {
+  const clean = (userText || '').trim();
+  if (!clean) {
+    return [
+      getProteinPortion('Peito de Frango', targetProteinGrams),
+      getCarbPortion('Arroz Branco', targetCarbGrams),
+      { name: 'Gordura Boa', portion: getHealthyFatPortion(targetFatGrams, mealIndex) },
+    ];
+  }
+
+  // Tokenizar por separadores comuns
+  const rawTokens = clean
+    .split(/[,+;\n]|\se\s|\sou\s/gi)
+    .map((t) => t.trim())
+    .filter(Boolean);
+
+  const protKeywords = [
+    'frango', 'peito', 'mignon', 'filé', 'file', 'tilapia', 'tilápia', 'peixe',
+    'moela', 'patinho', 'carne', 'ovo', 'ovos', 'atum', 'lombo', 'suino', 'suíno',
+    'whey', 'shake', 'proteina', 'proteína', 'albumina', 'tofu', 'queijo', 'iogurte'
+  ];
+
+  const carbKeywords = [
+    'arroz', 'feijao', 'feijão', 'batata', 'doce', 'inglesa', 'macarrao', 'macarrão',
+    'mandioca', 'aipim', 'macaxeira', 'aveia', 'pao', 'pão', 'tapioca', 'crepioca',
+    'banana', 'maca', 'maçã', 'mamao', 'mamão', 'fruta', 'cuscuz'
+  ];
+
+  const greensKeywords = ['salada', 'alface', 'tomate', 'brocolis', 'brócolis', 'couve', 'cenoura', 'legumes', 'folhas', 'pepino', 'rucula', 'rúcula'];
+
+  const foundProts: string[] = [];
+  const foundCarbs: string[] = [];
+  const foundGreens: string[] = [];
+
+  rawTokens.forEach((token) => {
+    const lower = token.toLowerCase();
+    const isProt = protKeywords.some((k) => lower.includes(k));
+    const isCarb = carbKeywords.some((k) => lower.includes(k));
+    const isGreen = greensKeywords.some((k) => lower.includes(k));
+
+    if (isProt) foundProts.push(token);
+    else if (isCarb) foundCarbs.push(token);
+    else if (isGreen) foundGreens.push(token);
+    else {
+      if (lower.includes('bife') || lower.includes('hamburguer') || lower.includes('hambúrguer')) {
+        foundProts.push(token);
+      } else {
+        foundCarbs.push(token);
+      }
+    }
+  });
+
+  const results: { name: string; portion: string }[] = [];
+
+  // Calcular Proteínas
+  if (foundProts.length === 0) {
+    results.push(getProteinPortion('Proteína Magra (Frango, Patinho ou Tilápia)', targetProteinGrams));
+  } else if (foundProts.length === 1) {
+    results.push(getProteinPortion(foundProts[0], targetProteinGrams));
+  } else {
+    const splitProt = Math.round(targetProteinGrams / foundProts.length);
+    foundProts.forEach((p) => {
+      results.push(getProteinPortion(p, splitProt));
+    });
+  }
+
+  // Calcular Carboidratos
+  const hasArroz = foundCarbs.some((c) => c.toLowerCase().includes('arroz'));
+  const hasFeijao = foundCarbs.some((c) => c.toLowerCase().includes('feijao') || c.toLowerCase().includes('feijão'));
+
+  if (hasArroz && hasFeijao && foundCarbs.length === 2) {
+    results.push(getCarbPortion('arroz e feijão', targetCarbGrams));
+  } else if (foundCarbs.length === 0) {
+    results.push(getCarbPortion('Carboidrato de sua escolha (Arroz, Batata ou Aveia)', targetCarbGrams));
+  } else if (foundCarbs.length === 1) {
+    results.push(getCarbPortion(foundCarbs[0], targetCarbGrams));
+  } else {
+    const splitCarb = Math.round(targetCarbGrams / foundCarbs.length);
+    foundCarbs.forEach((c) => {
+      results.push(getCarbPortion(c, splitCarb));
+    });
+  }
+
+  // Saladas / Vegetais
+  if (foundGreens.length > 0) {
+    results.push({
+      name: foundGreens.join(' + '),
+      portion: 'À vontade com folhas e legumes frescos',
+    });
+  } else if (mealIndex === 1 || mealIndex === 3) {
+    results.push({
+      name: 'Salada verde / Legumes frescos',
+      portion: '1 prato de sobremesa cheio temperado com limão e sal',
+    });
+  }
+
+  // Gordura Boa calculada
+  results.push({
+    name: 'Gordura Boa Essencial',
+    portion: getHealthyFatPortion(targetFatGrams, mealIndex),
+  });
+
+  return results;
+}
