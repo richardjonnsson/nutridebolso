@@ -633,9 +633,9 @@ export default function Home() {
       mealsCount: calcData.mealsCount,
       fastingProtocol: calcData.mealsCount === 3,
       preferences: currentSlots.map((s) => {
-        const o1 = mealOptionChoices[s.id]?.[0] || s.defaultOptions[0];
-        const o2 = mealOptionChoices[s.id]?.[1] || s.defaultOptions[1];
-        const o3 = mealOptionChoices[s.id]?.[2] || s.defaultOptions[2];
+        const o1 = getOptionValue(calcData.mealsCount, s.id, 0);
+        const o2 = getOptionValue(calcData.mealsCount, s.id, 1);
+        const o3 = getOptionValue(calcData.mealsCount, s.id, 2);
         return `${s.name}: [Op 1: ${o1}] | [Op 2: ${o2}] | [Op 3: ${o3}]`;
       }),
       options: calcData.options.map((m) => ({
