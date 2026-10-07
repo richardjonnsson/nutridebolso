@@ -21,7 +21,7 @@ export function generateDeterministicDiet(
 
     const optTitles = [
       'Opção 1: Seu Cardápio Principal (Escolha 1)',
-      'Opção 2: Sua Variação Tática (Escolha 2)',
+      'Opção 2: Sua Variação Estratégica (Escolha 2)',
       'Opção 3: Sua Rotação Prática (Escolha 3)',
     ];
 

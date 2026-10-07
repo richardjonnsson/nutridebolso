@@ -2,8 +2,8 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Gerador de Dieta | QG Nutrição Tática',
-  description: 'Gerador inteligente de ração base com 3 cardápios táticos balanceados na balança e download em PDF.',
+  title: 'Gerador de Dieta Personalizada | Nutrição & Performance',
+  description: 'Gerador inteligente de dieta com 3 opções de cardápio personalizadas, pesagens exatas na balança e download em PDF.',
 };
 
 export default function RootLayout({

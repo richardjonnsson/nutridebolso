@@ -518,7 +518,7 @@ export default function Home() {
     ];
     const optTitles = [
       'Opção 1: Seu Cardápio Principal (Escolha 1)',
-      'Opção 2: Sua Variação Tática (Escolha 2)',
+      'Opção 2: Sua Variação Estratégica (Escolha 2)',
       'Opção 3: Sua Rotação Prática (Escolha 3)',
     ];
 
@@ -664,7 +664,7 @@ export default function Home() {
           <h2>
             Acesso <span>Restrito</span>
           </h2>
-          <p>Área exclusiva para compradores e membros oficiais do QG.</p>
+          <p>Área exclusiva para alunos e membros cadastrados.</p>
         </div>
 
         <div className="card" id="form-card">
@@ -808,7 +808,7 @@ export default function Home() {
         <h2>
           Gerador de <span>Dieta</span>
         </h2>
-        <p>Inteligência Nutricional & Protocolo Operacional QG.</p>
+        <p>Inteligência Nutricional & Protocolo Fitness Personalizado.</p>
       </div>
 
       {!showResult ? (
@@ -953,7 +953,7 @@ export default function Home() {
               {getMealSlotsForCount(mealsCount).map((slot) => {
                 const optConfigs: { idx: 0 | 1 | 2; label: string; color: string; border: string }[] = [
                   { idx: 0, label: '🟢 Opção 1 (Cardápio Principal)', color: 'var(--primary)', border: 'rgba(0, 255, 0, 0.3)' },
-                  { idx: 1, label: '🟡 Opção 2 (Variação Tática)', color: '#FFD700', border: 'rgba(255, 215, 0, 0.3)' },
+                  { idx: 1, label: '🟡 Opção 2 (Variação Estratégica)', color: '#FFD700', border: 'rgba(255, 215, 0, 0.3)' },
                   { idx: 2, label: '🔴 Opção 3 (Rotação Prática)', color: '#ff5555', border: 'rgba(255, 85, 85, 0.3)' },
                 ];
 
@@ -1221,7 +1221,7 @@ export default function Home() {
             </div>
           </div>
 
-          {/* 3. Gorduras Boas: Alocação Automática do QG */}
+          {/* 3. Gorduras Boas: Alocação Automática Inteligente */}
           <div
             style={{
               background: 'rgba(255, 255, 255, 0.02)',
@@ -1256,7 +1256,7 @@ export default function Home() {
           <div id="result">
             <div className="card">
               <h3 style={{ marginTop: 0, fontFamily: "'Montserrat', sans-serif", textTransform: 'uppercase' }}>
-                Sua Ração Base
+                Seu Plano Alimentar Personalizado
               </h3>
 
               {/* Exibição Visual da TMB, GET e Meta Calórica Diária (Requisito 4) */}
@@ -1310,9 +1310,9 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* Linha dos Macros da Operação (Exatamente como solicitado) */}
+              {/* Linha dos Macros Diários */}
               <p style={{ fontSize: '12px', color: 'var(--muted)', marginBottom: '16px', lineHeight: 1.5 }}>
-                Macros Travados da Operação (<span style={{ color: 'var(--primary)', fontWeight: 'bold' }}>{calcData.goalLabel}</span>):<br />
+                Metas Diárias de Macronutrientes (<span style={{ color: 'var(--primary)', fontWeight: 'bold' }}>{calcData.goalLabel}</span>):<br />
                 <strong style={{ color: '#fff' }}>{calcData.prot}g</strong> Proteína (2.2g/kg) |{' '}
                 <strong style={{ color: '#00FF00' }}>{calcData.carb}g</strong> Carbo |{' '}
                 <strong style={{ color: '#fff' }}>{calcData.fat}g</strong> Gordura (0.9g/kg).
@@ -1343,7 +1343,7 @@ export default function Home() {
                 </div>
               )}
 
-              {/* CHECKLIST DIÁRIO OPERACIONAL (ÁGUA & REFEIÇÕES) */}
+              {/* CHECKLIST DIÁRIO DE HÁBITOS (ÁGUA & REFEIÇÕES) */}
               {(() => {
                 const totalWaterBottles = Math.max(1, Math.ceil((calcData.waterL * 1000) / 500));
                 const completedBottles = Math.min(waterCups, totalWaterBottles);
@@ -1389,7 +1389,7 @@ export default function Home() {
                             letterSpacing: '0.5px',
                           }}
                         >
-                          📋 Checklist Operacional Diário
+                          📋 Checklist Diário de Hábitos
                         </h4>
                         <span style={{ fontSize: '11px', color: 'var(--muted)' }}>
                           Hoje: {todayKey} • Progresso salvo automaticamente
@@ -1406,7 +1406,7 @@ export default function Home() {
                           fontWeight: 'bold',
                         }}
                       >
-                        {overallPercent}% CUMPRIDO
+                        {overallPercent}% CONCLUÍDO
                       </div>
                     </div>
 
@@ -1649,21 +1649,6 @@ export default function Home() {
                 }}
               >
                 Refazer Cálculo / Alterar Dados
-              </button>
-            </div>
-
-            {/* BOX DE MARKETING / UPSELL */}
-            <div className="upsell-box">
-              <h3>Quer o Controle Absoluto?</h3>
-              <p>
-                Esse cardápio é apenas o básico. Quer um aplicativo no seu celular que recalcula sua dieta toda semana,
-                tem lista de mercado, checklist de água e permite substituir qualquer alimento da dieta na hora?
-              </p>
-              <button
-                className="btn-upsell"
-                onClick={handleDownloadPdf}
-              >
-                Baixar PDF & Conhecer o QG PRO
               </button>
             </div>
           </div>

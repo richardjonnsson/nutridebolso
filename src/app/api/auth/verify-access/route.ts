@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({
         authorized: true,
         role: 'admin',
-        name: 'Administrador QG',
+        name: 'Administrador',
         email,
       });
     }

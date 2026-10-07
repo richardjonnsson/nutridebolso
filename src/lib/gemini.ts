@@ -73,7 +73,7 @@ RETORNE ESTRITAMENTE UM JSON VÁLIDO no seguinte formato (sem blocos de texto an
 [
   {
     "optionNumber": 1,
-    "title": "Opção 1: Combate Padrão",
+    "title": "Opção 1: Cardápio Principal",
     "tagline": "Prático e de alta digestibilidade",
     "totalCalories": ${targets.targetCalories},
     "totalProtein": ${targets.proteinGrams},

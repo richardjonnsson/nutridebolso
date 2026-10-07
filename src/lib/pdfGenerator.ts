@@ -41,7 +41,7 @@ export function generateTacticalPdf(data: TacticalDietData): void {
   const lightText: [number, number, number] = [245, 245, 245];
   const mutedText: [number, number, number] = [140, 140, 140];
 
-  // 1. Cabeçalho Tático
+  // 1. Cabeçalho do Plano
   doc.setFillColor(...darkBg);
   doc.rect(0, 0, 210, 26, 'F');
 
@@ -52,15 +52,15 @@ export function generateTacticalPdf(data: TacticalDietData): void {
   doc.setTextColor(255, 255, 255);
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(16);
-  doc.text('PLANO ALIMENTAR | QG NUTRIÇÃO TÁTICA', 14, 14);
+  doc.text('PLANO ALIMENTAR PERSONALIZADO | PROTOCOLO FITNESS', 14, 14);
 
   doc.setFontSize(9);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(...mutedText);
   const now = new Date().toLocaleDateString('pt-BR');
-  doc.text(`RAÇÃO BASE OPERACIONAL  |  DATA: ${now}  |  STATUS: PROTOCOLO ATIVO`, 14, 20);
+  doc.text(`PLANO NUTRICIONAL INDIVIDUAL  |  DATA: ${now}  |  STATUS: PROTOCOLO ATIVO`, 14, 20);
 
-  // 2. Quadro de Perfil & Metas da Operação
+  // 2. Quadro de Perfil & Metas Diárias
   doc.setFillColor(20, 20, 20);
   doc.roundedRect(14, 32, 182, 34, 2, 2, 'F');
 
@@ -175,7 +175,7 @@ export function generateTacticalPdf(data: TacticalDietData): void {
   doc.setFontSize(9);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(...neonGreen);
-  doc.text('CHECKLIST DIÁRIO OPERACIONAL & CONTROLE NA BALANÇA', 18, currentY + 7);
+  doc.text('CHECKLIST DIÁRIO DE HÁBITOS & CONTROLE NA BALANÇA', 18, currentY + 7);
 
   doc.setFontSize(8);
   doc.setFont('helvetica', 'normal');
@@ -189,10 +189,10 @@ export function generateTacticalPdf(data: TacticalDietData): void {
   // Rodapé
   doc.setFontSize(8);
   doc.setTextColor(...mutedText);
-  doc.text('QG Tático • Missão Dada é Missão Cumprida', 14, 288);
+  doc.text('Protocolo Fitness • Disciplina e Consistência', 14, 288);
   doc.text('Página 1 de 1', 180, 288);
 
-  doc.save(`Plano_Nutricional_Tatico_${Date.now()}.pdf`);
+  doc.save(`Plano_Alimentar_${Date.now()}.pdf`);
 }
 
 export function generateDietPdf(dietData: any): void {
