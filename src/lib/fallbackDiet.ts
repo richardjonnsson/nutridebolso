@@ -1,4 +1,5 @@
-import { DayOption, NutritionalTargets, UserDietInput } from '@/types/diet';
+import { DayOption, NutritionalTargets, UserDietInput, Meal, FoodItem } from '@/types/diet';
+import { parseAndCalculateMealItems } from './foodCalculations';
 
 /**
  * Gerador de cardápio determinístico baseado em equivalentes nutricionais.
@@ -10,6 +11,62 @@ export function generateDeterministicDiet(
   targets: NutritionalTargets
 ): [DayOption, DayOption, DayOption] {
   const { targetCalories, proteinGrams, carbsGrams, fatsGrams } = targets;
+  const mealsCount = input.mealsCount || 4;
+
+  // Se o aluno forneceu suas 3 opções de refeição personalizadas, respeitar com 100% de rigor
+  if (input.optionPlans && input.optionPlans.length >= 3) {
+    const pMeal = proteinGrams / mealsCount;
+    const cMeal = carbsGrams / mealsCount;
+    const fMeal = fatsGrams / mealsCount;
+
+    const optTitles = [
+      'Opção 1: Seu Cardápio Principal (Escolha 1)',
+      'Opção 2: Sua Variação Tática (Escolha 2)',
+      'Opção 3: Sua Rotação Prática (Escolha 3)',
+    ];
+
+    return input.optionPlans.slice(0, 3).map((plan, optIdx) => {
+      const meals: Meal[] = plan.meals.map((m, mIdx) => {
+        const rawItems = parseAndCalculateMealItems(m.userFoods, pMeal, cMeal, fMeal, mIdx + optIdx);
+        const mealKcal = Math.round(targetCalories / mealsCount);
+        const mealProt = Math.round(pMeal);
+        const mealCarb = Math.round(cMeal);
+        const mealFat = Math.round(fMeal);
+
+        const items: FoodItem[] = rawItems.map((it, itIdx) => ({
+          name: it.name,
+          portion: it.portion,
+          calories: Math.round(mealKcal / Math.max(1, rawItems.length)),
+          protein: it.name.includes('Gordura') ? 0 : Math.round(mealProt / Math.max(1, rawItems.length - 1)),
+          carbs: it.name.includes('Gordura') ? 0 : Math.round(mealCarb / Math.max(1, rawItems.length - 1)),
+          fats: it.name.includes('Gordura') ? mealFat : 1,
+        }));
+
+        return {
+          id: `opt${optIdx + 1}-m${mIdx + 1}`,
+          name: m.name,
+          timeSuggestion: m.timeSuggestion || '12:00',
+          totalCalories: mealKcal,
+          totalProtein: mealProt,
+          totalCarbs: mealCarb,
+          totalFats: mealFat,
+          items,
+        };
+      });
+
+      return {
+        optionNumber: (optIdx + 1) as 1 | 2 | 3,
+        title: optTitles[optIdx],
+        tagline: 'Calculado matematicamente com base nos alimentos que você escolheu na balança.',
+        totalCalories: targetCalories,
+        totalProtein: proteinGrams,
+        totalCarbs: carbsGrams,
+        totalFats: fatsGrams,
+        meals,
+      };
+    }) as [DayOption, DayOption, DayOption];
+  }
+
   const isLactoseFree =
     input.preferences.some((p) => p.toLowerCase().includes('lactose')) ||
     (input.customNotes && input.customNotes.toLowerCase().includes('lactose'));
@@ -503,7 +560,6 @@ export function generateDeterministicDiet(
     ],
   };
 
-  const mealsCount = input.mealsCount || 4;
   return adaptMealsCount([option1, option2, option3], mealsCount);
 }
 

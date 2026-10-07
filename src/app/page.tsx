@@ -308,55 +308,82 @@ export default function Home() {
   const [activity, setActivity] = useState<number>(1.55); // 1.2 a 1.9
   const [goal, setGoal] = useState<'hipertrofia' | 'emagrecimento' | 'emagrecimento_agressivo' | 'recomposicao'>('emagrecimento');
   const [mealsCount, setMealsCount] = useState<number>(4);
-  const [mealOptionChoices, setMealOptionChoices] = useState<Record<number, [string, string, string]>>({
-    0: [
-      'Ovos inteiros mexidos, aveia em flocos, café sem açúcar',
-      'Pão integral com ovos mexidos, 1 maçã ou mamão',
-      'Crepioca (ovos + goma de tapioca), café preto sem açúcar',
-    ],
-    1: [
-      'Peito de frango grelhado, arroz branco, feijão carioca, salada verde',
-      'Filé mignon ou carne moída (patinho), batata-doce na balança, salada',
-      'Filé de tilápia grelhado, arroz branco ou macarrão, brócolis no vapor',
-    ],
-    2: [
-      'Frango desfiado na balança, batata-doce cozida',
-      'Ovos inteiros cozidos, aveia em flocos, 1 fruta fresca',
-      'Shake proteico isolado com aveia e castanhas do Pará',
-    ],
-    3: [
-      'Patinho moído refogado, mandioca ou arroz, legumes no vapor',
-      'Peito de frango grelhado, batata inglesa cozida, legumes',
-      'Moela cozida ou tilápia grelhada, macarrão cozido, salada com azeite',
-    ],
-    4: [
-      'Patinho moído, legumes no vapor, arroz branco',
-      'Filé de tilápia, batata inglesa, salada',
-      'Moela cozida ou frango, mandioca, brócolis',
-    ],
-  });
-
+  const [mealOptionChoices, setMealOptionChoices] = useState<Record<string, [string, string, string]>>({});
+  const [draftFoodInputs, setDraftFoodInputs] = useState<Record<string, string>>({});
   const [focusedOptionIdx, setFocusedOptionIdx] = useState<Record<number, 0 | 1 | 2>>({});
 
-  const handleMealOptionChange = (slotId: number, optIdx: 0 | 1 | 2, text: string) => {
+  const getOptionValue = (mCount: number, slotId: number, optIdx: 0 | 1 | 2): string => {
+    const key = `${mCount}_${slotId}`;
+    if (mealOptionChoices[key]?.[optIdx] !== undefined) {
+      return mealOptionChoices[key][optIdx];
+    }
+    const slots = getMealSlotsForCount(mCount);
+    const slot = slots.find((s) => s.id === slotId);
+    return slot?.defaultOptions[optIdx] ?? '';
+  };
+
+  const getOptionItems = (mCount: number, slotId: number, optIdx: 0 | 1 | 2): string[] => {
+    const val = getOptionValue(mCount, slotId, optIdx);
+    if (!val.trim()) return [];
+    return val
+      .split(/[,;\n]/)
+      .map((s) => s.trim())
+      .filter(Boolean);
+  };
+
+  const updateOptionValue = (mCount: number, slotId: number, optIdx: 0 | 1 | 2, newValue: string) => {
+    const key = `${mCount}_${slotId}`;
     setMealOptionChoices((prev) => {
-      const current = prev[slotId] || ['', '', ''];
-      const updated: [string, string, string] = [current[0], current[1], current[2]];
-      updated[optIdx] = text;
-      return { ...prev, [slotId]: updated };
+      const current: [string, string, string] = [
+        getOptionValue(mCount, slotId, 0),
+        getOptionValue(mCount, slotId, 1),
+        getOptionValue(mCount, slotId, 2),
+      ];
+      current[optIdx] = newValue;
+      return { ...prev, [key]: current };
     });
+  };
+
+  const handleRemoveFoodItem = (slotId: number, optIdx: 0 | 1 | 2, itemIdx: number) => {
+    const items = getOptionItems(mealsCount, slotId, optIdx);
+    if (itemIdx >= 0 && itemIdx < items.length) {
+      items.splice(itemIdx, 1);
+    }
+    updateOptionValue(mealsCount, slotId, optIdx, items.join(', '));
+  };
+
+  const handleRemoveLastFoodItem = (slotId: number, optIdx: 0 | 1 | 2) => {
+    const items = getOptionItems(mealsCount, slotId, optIdx);
+    if (items.length > 0) {
+      items.pop();
+    }
+    updateOptionValue(mealsCount, slotId, optIdx, items.join(', '));
+  };
+
+  const handleClearOption = (slotId: number, optIdx: 0 | 1 | 2) => {
+    updateOptionValue(mealsCount, slotId, optIdx, '');
+  };
+
+  const handleAddFoodItem = (slotId: number, optIdx: 0 | 1 | 2, rawText: string) => {
+    const cleanText = rawText.trim();
+    if (!cleanText) return;
+    const newItems = cleanText
+      .split(/[,;\n]/)
+      .map((s) => s.trim())
+      .filter(Boolean);
+    const currentItems = getOptionItems(mealsCount, slotId, optIdx);
+    newItems.forEach((it) => {
+      if (!currentItems.some((existing) => existing.toLowerCase() === it.toLowerCase())) {
+        currentItems.push(it);
+      }
+    });
+    updateOptionValue(mealsCount, slotId, optIdx, currentItems.join(', '));
+    setDraftFoodInputs((prev) => ({ ...prev, [`${mealsCount}_${slotId}_${optIdx}`]: '' }));
   };
 
   const handleAddTagToMealOption = (slotId: number, tag: string) => {
     const targetIdx = focusedOptionIdx[slotId] !== undefined ? focusedOptionIdx[slotId] : 0;
-    setMealOptionChoices((prev) => {
-      const current = prev[slotId] || ['', '', ''];
-      const text = current[targetIdx] || '';
-      if (text.toLowerCase().includes(tag.toLowerCase())) return prev;
-      const updated: [string, string, string] = [current[0], current[1], current[2]];
-      updated[targetIdx] = text ? `${text}, ${tag}` : tag;
-      return { ...prev, [slotId]: updated };
-    });
+    handleAddFoodItem(slotId, targetIdx, tag);
   };
 
   // Checklist Diário Operacional (Água & Refeições)
@@ -477,22 +504,44 @@ export default function Home() {
         mealIndex: slot.id + 1,
         name: slot.name,
         timeSuggestion: slot.time,
-        userFoods: (
-          mealOptionChoices[slot.id]?.[optIdx] !== undefined
-            ? mealOptionChoices[slot.id][optIdx]
-            : slot.defaultOptions[optIdx]
-        ).trim(),
+        userFoods: getOptionValue(mealsCount, slot.id, optIdx as 0 | 1 | 2).trim(),
       })),
     }));
 
-    // Chamar backend /api/generate-diet para integrar a LLM com o prompt solicitado
-    let generatedOptions: {
-      title: string;
-      color: string;
-      rgbColor: [number, number, number];
-      mealsList: { name: string; time: string; desc: string }[];
-    }[] = [];
+    // GERAÇÃO MATEMÁTICA 100% FIEL ÀS ESCOLHAS DO ALUNO
+    // Calcula as gramaturas exatas na balança para cada refeição de cada opção escolhida
+    const optColors = ['var(--primary)', '#FFD700', '#ff3333'];
+    const optRgb: [number, number, number][] = [
+      [0, 255, 0],
+      [255, 215, 0],
+      [255, 51, 51],
+    ];
+    const optTitles = [
+      'Opção 1: Seu Cardápio Principal (Escolha 1)',
+      'Opção 2: Sua Variação Tática (Escolha 2)',
+      'Opção 3: Sua Rotação Prática (Escolha 3)',
+    ];
 
+    const generatedOptions = [0, 1, 2].map((optIdx) => {
+      const mealsList = currentSlots.map((slot) => {
+        const userText = getOptionValue(mealsCount, slot.id, optIdx as 0 | 1 | 2).trim();
+        const items = parseAndCalculateMealItems(userText, pMeal, cMeal, fatGrams / mealsCount, slot.id + optIdx);
+        return {
+          name: slot.name,
+          time: slot.time,
+          desc: items.map((it) => `<strong>${it.name}:</strong> ${it.portion}`).join('<br>'),
+        };
+      });
+
+      return {
+        title: optTitles[optIdx],
+        color: optColors[optIdx],
+        rgbColor: optRgb[optIdx],
+        mealsList,
+      };
+    });
+
+    // Enviar dados em background para registro e telemetria (sem bloquear nem sobrepor)
     const activityMap: Record<number, string> = {
       1.2: 'sedentario',
       1.375: 'leve',
@@ -501,89 +550,24 @@ export default function Home() {
       1.9: 'muito_ativo',
     };
 
-    try {
-      const response = await fetch('/api/generate-diet', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          age: a,
-          weight: w,
-          height: h,
-          gender,
-          activityLevel: activityMap[activity] || 'moderado',
-          goal,
-          mealsCount,
-          optionPlans,
-          preferences: optionPlans[0].meals.map((m) => `${m.name}: ${m.userFoods}`),
-          customNotes: optionPlans
-            .map((o) => `Opção ${o.optionNumber}: ` + o.meals.map((m) => `${m.name} [${m.userFoods}]`).join(', '))
-            .join(' | '),
-        }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        if (data.options && Array.isArray(data.options) && data.options.length >= 3) {
-          const colors = ['var(--primary)', '#FFD700', '#ff3333'];
-          const rgb: [number, number, number][] = [
-            [0, 255, 0],
-            [255, 215, 0],
-            [255, 51, 51],
-          ];
-
-          generatedOptions = data.options.slice(0, 3).map((opt: any, idx: number) => ({
-            title: opt.title || `Opção ${idx + 1}: ${idx === 0 ? 'Cardápio Principal' : idx === 1 ? 'Variação Tática' : 'Rotação Prática'}`,
-            color: colors[idx],
-            rgbColor: rgb[idx],
-            mealsList: (opt.meals || []).map((m: any, mIdx: number) => ({
-              name: m.name || currentSlots[mIdx]?.name || `Refeição ${mIdx + 1}`,
-              time: m.timeSuggestion || currentSlots[mIdx]?.time || '12:00',
-              desc: (m.items || []).map((it: any) => `<strong>${it.name}:</strong> ${it.portion}`).join('<br>'),
-            })),
-          }));
-        }
-      }
-    } catch (err) {
-      console.log('Utilizando gerador matemático local com as 3 opções de cada refeição:', err);
-    }
-
-    // Se a IA estiver sem chave ou em contingência, calculamos com exatidão matemática para cada uma das 3 opções do aluno
-    if (generatedOptions.length === 0) {
-      const optColors = ['var(--primary)', '#FFD700', '#ff3333'];
-      const optRgb: [number, number, number][] = [
-        [0, 255, 0],
-        [255, 215, 0],
-        [255, 51, 51],
-      ];
-      const optTitles = [
-        'Opção 1: Seu Cardápio Principal (Escolha 1)',
-        'Opção 2: Sua Variação Tática (Escolha 2)',
-        'Opção 3: Sua Rotação Prática (Escolha 3)',
-      ];
-
-      generatedOptions = [0, 1, 2].map((optIdx) => {
-        const mealsList = currentSlots.map((slot) => {
-          const userText = (
-            mealOptionChoices[slot.id]?.[optIdx] !== undefined
-              ? mealOptionChoices[slot.id][optIdx]
-              : slot.defaultOptions[optIdx]
-          ).trim();
-          const items = parseAndCalculateMealItems(userText, pMeal, cMeal, fatGrams / mealsCount, slot.id + optIdx);
-          return {
-            name: slot.name,
-            time: slot.time,
-            desc: items.map((it) => `<strong>${it.name}:</strong> ${it.portion}`).join('<br>'),
-          };
-        });
-
-        return {
-          title: optTitles[optIdx],
-          color: optColors[optIdx],
-          rgbColor: optRgb[optIdx],
-          mealsList,
-        };
-      });
-    }
+    fetch('/api/generate-diet', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        age: a,
+        weight: w,
+        height: h,
+        gender,
+        activityLevel: activityMap[activity] || 'moderado',
+        goal,
+        mealsCount,
+        optionPlans,
+        preferences: optionPlans[0].meals.map((m) => `${m.name}: ${m.userFoods}`),
+        customNotes: optionPlans
+          .map((o) => `Opção ${o.optionNumber}: ` + o.meals.map((m) => `${m.name} [${m.userFoods}]`).join(', '))
+          .join(' | '),
+      }),
+    }).catch(() => {});
 
     const activityLabelMap: Record<number, string> = {
       1.2: 'Sedentário (1.2)',
@@ -967,18 +951,13 @@ export default function Home() {
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               {getMealSlotsForCount(mealsCount).map((slot) => {
-                const opt1Val =
-                  mealOptionChoices[slot.id]?.[0] !== undefined
-                    ? mealOptionChoices[slot.id][0]
-                    : slot.defaultOptions[0];
-                const opt2Val =
-                  mealOptionChoices[slot.id]?.[1] !== undefined
-                    ? mealOptionChoices[slot.id][1]
-                    : slot.defaultOptions[1];
-                const opt3Val =
-                  mealOptionChoices[slot.id]?.[2] !== undefined
-                    ? mealOptionChoices[slot.id][2]
-                    : slot.defaultOptions[2];
+                const optConfigs: { idx: 0 | 1 | 2; label: string; color: string; border: string }[] = [
+                  { idx: 0, label: '🟢 Opção 1 (Cardápio Principal)', color: 'var(--primary)', border: 'rgba(0, 255, 0, 0.3)' },
+                  { idx: 1, label: '🟡 Opção 2 (Variação Tática)', color: '#FFD700', border: 'rgba(255, 215, 0, 0.3)' },
+                  { idx: 2, label: '🔴 Opção 3 (Rotação Prática)', color: '#ff5555', border: 'rgba(255, 85, 85, 0.3)' },
+                ];
+
+                const currentFocusedOpt = focusedOptionIdx[slot.id] !== undefined ? focusedOptionIdx[slot.id] : 0;
 
                 return (
                   <div
@@ -1019,72 +998,201 @@ export default function Home() {
                       </span>
                     </div>
 
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                      {/* Opção 1 */}
-                      <div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '3px' }}>
-                          <span style={{ fontSize: '11px', color: 'var(--primary)', fontWeight: 'bold' }}>
-                            🟢 Opção 1 (Cardápio Principal)
-                          </span>
-                        </div>
-                        <input
-                          type="text"
-                          value={opt1Val}
-                          onFocus={() => setFocusedOptionIdx((prev) => ({ ...prev, [slot.id]: 0 }))}
-                          onChange={(e) => handleMealOptionChange(slot.id, 0, e.target.value)}
-                          className="form-control"
-                          placeholder={slot.placeholders[0]}
-                          style={{
-                            borderColor: focusedOptionIdx[slot.id] === 0 ? 'var(--primary)' : '#282828',
-                          }}
-                        />
-                      </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                      {optConfigs.map((cfg) => {
+                        const items = getOptionItems(mealsCount, slot.id, cfg.idx);
+                        const draftKey = `${mealsCount}_${slot.id}_${cfg.idx}`;
+                        const draftVal = draftFoodInputs[draftKey] || '';
+                        const isFocused = currentFocusedOpt === cfg.idx;
 
-                      {/* Opção 2 */}
-                      <div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '3px' }}>
-                          <span style={{ fontSize: '11px', color: '#FFD700', fontWeight: 'bold' }}>
-                            🟡 Opção 2 (Variação Tática)
-                          </span>
-                        </div>
-                        <input
-                          type="text"
-                          value={opt2Val}
-                          onFocus={() => setFocusedOptionIdx((prev) => ({ ...prev, [slot.id]: 1 }))}
-                          onChange={(e) => handleMealOptionChange(slot.id, 1, e.target.value)}
-                          className="form-control"
-                          placeholder={slot.placeholders[1]}
-                          style={{
-                            borderColor: focusedOptionIdx[slot.id] === 1 ? '#FFD700' : '#282828',
-                          }}
-                        />
-                      </div>
+                        return (
+                          <div
+                            key={cfg.idx}
+                            onClick={() => setFocusedOptionIdx((prev) => ({ ...prev, [slot.id]: cfg.idx }))}
+                            style={{
+                              background: isFocused ? '#171717' : '#141414',
+                              border: `1px solid ${isFocused ? cfg.color : '#262626'}`,
+                              borderRadius: '6px',
+                              padding: '10px 12px',
+                              cursor: 'pointer',
+                            }}
+                          >
+                            <div
+                              style={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                                marginBottom: '8px',
+                                flexWrap: 'wrap',
+                                gap: '6px',
+                              }}
+                            >
+                              <span style={{ fontSize: '11px', color: cfg.color, fontWeight: 'bold' }}>
+                                {cfg.label}
+                              </span>
+                              <div style={{ display: 'flex', gap: '6px' }}>
+                                <button
+                                  type="button"
+                                  disabled={items.length === 0}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleRemoveLastFoodItem(slot.id, cfg.idx);
+                                  }}
+                                  title="Apagar o último alimento adicionado nesta opção"
+                                  style={{
+                                    background: items.length === 0 ? '#1c1c1c' : 'rgba(255, 170, 0, 0.15)',
+                                    border: `1px solid ${items.length === 0 ? '#2a2a2a' : '#ffaa00'}`,
+                                    color: items.length === 0 ? '#555' : '#ffaa00',
+                                    fontSize: '11px',
+                                    padding: '3px 8px',
+                                    borderRadius: '4px',
+                                    cursor: items.length === 0 ? 'not-allowed' : 'pointer',
+                                    fontWeight: 'bold',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '4px',
+                                  }}
+                                >
+                                  <span>⌫</span> Apagar Último
+                                </button>
+                                <button
+                                  type="button"
+                                  disabled={items.length === 0}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleClearOption(slot.id, cfg.idx);
+                                  }}
+                                  title="Limpar todos os alimentos desta opção para começar do zero"
+                                  style={{
+                                    background: items.length === 0 ? '#1c1c1c' : 'rgba(255, 50, 50, 0.15)',
+                                    border: `1px solid ${items.length === 0 ? '#2a2a2a' : '#ff5555'}`,
+                                    color: items.length === 0 ? '#555' : '#ff5555',
+                                    fontSize: '11px',
+                                    padding: '3px 8px',
+                                    borderRadius: '4px',
+                                    cursor: items.length === 0 ? 'not-allowed' : 'pointer',
+                                    fontWeight: 'bold',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '4px',
+                                  }}
+                                >
+                                  <span>🗑️</span> Limpar
+                                </button>
+                              </div>
+                            </div>
 
-                      {/* Opção 3 */}
-                      <div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '3px' }}>
-                          <span style={{ fontSize: '11px', color: '#ff5555', fontWeight: 'bold' }}>
-                            🔴 Opção 3 (Rotação de Praticidade)
-                          </span>
-                        </div>
-                        <input
-                          type="text"
-                          value={opt3Val}
-                          onFocus={() => setFocusedOptionIdx((prev) => ({ ...prev, [slot.id]: 2 }))}
-                          onChange={(e) => handleMealOptionChange(slot.id, 2, e.target.value)}
-                          className="form-control"
-                          placeholder={slot.placeholders[2]}
-                          style={{
-                            borderColor: focusedOptionIdx[slot.id] === 2 ? '#ff5555' : '#282828',
-                          }}
-                        />
-                      </div>
+                            {/* Chips de Alimentos com botão individual [✕] */}
+                            <div
+                              style={{
+                                display: 'flex',
+                                flexWrap: 'wrap',
+                                gap: '6px',
+                                marginBottom: '8px',
+                                minHeight: '28px',
+                                alignItems: 'center',
+                              }}
+                            >
+                              {items.map((it, itIdx) => (
+                                <span
+                                  key={itIdx}
+                                  style={{
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '6px',
+                                    background: '#222222',
+                                    border: `1px solid ${cfg.border}`,
+                                    color: '#eee',
+                                    fontSize: '12px',
+                                    padding: '4px 8px',
+                                    borderRadius: '5px',
+                                  }}
+                                >
+                                  <span>{it}</span>
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleRemoveFoodItem(slot.id, cfg.idx, itIdx);
+                                    }}
+                                    title={`Remover "${it}"`}
+                                    style={{
+                                      background: 'none',
+                                      border: 'none',
+                                      color: '#ff6666',
+                                      cursor: 'pointer',
+                                      padding: '0 2px',
+                                      fontSize: '13px',
+                                      fontWeight: 'bold',
+                                      lineHeight: 1,
+                                    }}
+                                  >
+                                    ✕
+                                  </button>
+                                </span>
+                              ))}
+                              {items.length === 0 && (
+                                <span style={{ fontSize: '11px', color: '#666', fontStyle: 'italic' }}>
+                                  Nenhum alimento nesta opção. Digite abaixo ou toque nas sugestões.
+                                </span>
+                              )}
+                            </div>
+
+                            {/* Digitação rápida de alimento */}
+                            <div
+                              style={{ display: 'flex', gap: '6px' }}
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <input
+                                type="text"
+                                value={draftVal}
+                                onFocus={() => setFocusedOptionIdx((prev) => ({ ...prev, [slot.id]: cfg.idx }))}
+                                onChange={(e) =>
+                                  setDraftFoodInputs((prev) => ({ ...prev, [draftKey]: e.target.value }))
+                                }
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') {
+                                    e.preventDefault();
+                                    handleAddFoodItem(slot.id, cfg.idx, draftVal);
+                                  }
+                                }}
+                                className="form-control"
+                                placeholder={slot.placeholders[cfg.idx]}
+                                style={{
+                                  margin: 0,
+                                  fontSize: '12px',
+                                  padding: '7px 10px',
+                                  flex: 1,
+                                  borderColor: isFocused ? cfg.color : '#2d2d2d',
+                                }}
+                              />
+                              <button
+                                type="button"
+                                onClick={() => handleAddFoodItem(slot.id, cfg.idx, draftVal)}
+                                style={{
+                                  background: cfg.color,
+                                  color: '#000',
+                                  fontWeight: 'bold',
+                                  fontSize: '11px',
+                                  padding: '0 12px',
+                                  border: 'none',
+                                  borderRadius: '5px',
+                                  cursor: 'pointer',
+                                  whiteSpace: 'nowrap',
+                                }}
+                              >
+                                + Adicionar
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
 
                     {/* Tags Rápidas de Sugestão */}
-                    <div style={{ marginTop: '10px' }}>
-                      <span style={{ fontSize: '10px', color: '#777', display: 'block', marginBottom: '4px' }}>
-                        Clique para adicionar à opção em foco:
+                    <div style={{ marginTop: '12px', paddingTop: '8px', borderTop: '1px solid #1a1a1a' }}>
+                      <span style={{ fontSize: '10px', color: '#777', display: 'block', marginBottom: '5px' }}>
+                        Toque para adicionar à <strong>{optConfigs[currentFocusedOpt]?.label.split(' ')[1]} {optConfigs[currentFocusedOpt]?.label.split(' ')[2]}</strong>:
                       </span>
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
                         {slot.quickTags.map((tag) => (

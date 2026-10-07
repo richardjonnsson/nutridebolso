@@ -106,7 +106,7 @@ RETORNE ESTRITAMENTE UM JSON VÁLIDO no seguinte formato (sem blocos de texto an
 `;
 
     const response = await ai.models.generateContent({
-      model: 'gemini-3.8-flash',
+      model: 'gemini-2.5-flash',
       contents: prompt,
       config: {
         responseMimeType: 'application/json',
