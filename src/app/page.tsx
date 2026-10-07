@@ -41,16 +41,16 @@ export const getMealSlotsForCount = (count: number): MealSlotConfig[] => {
         time: '16:00',
         icon: '☕',
         defaultOptions: [
+          'Whey Protein, 1 banana',
           'Ovos inteiros mexidos, aveia em flocos, 1 fruta fresca',
-          'Frango desfiado na balança, pão integral ou tapioca, 1 maçã',
-          'Crepioca (ovos + tapioca), castanhas do Pará, 1 banana',
+          'Iogurte desnatado, aveia em flocos, castanhas do Pará',
         ],
         placeholders: [
-          'Opção 1: Ex: ovos mexidos, aveia em flocos, fruta',
-          'Opção 2: Ex: frango desfiado, pão integral, maçã',
-          'Opção 3: Ex: crepioca, castanhas, banana',
+          'Opção 1: Ex: Whey Protein, banana',
+          'Opção 2: Ex: ovos mexidos, aveia, fruta',
+          'Opção 3: Ex: iogurte com aveia e castanhas',
         ],
-        quickTags: ['Ovos Mexidos', 'Aveia em Flocos', 'Banana', 'Pão Integral', 'Frango Desfiado', 'Castanhas'],
+        quickTags: ['Whey Protein', 'Banana', 'Ovos Mexidos', 'Aveia em Flocos', 'Pão Integral', 'Pasta de Amendoim'],
       },
       {
         id: 2,
@@ -131,16 +131,16 @@ export const getMealSlotsForCount = (count: number): MealSlotConfig[] => {
         time: '16:30',
         icon: '☕',
         defaultOptions: [
-          'Frango desfiado na balança, batata-doce cozida',
-          'Ovos inteiros cozidos, aveia em flocos, 1 banana',
-          'Shake proteico isolado com aveia em flocos e castanhas',
+          'Whey Protein, 1 banana',
+          'Ovos inteiros cozidos, aveia em flocos, 1 fruta',
+          'Iogurte desnatado com aveia em flocos e castanhas',
         ],
         placeholders: [
-          'Opção 1: Ex: frango desfiado com batata-doce',
+          'Opção 1: Ex: Whey Protein, banana',
           'Opção 2: Ex: ovos cozidos com aveia e fruta',
-          'Opção 3: Ex: shake proteico com aveia',
+          'Opção 3: Ex: iogurte com aveia e castanhas',
         ],
-        quickTags: ['Frango Desfiado', 'Ovos Cozidos', 'Batata-Doce', 'Aveia em Flocos'],
+        quickTags: ['Whey Protein', 'Banana', 'Ovos Cozidos', 'Aveia em Flocos', 'Pão Integral', 'Pasta de Amendoim'],
       },
       {
         id: 4,
@@ -204,16 +204,16 @@ export const getMealSlotsForCount = (count: number): MealSlotConfig[] => {
       time: '16:30',
       icon: '☕',
       defaultOptions: [
-        'Frango desfiado na balança, batata-doce cozida',
+        'Whey Protein, 1 banana',
         'Ovos inteiros cozidos, aveia em flocos, 1 fruta fresca',
-        'Shake proteico isolado com aveia e castanhas do Pará',
+        'Iogurte desnatado com aveia e castanhas do Pará',
       ],
       placeholders: [
-        'Opção 1: Ex: frango desfiado com batata-doce',
+        'Opção 1: Ex: Whey Protein, banana',
         'Opção 2: Ex: ovos cozidos com aveia e fruta',
-        'Opção 3: Ex: shake proteico com castanhas',
+        'Opção 3: Ex: iogurte com aveia e castanhas',
       ],
-      quickTags: ['Frango Desfiado', 'Ovos Mexidos', 'Batata-Doce', 'Castanhas', 'Aveia em Flocos'],
+      quickTags: ['Whey Protein', 'Banana', 'Ovos Mexidos', 'Pão Integral', 'Aveia em Flocos', 'Pasta de Amendoim'],
     },
     {
       id: 3,
@@ -371,13 +371,22 @@ export default function Home() {
       .split(/[,;\n]/)
       .map((s) => s.trim())
       .filter(Boolean);
-    const currentItems = getOptionItems(mealsCount, slotId, optIdx);
+    if (newItems.length === 0) return;
+
+    const key = `${mealsCount}_${slotId}`;
+    const hasCustomized = mealOptionChoices[key]?.[optIdx] !== undefined;
+
+    // Se o usuário ainda não personalizou esta opção (está com o valor padrão do sistema),
+    // o novo alimento SUBSTITUI o padrão em vez de se acumular com ele!
+    const baseItems = hasCustomized ? getOptionItems(mealsCount, slotId, optIdx) : [];
+
     newItems.forEach((it) => {
-      if (!currentItems.some((existing) => existing.toLowerCase() === it.toLowerCase())) {
-        currentItems.push(it);
+      if (!baseItems.some((existing) => existing.toLowerCase() === it.toLowerCase())) {
+        baseItems.push(it);
       }
     });
-    updateOptionValue(mealsCount, slotId, optIdx, currentItems.join(', '));
+
+    updateOptionValue(mealsCount, slotId, optIdx, baseItems.join(', '));
     setDraftFoodInputs((prev) => ({ ...prev, [`${mealsCount}_${slotId}_${optIdx}`]: '' }));
   };
 
@@ -947,6 +956,20 @@ export default function Home() {
               <p style={{ fontSize: '12px', color: 'var(--muted)', margin: '4px 0 0 0', lineHeight: 1.45 }}>
                 Digite livremente o que deseja comer em cada uma das suas <strong>{mealsCount} refeições</strong>. O app vai calcular as quantidades e pesagens exatas na balança para bater suas metas!
               </p>
+              <div
+                style={{
+                  background: 'rgba(0, 208, 255, 0.06)',
+                  border: '1px solid rgba(0, 208, 255, 0.3)',
+                  borderRadius: '6px',
+                  padding: '8px 12px',
+                  marginTop: '8px',
+                  fontSize: '11px',
+                  color: '#ccc',
+                  lineHeight: '1.4',
+                }}
+              >
+                <strong style={{ color: '#00d0ff' }}>💡 Dica:</strong> Para montar sua refeição do seu jeito (ex: <em>Whey, Banana</em>), digite no campo ou toque nas sugestões. O app calcula as pesagens exatas na balança sem colocar nada a mais!
+              </div>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
