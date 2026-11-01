@@ -198,13 +198,12 @@ export default function AromataseGuideTab() {
         </p>
       </div>
 
-      {/* Sub-navegação horizontal do Guia */}
+      {/* Sub-navegação do Guia (fixa e sem rolagem lateral) */}
       <div
         style={{
           display: 'flex',
+          flexWrap: 'wrap',
           gap: '6px',
-          overflowX: 'auto',
-          paddingBottom: '8px',
           marginBottom: '18px',
         }}
       >

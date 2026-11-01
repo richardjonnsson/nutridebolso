@@ -724,7 +724,7 @@ export default function Home() {
 
   // 3. Aplicação Liberada para Aluno Autenticado
   return (
-    <div>
+    <div style={{ width: '100%', maxWidth: '100vw', overflowX: 'hidden' }}>
       {/* HEADER TÁTICO FIXO ESTILO APP MOBILE + NETFLIX DARK */}
       <header
         style={{
@@ -734,17 +734,18 @@ export default function Home() {
           position: 'sticky',
           top: 0,
           zIndex: 100,
-          padding: '12px 16px',
+          padding: '10px 14px',
+          width: '100%',
         }}
       >
         <div
           style={{
-            maxWidth: '840px',
+            maxWidth: '540px',
             margin: '0 auto',
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
-            gap: '10px',
+            gap: '8px',
           }}
         >
           <div
@@ -2160,6 +2161,7 @@ export default function Home() {
           bottom: 0,
           left: 0,
           right: 0,
+          width: '100%',
           zIndex: 120,
           background: 'rgba(10, 10, 10, 0.96)',
           backdropFilter: 'blur(14px)',
@@ -2169,11 +2171,11 @@ export default function Home() {
       >
         <div
           style={{
-            maxWidth: '640px',
+            maxWidth: '540px',
             margin: '0 auto',
             display: 'grid',
             gridTemplateColumns: 'repeat(5, 1fr)',
-            gap: '4px',
+            gap: '2px',
           }}
         >
           {[
