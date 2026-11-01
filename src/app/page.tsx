@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { generateTacticalPdf, TacticalDietData } from '@/lib/pdfGenerator';
-import { getProteinPortion, getCarbPortion, getHealthyFatPortion, parseAndCalculateMealItems } from '@/lib/foodCalculations';
+import { parseAndCalculateMealItems } from '@/lib/foodCalculations';
 import confetti from 'canvas-confetti';
 
 export interface MealSlotConfig {
@@ -54,7 +54,7 @@ export const getMealSlotsForCount = (count: number): MealSlotConfig[] => {
       },
       {
         id: 2,
-        name: 'Jantar (Fechamento da Janela • Secagem Peitoral)',
+        name: 'Jantar (Fechamento da Janela • Alta Absorção)',
         time: '20:00',
         icon: '🥩',
         defaultOptions: [
@@ -144,7 +144,7 @@ export const getMealSlotsForCount = (count: number): MealSlotConfig[] => {
       },
       {
         id: 4,
-        name: 'Jantar (Secagem Peitoral Noturna)',
+        name: 'Jantar (Recuperação Noturna & Saciedade)',
         time: '20:00',
         icon: '🥩',
         defaultOptions: [
@@ -217,7 +217,7 @@ export const getMealSlotsForCount = (count: number): MealSlotConfig[] => {
     },
     {
       id: 3,
-      name: 'Jantar (Secagem Peitoral & Recuperação Noturna)',
+      name: 'Jantar (Recuperação Noturna & Saciedade)',
       time: '20:00',
       icon: '🥩',
       defaultOptions: [
@@ -308,93 +308,7 @@ export default function Home() {
   const [activity, setActivity] = useState<number>(1.55); // 1.2 a 1.9
   const [goal, setGoal] = useState<'hipertrofia' | 'emagrecimento' | 'emagrecimento_agressivo' | 'recomposicao'>('emagrecimento');
   const [mealsCount, setMealsCount] = useState<number>(4);
-  const [mealOptionChoices, setMealOptionChoices] = useState<Record<string, [string, string, string]>>({});
-  const [draftFoodInputs, setDraftFoodInputs] = useState<Record<string, string>>({});
-  const [focusedOptionIdx, setFocusedOptionIdx] = useState<Record<number, 0 | 1 | 2>>({});
   const [showAromataseGuide, setShowAromataseGuide] = useState<boolean>(true);
-
-  const getOptionValue = (mCount: number, slotId: number, optIdx: 0 | 1 | 2): string => {
-    const key = `${mCount}_${slotId}`;
-    if (mealOptionChoices[key]?.[optIdx] !== undefined) {
-      return mealOptionChoices[key][optIdx];
-    }
-    const slots = getMealSlotsForCount(mCount);
-    const slot = slots.find((s) => s.id === slotId);
-    return slot?.defaultOptions[optIdx] ?? '';
-  };
-
-  const getOptionItems = (mCount: number, slotId: number, optIdx: 0 | 1 | 2): string[] => {
-    const val = getOptionValue(mCount, slotId, optIdx);
-    if (!val.trim()) return [];
-    return val
-      .split(/[,;\n]/)
-      .map((s) => s.trim())
-      .filter(Boolean);
-  };
-
-  const updateOptionValue = (mCount: number, slotId: number, optIdx: 0 | 1 | 2, newValue: string) => {
-    const key = `${mCount}_${slotId}`;
-    setMealOptionChoices((prev) => {
-      const current: [string, string, string] = [
-        getOptionValue(mCount, slotId, 0),
-        getOptionValue(mCount, slotId, 1),
-        getOptionValue(mCount, slotId, 2),
-      ];
-      current[optIdx] = newValue;
-      return { ...prev, [key]: current };
-    });
-  };
-
-  const handleRemoveFoodItem = (slotId: number, optIdx: 0 | 1 | 2, itemIdx: number) => {
-    const items = getOptionItems(mealsCount, slotId, optIdx);
-    if (itemIdx >= 0 && itemIdx < items.length) {
-      items.splice(itemIdx, 1);
-    }
-    updateOptionValue(mealsCount, slotId, optIdx, items.join(', '));
-  };
-
-  const handleRemoveLastFoodItem = (slotId: number, optIdx: 0 | 1 | 2) => {
-    const items = getOptionItems(mealsCount, slotId, optIdx);
-    if (items.length > 0) {
-      items.pop();
-    }
-    updateOptionValue(mealsCount, slotId, optIdx, items.join(', '));
-  };
-
-  const handleClearOption = (slotId: number, optIdx: 0 | 1 | 2) => {
-    updateOptionValue(mealsCount, slotId, optIdx, '');
-  };
-
-  const handleAddFoodItem = (slotId: number, optIdx: 0 | 1 | 2, rawText: string) => {
-    const cleanText = rawText.trim();
-    if (!cleanText) return;
-    const newItems = cleanText
-      .split(/[,;\n]/)
-      .map((s) => s.trim())
-      .filter(Boolean);
-    if (newItems.length === 0) return;
-
-    const key = `${mealsCount}_${slotId}`;
-    const hasCustomized = mealOptionChoices[key]?.[optIdx] !== undefined;
-
-    // Se o usuário ainda não personalizou esta opção (está com o valor padrão do sistema),
-    // o novo alimento SUBSTITUI o padrão em vez de se acumular com ele!
-    const baseItems = hasCustomized ? getOptionItems(mealsCount, slotId, optIdx) : [];
-
-    newItems.forEach((it) => {
-      if (!baseItems.some((existing) => existing.toLowerCase() === it.toLowerCase())) {
-        baseItems.push(it);
-      }
-    });
-
-    updateOptionValue(mealsCount, slotId, optIdx, baseItems.join(', '));
-    setDraftFoodInputs((prev) => ({ ...prev, [`${mealsCount}_${slotId}_${optIdx}`]: '' }));
-  };
-
-  const handleAddTagToMealOption = (slotId: number, tag: string) => {
-    const targetIdx = focusedOptionIdx[slotId] !== undefined ? focusedOptionIdx[slotId] : 0;
-    handleAddFoodItem(slotId, targetIdx, tag);
-  };
 
   // Checklist Diário Operacional (Água & Refeições)
   const todayKey = new Date().toISOString().slice(0, 10);
@@ -490,17 +404,17 @@ export default function Home() {
     const get = Math.round(tmb * activity);
 
     let targetKcal = get;
-    let goalLabel = 'Recomposição Peitoral (Trocar Gordura por Músculo no Peito)';
+    let goalLabel = 'Recomposição Corporal (Trocar Gordura por Músculo)';
 
     if (goal === 'hipertrofia') {
       targetKcal = get + 400;
-      goalLabel = 'Volume & Densidade Peitoral (+400 kcal)';
+      goalLabel = 'Hipertrofia & Volume (+400 kcal • Massa Muscular)';
     } else if (goal === 'emagrecimento') {
       targetKcal = get - 500;
-      goalLabel = 'Secar Peitoral Moderado (-500 kcal • Queima & Foco Anti-Aromatase)';
+      goalLabel = 'Emagrecimento Moderado (-500 kcal • Foco Anti-Aromatase)';
     } else if (goal === 'emagrecimento_agressivo') {
       targetKcal = get - 750;
-      goalLabel = 'Seca Peitoral Extremo (-750 kcal • Máxima Queima)';
+      goalLabel = 'Emagrecimento Agressivo (-750 kcal • Máxima Queima)';
     }
 
     // Piso de segurança
@@ -526,7 +440,7 @@ export default function Home() {
     const pMeal = protGrams / mealsCount;
     const cMeal = carbGrams / mealsCount;
 
-    // Configurações e as 3 opções de cada refeição escolhidas pelo aluno
+    // Configurações e as 3 opções de cada refeição geradas estritamente com base na calculadora
     const currentSlots = getMealSlotsForCount(mealsCount);
     const optionPlans = [0, 1, 2].map((optIdx) => ({
       optionNumber: (optIdx + 1) as 1 | 2 | 3,
@@ -534,12 +448,12 @@ export default function Home() {
         mealIndex: slot.id + 1,
         name: slot.name,
         timeSuggestion: slot.time,
-        userFoods: getOptionValue(mealsCount, slot.id, optIdx as 0 | 1 | 2).trim(),
+        userFoods: slot.defaultOptions[optIdx] ?? '',
       })),
     }));
 
-    // GERAÇÃO MATEMÁTICA 100% FIEL ÀS ESCOLHAS DO ALUNO
-    // Calcula as gramaturas exatas na balança para cada refeição de cada opção escolhida
+    // GERAÇÃO MATEMÁTICA 100% FIEL ÀS METAS CALCULADAS
+    // Calcula as gramaturas exatas na balança para cada refeição de cada opção
     const optColors = ['var(--primary)', '#FFD700', '#ff3333'];
     const optRgb: [number, number, number][] = [
       [0, 255, 0],
@@ -547,15 +461,15 @@ export default function Home() {
       [255, 51, 51],
     ];
     const optTitles = [
-      'Opção 1: Seu Cardápio Principal (Seca Peitoral & DIM)',
+      'Opção 1: Seu Cardápio Principal (Crucíferos & DIM)',
       'Opção 2: Sua Variação Estratégica (Inibidores de Aromatase)',
       'Opção 3: Sua Rotação Prática (Zinco & Alta Proteína)',
     ];
 
     const generatedOptions = [0, 1, 2].map((optIdx) => {
       const mealsList = currentSlots.map((slot) => {
-        const userText = getOptionValue(mealsCount, slot.id, optIdx as 0 | 1 | 2).trim();
-        const items = parseAndCalculateMealItems(userText, pMeal, cMeal, fatGrams / mealsCount, slot.id + optIdx);
+        const mealFoods = slot.defaultOptions[optIdx] ?? '';
+        const items = parseAndCalculateMealItems(mealFoods, pMeal, cMeal, fatGrams / mealsCount, slot.id + optIdx);
         return {
           name: slot.name,
           time: slot.time,
@@ -654,9 +568,9 @@ export default function Home() {
       mealsCount: calcData.mealsCount,
       fastingProtocol: calcData.mealsCount === 3,
       preferences: currentSlots.map((s) => {
-        const o1 = getOptionValue(calcData.mealsCount, s.id, 0);
-        const o2 = getOptionValue(calcData.mealsCount, s.id, 1);
-        const o3 = getOptionValue(calcData.mealsCount, s.id, 2);
+        const o1 = s.defaultOptions[0] ?? '';
+        const o2 = s.defaultOptions[1] ?? '';
+        const o3 = s.defaultOptions[2] ?? '';
         return `${s.name}: [Op 1: ${o1}] | [Op 2: ${o2}] | [Op 3: ${o3}]`;
       }),
       options: calcData.options.map((m) => ({
@@ -972,7 +886,7 @@ export default function Home() {
                 onChange={(e) => setGender(e.target.value as any)}
                 className="form-control"
               >
-                <option value="masculino">Masculino (Otimização Hormonal & Peitoral)</option>
+                <option value="masculino">Masculino (Otimização Hormonal Masculina)</option>
               </select>
             </div>
           </div>
@@ -1030,10 +944,10 @@ export default function Home() {
                 onChange={(e) => setGoal(e.target.value as any)}
                 className="form-control"
               >
-                <option value="emagrecimento">1) Secar Peitoral Moderado (-500 kcal • Foco Anti-Aromatase) - RECOMENDADO</option>
-                <option value="emagrecimento_agressivo">2) Seca Peitoral Extremo (-750 kcal • Máxima Definição Torácica)</option>
-                <option value="recomposicao">3) Recomposição Peitoral (Trocar Gordura por Músculo no Peito)</option>
-                <option value="hipertrofia">4) Volume e Densidade Peitoral (+400 kcal • Massa Muscular)</option>
+                <option value="emagrecimento">1) Emagrecimento Moderado (-500 kcal • Foco Anti-Aromatase) - RECOMENDADO</option>
+                <option value="emagrecimento_agressivo">2) Emagrecimento Agressivo (-750 kcal • Máxima Definição)</option>
+                <option value="recomposicao">3) Recomposição Corporal (Trocar Gordura por Músculo)</option>
+                <option value="hipertrofia">4) Hipertrofia & Volume (+400 kcal • Massa Muscular)</option>
               </select>
             </div>
           </div>
@@ -1075,322 +989,26 @@ export default function Home() {
             )}
           </div>
 
-          {/* SELEÇÃO PERSONALIZADA POR REFEIÇÃO */}
-          <div style={{ marginTop: '20px', marginBottom: '10px' }}>
-            <div style={{ marginBottom: '14px' }}>
-              <span style={{ fontSize: '14px', fontFamily: "'Montserrat', sans-serif", fontWeight: 'bold', color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block' }}>
-                🍽️ O Que Você Quer Comer em Cada Refeição?
-              </span>
-              <p style={{ fontSize: '12px', color: 'var(--muted)', margin: '4px 0 0 0', lineHeight: 1.45 }}>
-                Digite livremente o que deseja comer em cada uma das suas <strong>{mealsCount} refeições</strong>. O app vai calcular as quantidades e pesagens exatas na balança para bater suas metas!
-              </p>
-              <div
-                style={{
-                  background: 'rgba(0, 208, 255, 0.06)',
-                  border: '1px solid rgba(0, 208, 255, 0.3)',
-                  borderRadius: '6px',
-                  padding: '8px 12px',
-                  marginTop: '8px',
-                  fontSize: '11px',
-                  color: '#ccc',
-                  lineHeight: '1.4',
-                }}
-              >
-                <strong style={{ color: '#00d0ff' }}>💡 Dica Estratégica:</strong> As opções padrão já trazem alimentos chave para inibir a aromatase (Brócolis, Cogumelos Paris, Sementes de Abóbora, Chá Verde, Ovos e Carnes Magras). Se quiser alterar qualquer alimento, basta digitar no campo ou tocar nas sugestões. O app calcula as pesagens exatas na balança sem colocar nada a mais!
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              {getMealSlotsForCount(mealsCount).map((slot) => {
-                const optConfigs: { idx: 0 | 1 | 2; label: string; color: string; border: string }[] = [
-                  { idx: 0, label: '🟢 Opção 1 (Seca Peitoral Principal)', color: 'var(--primary)', border: 'rgba(0, 255, 0, 0.3)' },
-                  { idx: 1, label: '🟡 Opção 2 (Variação Anti-Aromatase)', color: '#FFD700', border: 'rgba(255, 215, 0, 0.3)' },
-                  { idx: 2, label: '🔴 Opção 3 (Rotação de Zinco & Proteína)', color: '#ff5555', border: 'rgba(255, 85, 85, 0.3)' },
-                ];
-
-                const currentFocusedOpt = focusedOptionIdx[slot.id] !== undefined ? focusedOptionIdx[slot.id] : 0;
-
-                return (
-                  <div
-                    key={slot.id}
-                    style={{
-                      background: '#121212',
-                      border: '1px solid #242424',
-                      borderRadius: '8px',
-                      padding: '14px',
-                    }}
-                  >
-                    <div
-                      style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        marginBottom: '10px',
-                        borderBottom: '1px solid #1c1c1c',
-                        paddingBottom: '8px',
-                      }}
-                    >
-                      <label
-                        style={{
-                          fontSize: '13px',
-                          fontWeight: 'bold',
-                          color: '#fff',
-                          margin: 0,
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '6px',
-                        }}
-                      >
-                        <span>{slot.icon}</span>
-                        <span>Refeição {slot.id + 1}: {slot.name}</span>
-                      </label>
-                      <span style={{ fontSize: '11px', color: '#00d0ff', fontFamily: 'monospace', fontWeight: 'bold' }}>
-                        {slot.time}
-                      </span>
-                    </div>
-
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                      {optConfigs.map((cfg) => {
-                        const items = getOptionItems(mealsCount, slot.id, cfg.idx);
-                        const draftKey = `${mealsCount}_${slot.id}_${cfg.idx}`;
-                        const draftVal = draftFoodInputs[draftKey] || '';
-                        const isFocused = currentFocusedOpt === cfg.idx;
-
-                        return (
-                          <div
-                            key={cfg.idx}
-                            onClick={() => setFocusedOptionIdx((prev) => ({ ...prev, [slot.id]: cfg.idx }))}
-                            style={{
-                              background: isFocused ? '#171717' : '#141414',
-                              border: `1px solid ${isFocused ? cfg.color : '#262626'}`,
-                              borderRadius: '6px',
-                              padding: '10px 12px',
-                              cursor: 'pointer',
-                            }}
-                          >
-                            <div
-                              style={{
-                                display: 'flex',
-                                justifyContent: 'space-between',
-                                alignItems: 'center',
-                                marginBottom: '8px',
-                                flexWrap: 'wrap',
-                                gap: '6px',
-                              }}
-                            >
-                              <span style={{ fontSize: '11px', color: cfg.color, fontWeight: 'bold' }}>
-                                {cfg.label}
-                              </span>
-                              <div style={{ display: 'flex', gap: '6px' }}>
-                                <button
-                                  type="button"
-                                  disabled={items.length === 0}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleRemoveLastFoodItem(slot.id, cfg.idx);
-                                  }}
-                                  title="Apagar o último alimento adicionado nesta opção"
-                                  style={{
-                                    background: items.length === 0 ? '#1c1c1c' : 'rgba(255, 170, 0, 0.15)',
-                                    border: `1px solid ${items.length === 0 ? '#2a2a2a' : '#ffaa00'}`,
-                                    color: items.length === 0 ? '#555' : '#ffaa00',
-                                    fontSize: '11px',
-                                    padding: '3px 8px',
-                                    borderRadius: '4px',
-                                    cursor: items.length === 0 ? 'not-allowed' : 'pointer',
-                                    fontWeight: 'bold',
-                                    display: 'inline-flex',
-                                    alignItems: 'center',
-                                    gap: '4px',
-                                  }}
-                                >
-                                  <span>⌫</span> Apagar Último
-                                </button>
-                                <button
-                                  type="button"
-                                  disabled={items.length === 0}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleClearOption(slot.id, cfg.idx);
-                                  }}
-                                  title="Limpar todos os alimentos desta opção para começar do zero"
-                                  style={{
-                                    background: items.length === 0 ? '#1c1c1c' : 'rgba(255, 50, 50, 0.15)',
-                                    border: `1px solid ${items.length === 0 ? '#2a2a2a' : '#ff5555'}`,
-                                    color: items.length === 0 ? '#555' : '#ff5555',
-                                    fontSize: '11px',
-                                    padding: '3px 8px',
-                                    borderRadius: '4px',
-                                    cursor: items.length === 0 ? 'not-allowed' : 'pointer',
-                                    fontWeight: 'bold',
-                                    display: 'inline-flex',
-                                    alignItems: 'center',
-                                    gap: '4px',
-                                  }}
-                                >
-                                  <span>🗑️</span> Limpar
-                                </button>
-                              </div>
-                            </div>
-
-                            {/* Chips de Alimentos com botão individual [✕] */}
-                            <div
-                              style={{
-                                display: 'flex',
-                                flexWrap: 'wrap',
-                                gap: '6px',
-                                marginBottom: '8px',
-                                minHeight: '28px',
-                                alignItems: 'center',
-                              }}
-                            >
-                              {items.map((it, itIdx) => (
-                                <span
-                                  key={itIdx}
-                                  style={{
-                                    display: 'inline-flex',
-                                    alignItems: 'center',
-                                    gap: '6px',
-                                    background: '#222222',
-                                    border: `1px solid ${cfg.border}`,
-                                    color: '#eee',
-                                    fontSize: '12px',
-                                    padding: '4px 8px',
-                                    borderRadius: '5px',
-                                  }}
-                                >
-                                  <span>{it}</span>
-                                  <button
-                                    type="button"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleRemoveFoodItem(slot.id, cfg.idx, itIdx);
-                                    }}
-                                    title={`Remover "${it}"`}
-                                    style={{
-                                      background: 'none',
-                                      border: 'none',
-                                      color: '#ff6666',
-                                      cursor: 'pointer',
-                                      padding: '0 2px',
-                                      fontSize: '13px',
-                                      fontWeight: 'bold',
-                                      lineHeight: 1,
-                                    }}
-                                  >
-                                    ✕
-                                  </button>
-                                </span>
-                              ))}
-                              {items.length === 0 && (
-                                <span style={{ fontSize: '11px', color: '#666', fontStyle: 'italic' }}>
-                                  Nenhum alimento nesta opção. Digite abaixo ou toque nas sugestões.
-                                </span>
-                              )}
-                            </div>
-
-                            {/* Digitação rápida de alimento */}
-                            <div
-                              style={{ display: 'flex', gap: '6px' }}
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              <input
-                                type="text"
-                                value={draftVal}
-                                onFocus={() => setFocusedOptionIdx((prev) => ({ ...prev, [slot.id]: cfg.idx }))}
-                                onChange={(e) =>
-                                  setDraftFoodInputs((prev) => ({ ...prev, [draftKey]: e.target.value }))
-                                }
-                                onKeyDown={(e) => {
-                                  if (e.key === 'Enter') {
-                                    e.preventDefault();
-                                    handleAddFoodItem(slot.id, cfg.idx, draftVal);
-                                  }
-                                }}
-                                className="form-control"
-                                placeholder={slot.placeholders[cfg.idx]}
-                                style={{
-                                  margin: 0,
-                                  fontSize: '12px',
-                                  padding: '7px 10px',
-                                  flex: 1,
-                                  borderColor: isFocused ? cfg.color : '#2d2d2d',
-                                }}
-                              />
-                              <button
-                                type="button"
-                                onClick={() => handleAddFoodItem(slot.id, cfg.idx, draftVal)}
-                                style={{
-                                  background: cfg.color,
-                                  color: '#000',
-                                  fontWeight: 'bold',
-                                  fontSize: '11px',
-                                  padding: '0 12px',
-                                  border: 'none',
-                                  borderRadius: '5px',
-                                  cursor: 'pointer',
-                                  whiteSpace: 'nowrap',
-                                }}
-                              >
-                                + Adicionar
-                              </button>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-
-                    {/* Tags Rápidas de Sugestão */}
-                    <div style={{ marginTop: '12px', paddingTop: '8px', borderTop: '1px solid #1a1a1a' }}>
-                      <span style={{ fontSize: '10px', color: '#777', display: 'block', marginBottom: '5px' }}>
-                        Toque para adicionar à <strong>{optConfigs[currentFocusedOpt]?.label.split(' ')[1]} {optConfigs[currentFocusedOpt]?.label.split(' ')[2]}</strong>:
-                      </span>
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
-                        {slot.quickTags.map((tag) => (
-                          <button
-                            key={tag}
-                            type="button"
-                            onClick={() => handleAddTagToMealOption(slot.id, tag)}
-                            style={{
-                              background: '#1a1a1a',
-                              border: '1px solid #333',
-                              color: '#999',
-                              fontSize: '11px',
-                              padding: '3px 7px',
-                              borderRadius: '4px',
-                              cursor: 'pointer',
-                            }}
-                          >
-                            + {tag}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* 3. Gorduras Boas: Alocação Automática Inteligente */}
+          {/* Card: Cardápios 100% Gerados nas Quantidades da Calculadora */}
           <div
             style={{
-              background: 'rgba(255, 255, 255, 0.02)',
-              border: '1px solid #222',
-              borderRadius: '6px',
-              padding: '12px 14px',
-              marginTop: '8px',
-              marginBottom: '10px',
-              fontSize: '12px',
-              lineHeight: '1.45',
+              background: 'rgba(0, 255, 0, 0.04)',
+              border: '1px solid rgba(0, 255, 0, 0.3)',
+              borderRadius: '8px',
+              padding: '16px 18px',
+              marginTop: '20px',
+              marginBottom: '16px',
             }}
           >
-            <strong style={{ color: '#00d0ff', display: 'block', marginBottom: '4px', fontSize: '12px' }}>
-              🥑 Gorduras Boas: Alocação Automática de Precisão (0.9g/kg)
-            </strong>
-            <span style={{ color: '#a0a0a0' }}>
-              Você só escolhe o que quer comer nas caixas acima! Nosso sistema distribui automaticamente fontes puras e saudáveis (Azeite Extravirgem, Castanhas e Gemas) nas suas refeições para fechar sua meta com máxima precisão metabólica.
-            </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+              <span style={{ fontSize: '20px' }}>⚡</span>
+              <strong style={{ color: 'var(--primary)', fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                Cardápios 100% Gerados nas Quantidades da Calculadora
+              </strong>
+            </div>
+            <p style={{ fontSize: '12px', color: '#ccc', margin: 0, lineHeight: 1.55 }}>
+              O sistema calcula as calorias e macronutrientes exatos do seu corpo e entrega <strong>3 opções completas de cardápio</strong> para as suas <strong>{mealsCount} refeições diárias</strong>. Cada alimento (proteínas magras, carboidratos limpos, gorduras boas e vegetais anti-aromatase como brócolis, cogumelos e sementes de abóbora) já virá com a pesagem precisa em gramas na balança para você seguir sem erro.
+            </p>
           </div>
 
           <button
@@ -1399,7 +1017,7 @@ export default function Home() {
             onClick={generateDiet}
             disabled={isLoading}
           >
-            {isLoading ? 'CALCULANDO METAS & ANTI-AROMATASE...' : '⚡ Gerar 3 Cardápios Anti-Aromatase'}
+            {isLoading ? 'CALCULANDO METAS & GERANDO CARDÁPIOS...' : '⚡ Gerar 3 Cardápios Anti-Aromatase'}
           </button>
         </div>
       ) : (
