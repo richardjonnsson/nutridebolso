@@ -2,8 +2,8 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Gerador de Dieta Personalizada | Nutrição & Performance',
-  description: 'Gerador inteligente de dieta com 3 opções de cardápio personalizadas, pesagens exatas na balança e download em PDF.',
+  title: 'Protocolo Seca Peitoral | Dieta Anti-Aromatase & Otimização Hormonal Masculina',
+  description: 'Gerador inteligente de dieta anti-aromatase para homens. Otimização hormonal, redução de estrogênio e eliminação de gordura peitoral com pesagens exatas na balança.',
 };
 
 export default function RootLayout({

@@ -29,25 +29,25 @@ export const ACTIVITY_MULTIPLIERS: Record<ActivityLevel, { factor: number; label
 };
 
 export const GOAL_DETAILS: Record<DietGoal, { label: string; diff: number; description: string }> = {
-  hipertrofia: {
-    label: 'Hipertrofia (Ganhar Músculo)',
-    diff: 400,
-    description: 'Superávit calórico (+400 kcal) para estimular ganho de massa magra.',
-  },
   emagrecimento: {
-    label: 'Emagrecimento Moderado (-500 kcal)',
+    label: 'Secar Peitoral Moderado (-500 kcal • Queima Contínua & Foco Aromatase)',
     diff: -500,
-    description: 'Déficit calórico padrão (-500 kcal) para queima consistente de gordura.',
+    description: 'Déficit calórico padrão (-500 kcal) ideal para inibir a aromatase e queimar gordura peitoral com consistência.',
   },
   emagrecimento_agressivo: {
-    label: 'Emagrecimento Agressivo (-750 kcal)',
+    label: 'Seca Peitoral Extremo (-750 kcal • Máxima Definição Torácica)',
     diff: -750,
-    description: 'Déficit calórico maior (-750 kcal) para secar com maior velocidade.',
+    description: 'Déficit calórico agressivo (-750 kcal) para eliminar a gordura no peito e afinar a pele rapidamente.',
   },
   recomposicao: {
-    label: 'Recomposição Corporal',
+    label: 'Recomposição Peitoral (Trocar Gordura por Músculo no Peitoral)',
     diff: 0,
-    description: 'Calorias de manutenção para trocar gordura por massa muscular.',
+    description: 'Calorias de manutenção para construir densidade muscular peitoral enquanto reduz o estrogênio.',
+  },
+  hipertrofia: {
+    label: 'Volume e Densidade Peitoral (+400 kcal • Massa Muscular)',
+    diff: 400,
+    description: 'Superávit calórico controlado (+400 kcal) com alta ingestão proteica para expandir a caixa torácica.',
   },
 };
 

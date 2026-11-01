@@ -51,14 +51,18 @@ export function generateTacticalPdf(data: TacticalDietData): void {
 
   doc.setTextColor(255, 255, 255);
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(16);
-  doc.text('PLANO ALIMENTAR PERSONALIZADO | PROTOCOLO FITNESS', 14, 14);
+  doc.setFontSize(14);
+  doc.text('PROTOCOLO SECA PEITORAL | DIETA ANTI-AROMATASE', 14, 13);
 
-  doc.setFontSize(9);
+  doc.setFontSize(8.5);
   doc.setFont('helvetica', 'normal');
+  doc.setTextColor(...neonGreen);
+  doc.text('ORDER BUMP OFICIAL • FICHA DE TREINO SECA PEITORAL | OTIMIZAÇÃO HORMONAL MASCULINA', 14, 19);
+
+  doc.setFontSize(7.5);
   doc.setTextColor(...mutedText);
   const now = new Date().toLocaleDateString('pt-BR');
-  doc.text(`PLANO NUTRICIONAL INDIVIDUAL  |  DATA: ${now}  |  STATUS: PROTOCOLO ATIVO`, 14, 20);
+  doc.text(`PROTOCOLO ATIVO  |  DATA: ${now}  |  FOCO: BLOQUEIO DE AROMATASE E REDUÇÃO DE GORDURA PEITORAL`, 14, 23.5);
 
   // 2. Quadro de Perfil & Metas Diárias
   doc.setFillColor(20, 20, 20);
@@ -67,13 +71,13 @@ export function generateTacticalPdf(data: TacticalDietData): void {
   doc.setFontSize(10);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(...neonGreen);
-  doc.text(`METAS ENERGÉTICAS (EQUAÇÃO MIFFLIN-ST JEOR)`, 18, 39);
+  doc.text(`METAS ENERGÉTICAS E HORMONAIS (EQUAÇÃO MIFFLIN-ST JEOR)`, 18, 39);
 
   doc.setFontSize(8.5);
   doc.setTextColor(...lightText);
   doc.setFont('helvetica', 'normal');
   doc.text(
-    `• Perfil: ${data.gender === 'feminino' ? 'Mulher' : 'Homem'}, ${data.age} anos | Peso: ${data.weight} kg | Altura: ${data.height} cm | Meta: ${data.goal}`,
+    `• Perfil: Homem (${data.age} anos) | Peso: ${data.weight} kg | Altura: ${data.height} cm | Foco: ${data.goal}`,
     18,
     46
   );
@@ -83,14 +87,14 @@ export function generateTacticalPdf(data: TacticalDietData): void {
     52
   );
   doc.text(
-    `• Macros: ${data.prot}g Proteína (2.2g/kg)  |  ${data.carb}g Carbo (Controlado)  |  ${data.fat}g Gordura  |  Água: ${data.waterL}L/dia`,
+    `• Macros: ${data.prot}g Proteína (2.2g/kg)  |  ${data.carb}g Carbo Limpo  |  ${data.fat}g Gordura Esteroidogênica  |  Água: ${data.waterL}L/dia`,
     18,
     58
   );
 
   doc.setFontSize(7.5);
   doc.setTextColor(...mutedText);
-  doc.text('*Todos os pesos abaixo referem-se ao alimento já preparado/cozido na balança de precisão.', 18, 63);
+  doc.text('*Alimentos pesados prontos/cozidos na balança. Otimizado para inibir a aromatase e proteger a testosterona.', 18, 63);
 
   let currentY = 72;
 
@@ -164,35 +168,36 @@ export function generateTacticalPdf(data: TacticalDietData): void {
     }
   });
 
-  // Tabela de Equivalências e Regras Inegociáveis
-  if (currentY > 230) {
+  // Tabela de Diretrizes Anti-Aromatase & Regras Inegociáveis
+  if (currentY > 225) {
     doc.addPage();
     currentY = 20;
   }
 
   doc.setFillColor(20, 20, 20);
-  doc.roundedRect(14, currentY, 182, 42, 2, 2, 'F');
+  doc.roundedRect(14, currentY, 182, 46, 2, 2, 'F');
   doc.setFontSize(9);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(...neonGreen);
-  doc.text('CHECKLIST DIÁRIO DE HÁBITOS & CONTROLE NA BALANÇA', 18, currentY + 7);
+  doc.text('CHECKLIST DIÁRIO ANTI-AROMATASE & HÁBITOS DE SECAGEM PEITORAL', 18, currentY + 7);
 
-  doc.setFontSize(8);
+  doc.setFontSize(7.8);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(...lightText);
-  doc.text(`• Checklist de Água (${data.waterL}L): [ ] 500ml   [ ] 1.0L   [ ] 1.5L   [ ] 2.0L   [ ] 2.5L   [ ] 3.0L`, 18, currentY + 14);
-  doc.text(`• Checklist de Refeições: ${Array.from({ length: data.mealsCount }).map((_, i) => `[ ] Refeição ${i + 1}`).join('     ')}`, 18, currentY + 20);
-  doc.text('• Equivalência Proteínas: 100g Frango = 100g Mignon/Patinho = 120g Tilápia = 110g Moela = 4 Ovos.', 18, currentY + 26);
-  doc.text('• Equivalência Carbos: 100g Arroz = 120g Batata-Doce = 150g Batata Inglesa = 100g Macarrão = 60g Aveia.', 18, currentY + 32);
-  doc.text('• Saladas Verdes: Alface, rúcula, espinafre e pepino são livres para saciedade máxima.', 18, currentY + 38);
+  doc.text(`• Ficha de Treino: [ ] Treino Peitoral Feito   |   Chá Verde (EGCG): [ ] 1 a 2 Xícaras   |   Água (${data.waterL}L): [ ] 1L  [ ] 2L  [ ] 3L`, 18, currentY + 14);
+  doc.text(`• Checklist Refeições na Balança: ${Array.from({ length: data.mealsCount }).map((_, i) => `[ ] Refeição ${i + 1}`).join('      ')}`, 18, currentY + 20);
+  doc.text('• Regra Crucíferos (DIM): Brócolis, couve-flor ou repolho ao menos 1x ao dia para inibir a enzima aromatase no peitoral.', 18, currentY + 26);
+  doc.text('• Regra Zinco & Testosterona: Consumir carnes magras ou 20g sementes de abóbora diariamente para blindar a testosterona livre.', 18, currentY + 32);
+  doc.text('• Inimigos Banidos: Cerveja/Álcool (fitoestrógenos do lúpulo) e açúcar refinado (picos de insulina que ativam a aromatase).', 18, currentY + 38);
+  doc.text('• Vegetais e Folhas Livres: Rúcula, alface, espinafre e cogumelos frescos para saciedade e bloqueio estrogênico.', 18, currentY + 43);
 
   // Rodapé
   doc.setFontSize(8);
   doc.setTextColor(...mutedText);
-  doc.text('Protocolo Fitness • Disciplina e Consistência', 14, 288);
+  doc.text('Ficha de Treino Seca Peitoral • Dieta Anti-Aromatase • Otimização Hormonal Masculina', 14, 288);
   doc.text('Página 1 de 1', 180, 288);
 
-  doc.save(`Plano_Alimentar_${Date.now()}.pdf`);
+  doc.save(`Protocolo_Seca_Peitoral_AntiAromatase_${Date.now()}.pdf`);
 }
 
 export function generateDietPdf(dietData: any): void {

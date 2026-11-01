@@ -20,54 +20,54 @@ export const getMealSlotsForCount = (count: number): MealSlotConfig[] => {
     return [
       {
         id: 0,
-        name: 'Almoço (Quebra do Jejum 16h)',
+        name: 'Almoço (Quebra do Jejum 16h • Foco Anti-Aromatase)',
         time: '12:00',
         icon: '🍗',
         defaultOptions: [
-          'Peito de frango grelhado, arroz branco, feijão carioca, salada verde',
-          'Filé mignon ou carne moída (patinho), batata-doce, salada',
-          'Filé de tilápia grelhado, macarrão ou mandioca, brócolis com azeite',
+          'Peito de frango grelhado, brócolis no vapor, arroz branco, feijão carioca',
+          'Carne moída (patinho), cogumelos Paris frescos, batata-doce, salada de rúcula',
+          'Filé de tilápia grelhado, couve-flor no vapor, mandioca na balança, azeite extravirgem',
         ],
         placeholders: [
-          'Opção 1: Ex: peito de frango, arroz, feijão, salada',
-          'Opção 2: Ex: filé mignon, batata-doce, legumes',
-          'Opção 3: Ex: tilápia grelhada, macarrão, brócolis',
+          'Opção 1: Ex: peito de frango, brócolis, arroz, feijão',
+          'Opção 2: Ex: patinho moído, cogumelos Paris, batata-doce',
+          'Opção 3: Ex: tilápia, couve-flor, mandioca, azeite',
         ],
-        quickTags: ['Peito de Frango', 'Filé Mignon', 'Tilápia', 'Moela', 'Patinho Moído', 'Arroz Branco', 'Feijão', 'Batata-Doce', 'Salada Verde'],
+        quickTags: ['Peito de Frango', 'Patinho Moído', 'Brócolis (DIM)', 'Cogumelo Paris', 'Couve-Flor', 'Tilápia', 'Arroz Branco', 'Feijão', 'Batata-Doce', 'Rúcula e Folhas'],
       },
       {
         id: 1,
-        name: 'Café / Lanche da Tarde',
+        name: 'Café / Lanche da Tarde (Controle Hormonal & Zinco)',
         time: '16:00',
         icon: '☕',
         defaultOptions: [
-          'Whey Protein, 1 banana',
-          'Ovos inteiros mexidos, aveia em flocos, 1 fruta fresca',
-          'Iogurte desnatado, aveia em flocos, castanhas do Pará',
+          'Whey Protein, sementes de abóbora, 1 banana',
+          'Ovos inteiros mexidos, aveia em flocos, chá verde com limão',
+          'Iogurte desnatado, morangos frescos, sementes de chia',
         ],
         placeholders: [
-          'Opção 1: Ex: Whey Protein, banana',
-          'Opção 2: Ex: ovos mexidos, aveia, fruta',
-          'Opção 3: Ex: iogurte com aveia e castanhas',
+          'Opção 1: Ex: Whey Protein, sementes de abóbora, banana',
+          'Opção 2: Ex: ovos mexidos, aveia, chá verde',
+          'Opção 3: Ex: iogurte com morangos e sementes',
         ],
-        quickTags: ['Whey Protein', 'Banana', 'Ovos Mexidos', 'Aveia em Flocos', 'Pão Integral', 'Pasta de Amendoim'],
+        quickTags: ['Whey Protein', 'Sementes de Abóbora (Zinco)', 'Chá Verde (EGCG)', 'Morangos (Resveratrol)', 'Ovos Mexidos', 'Aveia em Flocos', '1 Banana'],
       },
       {
         id: 2,
-        name: 'Jantar (Fechamento da Janela)',
+        name: 'Jantar (Fechamento da Janela • Secagem Peitoral)',
         time: '20:00',
         icon: '🥩',
         defaultOptions: [
-          'Patinho moído refogado, arroz branco, legumes no vapor',
-          'Filé de tilápia grelhado, batata inglesa cozida, salada colorida',
-          'Moela cozida ou peito de frango, mandioca na balança, legumes',
+          'Patinho moído refogado, brócolis no vapor, arroz branco na balança, azeite',
+          'Filé de tilápia grelhado, repolho roxo refogado, batata inglesa cozida',
+          'Peito de frango grelhado, cogumelos refogados no azeite, mandioca na balança',
         ],
         placeholders: [
-          'Opção 1: Ex: patinho moído, arroz, legumes no vapor',
-          'Opção 2: Ex: tilápia, batata inglesa, salada',
-          'Opção 3: Ex: moela cozida, mandioca, brócolis',
+          'Opção 1: Ex: patinho moído, brócolis, arroz',
+          'Opção 2: Ex: tilápia, repolho roxo, batata inglesa',
+          'Opção 3: Ex: frango, cogumelos, mandioca',
         ],
-        quickTags: ['Patinho Moído', 'Tilápia', 'Moela', 'Batata Inglesa', 'Mandioca', 'Macarrão', 'Legumes no vapor'],
+        quickTags: ['Patinho Moído (Zinco)', 'Brócolis (DIM)', 'Cogumelos Paris', 'Peito de Frango', 'Tilápia', 'Repolho Roxo', 'Batata Inglesa', 'Azeite Extravirgem'],
       },
     ];
   }
@@ -76,88 +76,88 @@ export const getMealSlotsForCount = (count: number): MealSlotConfig[] => {
     return [
       {
         id: 0,
-        name: 'Café da Manhã',
+        name: 'Café da Manhã (Ativação Anti-Aromatase)',
         time: '07:00',
         icon: '🍳',
         defaultOptions: [
-          'Ovos inteiros mexidos, aveia em flocos, café sem açúcar',
-          'Pão integral com ovos mexidos, café preto sem açúcar',
-          'Crepioca (ovos e tapioca), mamão com canela',
+          'Ovos inteiros mexidos com cogumelos Paris, aveia em flocos, chá verde',
+          'Pão integral com ovos mexidos, morangos frescos, café preto sem açúcar',
+          'Crepioca (ovos e tapioca), sementes de abóbora, chá verde com limão',
         ],
         placeholders: [
-          'Opção 1: Ex: ovos mexidos, aveia, café',
-          'Opção 2: Ex: pão integral, ovos mexidos',
-          'Opção 3: Ex: crepioca, fruta com canela',
+          'Opção 1: Ex: ovos mexidos, cogumelos, aveia, chá verde',
+          'Opção 2: Ex: pão integral, ovos mexidos, morangos',
+          'Opção 3: Ex: crepioca, sementes de abóbora, chá verde',
         ],
-        quickTags: ['Ovos Mexidos', 'Aveia em Flocos', 'Pão Integral', 'Tapioca', 'Fruta'],
+        quickTags: ['Ovos Inteiros', 'Cogumelo Paris', 'Aveia em Flocos', 'Sementes de Abóbora (Zinco)', 'Chá Verde (EGCG)', 'Pão Integral', 'Morangos'],
       },
       {
         id: 1,
-        name: 'Lanche da Manhã',
+        name: 'Lanche da Manhã (Zinco & Antioxidantes)',
         time: '10:00',
         icon: '🍎',
         defaultOptions: [
-          '1 maçã ou mamão com castanhas de caju na balança',
-          'Ovos cozidos na balança com 1 fruta fresca',
-          'Iogurte natural desnatado com sementes de chia e fruta',
+          'Morangos frescos com sementes de abóbora na balança',
+          'Ovos cozidos na balança com chá verde com limão',
+          'Iogurte natural desnatado com sementes de chia e frutas vermelhas',
         ],
         placeholders: [
-          'Opção 1: Ex: fruta com castanhas de caju',
-          'Opção 2: Ex: ovos cozidos com fruta',
-          'Opção 3: Ex: iogurte com sementes e fruta',
+          'Opção 1: Ex: morangos com sementes de abóbora',
+          'Opção 2: Ex: ovos cozidos com chá verde',
+          'Opção 3: Ex: iogurte com sementes e morangos',
         ],
-        quickTags: ['1 Fruta', 'Castanhas de Caju', 'Ovos Cozidos', 'Shake de Proteína'],
+        quickTags: ['Morangos (Resveratrol)', 'Sementes de Abóbora (Zinco)', 'Ovos Cozidos', 'Chá Verde (EGCG)'],
       },
       {
         id: 2,
-        name: 'Almoço Principal',
+        name: 'Almoço Principal (Bloqueio de Estrogênio)',
         time: '13:00',
         icon: '🍗',
         defaultOptions: [
-          'Peito de frango grelhado, arroz branco, feijão, salada verde',
-          'Filé mignon ou carne moída (patinho), batata-doce, salada',
-          'Filé de tilápia grelhado, macarrão cozido, legumes no vapor',
+          'Peito de frango grelhado, brócolis no vapor, arroz branco, feijão carioca',
+          'Carne moída (patinho), cogumelos Paris frescos, batata-doce, salada de rúcula',
+          'Filé de tilápia grelhado, couve-flor no vapor, mandioca na balança, azeite',
         ],
         placeholders: [
-          'Opção 1: Ex: peito de frango, arroz, feijão, salada',
-          'Opção 2: Ex: filé mignon, batata-doce, salada',
-          'Opção 3: Ex: tilápia, macarrão, legumes',
+          'Opção 1: Ex: peito de frango, brócolis, arroz, feijão',
+          'Opção 2: Ex: patinho moído, cogumelos, batata-doce',
+          'Opção 3: Ex: tilápia, couve-flor, mandioca',
         ],
-        quickTags: ['Peito de Frango', 'Filé Mignon', 'Patinho Moído', 'Arroz Branco', 'Feijão', 'Salada Verde'],
+        quickTags: ['Peito de Frango', 'Patinho Moído', 'Brócolis (DIM)', 'Cogumelo Paris', 'Couve-Flor', 'Tilápia', 'Arroz Branco', 'Feijão'],
       },
       {
         id: 3,
-        name: 'Café / Lanche da Tarde',
+        name: 'Café / Lanche da Tarde (Aporte Proteico)',
         time: '16:30',
         icon: '☕',
         defaultOptions: [
-          'Whey Protein, 1 banana',
-          'Ovos inteiros cozidos, aveia em flocos, 1 fruta',
-          'Iogurte desnatado com aveia em flocos e castanhas',
+          'Whey Protein, sementes de abóbora, 1 banana',
+          'Ovos inteiros cozidos, aveia em flocos, chá verde com limão',
+          'Iogurte desnatado com aveia em flocos e morangos frescos',
         ],
         placeholders: [
-          'Opção 1: Ex: Whey Protein, banana',
-          'Opção 2: Ex: ovos cozidos com aveia e fruta',
-          'Opção 3: Ex: iogurte com aveia e castanhas',
+          'Opção 1: Ex: Whey Protein, sementes de abóbora, banana',
+          'Opção 2: Ex: ovos cozidos com aveia e chá verde',
+          'Opção 3: Ex: iogurte com aveia e morangos',
         ],
-        quickTags: ['Whey Protein', 'Banana', 'Ovos Cozidos', 'Aveia em Flocos', 'Pão Integral', 'Pasta de Amendoim'],
+        quickTags: ['Whey Protein', 'Sementes de Abóbora (Zinco)', 'Chá Verde (EGCG)', 'Morangos (Resveratrol)', 'Ovos Cozidos', 'Aveia em Flocos', '1 Banana'],
       },
       {
         id: 4,
-        name: 'Jantar',
+        name: 'Jantar (Secagem Peitoral Noturna)',
         time: '20:00',
         icon: '🥩',
         defaultOptions: [
-          'Patinho moído refogado, arroz branco, legumes no vapor',
-          'Filé de tilápia grelhado, batata inglesa cozida, salada',
-          'Moela cozida ou frango, mandioca na balança, brócolis',
+          'Patinho moído refogado, brócolis no vapor, arroz branco na balança',
+          'Filé de tilápia grelhado, repolho roxo refogado, batata inglesa cozida',
+          'Peito de frango grelhado, mix de cogumelos refogados no azeite, mandioca cozida',
         ],
         placeholders: [
-          'Opção 1: Ex: patinho moído, arroz, legumes',
-          'Opção 2: Ex: tilápia, batata inglesa, salada',
-          'Opção 3: Ex: moela cozida, mandioca, brócolis',
+          'Opção 1: Ex: patinho moído, brócolis, arroz',
+          'Opção 2: Ex: tilápia, repolho roxo, batata inglesa',
+          'Opção 3: Ex: frango, cogumelos, mandioca',
         ],
-        quickTags: ['Patinho Moído', 'Tilápia', 'Moela', 'Macarrão', 'Legumes no vapor'],
+        quickTags: ['Patinho Moído (Zinco)', 'Brócolis (DIM)', 'Cogumelos Paris', 'Tilápia', 'Peito de Frango', 'Repolho Roxo', 'Batata Inglesa'],
       },
     ];
   }
@@ -166,71 +166,71 @@ export const getMealSlotsForCount = (count: number): MealSlotConfig[] => {
   return [
     {
       id: 0,
-      name: 'Café da Manhã',
+      name: 'Café da Manhã (Ativação Metabólica Anti-Aromatase)',
       time: '07:30',
       icon: '🍳',
       defaultOptions: [
-        'Ovos inteiros mexidos, aveia em flocos, café sem açúcar',
-        'Pão integral com ovos mexidos, 1 maçã ou mamão',
-        'Crepioca (ovos + goma de tapioca), café preto sem açúcar',
+        'Ovos inteiros mexidos com cogumelos Paris, aveia em flocos, chá verde',
+        'Pão integral com ovos mexidos, morangos frescos, café puro sem açúcar',
+        'Crepioca (ovos + goma de tapioca), sementes de abóbora, chá verde com limão',
       ],
       placeholders: [
-        'Opção 1: Ex: ovos mexidos, aveia em flocos, café',
-        'Opção 2: Ex: pão integral com ovos, fruta',
-        'Opção 3: Ex: crepioca, café preto',
+        'Opção 1: Ex: ovos mexidos, cogumelos, aveia, chá verde',
+        'Opção 2: Ex: pão integral, ovos mexidos, morangos',
+        'Opção 3: Ex: crepioca, sementes de abóbora, chá verde',
       ],
-      quickTags: ['Ovos Inteiros', 'Aveia em Flocos', 'Pão Integral', '1 Banana', 'Café sem açúcar'],
+      quickTags: ['Ovos Inteiros', 'Cogumelo Paris', 'Aveia em Flocos', 'Sementes de Abóbora (Zinco)', 'Chá Verde (EGCG)', 'Pão Integral', 'Morangos'],
     },
     {
       id: 1,
-      name: 'Almoço Principal',
+      name: 'Almoço Principal (Bloqueio de Aromatase & DIM)',
       time: '12:30',
       icon: '🍗',
       defaultOptions: [
-        'Peito de frango grelhado, arroz branco, feijão carioca, salada verde',
-        'Filé mignon ou carne moída (patinho), batata-doce na balança, salada',
-        'Filé de tilápia grelhado, arroz branco ou macarrão, brócolis no vapor',
+        'Peito de frango grelhado, brócolis no vapor, arroz branco, feijão carioca',
+        'Patinho moído refogado, cogumelos Paris frescos, batata-doce, salada de rúcula',
+        'Filé de tilápia grelhado, couve-flor no vapor, mandioca na balança, azeite',
       ],
       placeholders: [
-        'Opção 1: Ex: peito de frango, arroz, feijão, salada',
-        'Opção 2: Ex: filé mignon, batata-doce, salada',
-        'Opção 3: Ex: tilápia grelhada, macarrão, brócolis',
+        'Opção 1: Ex: peito de frango, brócolis, arroz, feijão',
+        'Opção 2: Ex: patinho moído, cogumelos Paris, batata-doce',
+        'Opção 3: Ex: tilápia grelhada, couve-flor, mandioca, azeite',
       ],
-      quickTags: ['Peito de Frango', 'Filé Mignon', 'Tilápia', 'Arroz Branco', 'Feijão', 'Salada Verde'],
+      quickTags: ['Peito de Frango', 'Patinho Moído', 'Brócolis (DIM)', 'Cogumelo Paris', 'Couve-Flor', 'Tilápia', 'Arroz Branco', 'Feijão', 'Batata-Doce'],
     },
     {
       id: 2,
-      name: 'Café / Lanche da Tarde',
+      name: 'Café / Lanche da Tarde (Aporte Proteico & Zinco)',
       time: '16:30',
       icon: '☕',
       defaultOptions: [
-        'Whey Protein, 1 banana',
-        'Ovos inteiros cozidos, aveia em flocos, 1 fruta fresca',
-        'Iogurte desnatado com aveia e castanhas do Pará',
+        'Whey Protein, sementes de abóbora, 1 banana',
+        'Ovos inteiros cozidos, aveia em flocos, chá verde com limão',
+        'Iogurte desnatado com aveia em flocos e morangos frescos',
       ],
       placeholders: [
-        'Opção 1: Ex: Whey Protein, banana',
-        'Opção 2: Ex: ovos cozidos com aveia e fruta',
-        'Opção 3: Ex: iogurte com aveia e castanhas',
+        'Opção 1: Ex: Whey Protein, sementes de abóbora, banana',
+        'Opção 2: Ex: ovos cozidos com aveia e chá verde',
+        'Opção 3: Ex: iogurte com aveia e morangos',
       ],
-      quickTags: ['Whey Protein', 'Banana', 'Ovos Mexidos', 'Pão Integral', 'Aveia em Flocos', 'Pasta de Amendoim'],
+      quickTags: ['Whey Protein', 'Sementes de Abóbora (Zinco)', 'Chá Verde (EGCG)', 'Morangos (Resveratrol)', 'Ovos Inteiros', 'Aveia em Flocos', '1 Banana'],
     },
     {
       id: 3,
-      name: 'Jantar',
+      name: 'Jantar (Secagem Peitoral & Recuperação Noturna)',
       time: '20:00',
       icon: '🥩',
       defaultOptions: [
-        'Patinho moído refogado, mandioca ou arroz, legumes no vapor',
-        'Peito de frango grelhado, batata inglesa cozida, legumes',
-        'Moela cozida ou tilápia grelhada, macarrão cozido, salada com azeite',
+        'Patinho moído refogado, brócolis no vapor, arroz branco na balança, azeite',
+        'Filé de tilápia grelhado, repolho roxo refogado, batata inglesa cozida',
+        'Peito de frango grelhado, mix de cogumelos refogados no azeite, mandioca cozida',
       ],
       placeholders: [
-        'Opção 1: Ex: patinho moído, mandioca, legumes',
-        'Opção 2: Ex: frango grelhado, batata inglesa, salada',
-        'Opção 3: Ex: moela cozida ou tilápia, macarrão',
+        'Opção 1: Ex: patinho moído, brócolis, arroz, azeite',
+        'Opção 2: Ex: tilápia, repolho roxo, batata inglesa',
+        'Opção 3: Ex: frango grelhado, cogumelos, mandioca',
       ],
-      quickTags: ['Patinho Moído', 'Tilápia', 'Moela', 'Macarrão', 'Mandioca', 'Legumes no vapor'],
+      quickTags: ['Patinho Moído (Zinco)', 'Brócolis (DIM)', 'Cogumelos Paris', 'Tilápia', 'Peito de Frango', 'Repolho Roxo', 'Batata Inglesa', 'Azeite Extravirgem'],
     },
   ];
 };
@@ -311,6 +311,7 @@ export default function Home() {
   const [mealOptionChoices, setMealOptionChoices] = useState<Record<string, [string, string, string]>>({});
   const [draftFoodInputs, setDraftFoodInputs] = useState<Record<string, string>>({});
   const [focusedOptionIdx, setFocusedOptionIdx] = useState<Record<number, 0 | 1 | 2>>({});
+  const [showAromataseGuide, setShowAromataseGuide] = useState<boolean>(true);
 
   const getOptionValue = (mCount: number, slotId: number, optIdx: 0 | 1 | 2): string => {
     const key = `${mCount}_${slotId}`;
@@ -399,6 +400,8 @@ export default function Home() {
   const todayKey = new Date().toISOString().slice(0, 10);
   const [waterCups, setWaterCups] = useState<number>(0);
   const [checkedMeals, setCheckedMeals] = useState<Record<string, boolean>>({});
+  const [workoutChecked, setWorkoutChecked] = useState<boolean>(false);
+  const [greenTeaChecked, setGreenTeaChecked] = useState<boolean>(false);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -411,6 +414,12 @@ export default function Home() {
           setCheckedMeals(JSON.parse(savedMeals));
         } catch {}
       }
+
+      const savedWorkout = localStorage.getItem(`qg_workout_${todayKey}`);
+      if (savedWorkout) setWorkoutChecked(savedWorkout === 'true');
+
+      const savedTea = localStorage.getItem(`qg_tea_${todayKey}`);
+      if (savedTea) setGreenTeaChecked(savedTea === 'true');
     }
   }, [todayKey]);
 
@@ -424,6 +433,18 @@ export default function Home() {
     const updated = { ...checkedMeals, [mealKey]: !checkedMeals[mealKey] };
     setCheckedMeals(updated);
     localStorage.setItem(`qg_meals_${todayKey}`, JSON.stringify(updated));
+  };
+
+  const toggleWorkoutCheck = () => {
+    const val = !workoutChecked;
+    setWorkoutChecked(val);
+    localStorage.setItem(`qg_workout_${todayKey}`, String(val));
+  };
+
+  const toggleGreenTeaCheck = () => {
+    const val = !greenTeaChecked;
+    setGreenTeaChecked(val);
+    localStorage.setItem(`qg_tea_${todayKey}`, String(val));
   };
 
   // 2. Resultados Calculados
@@ -469,21 +490,21 @@ export default function Home() {
     const get = Math.round(tmb * activity);
 
     let targetKcal = get;
-    let goalLabel = 'Recomposição Corporal';
+    let goalLabel = 'Recomposição Peitoral (Trocar Gordura por Músculo no Peito)';
 
     if (goal === 'hipertrofia') {
       targetKcal = get + 400;
-      goalLabel = 'Hipertrofia (+400 kcal)';
+      goalLabel = 'Volume & Densidade Peitoral (+400 kcal)';
     } else if (goal === 'emagrecimento') {
       targetKcal = get - 500;
-      goalLabel = 'Emagrecimento Moderado (-500 kcal)';
+      goalLabel = 'Secar Peitoral Moderado (-500 kcal • Queima & Foco Anti-Aromatase)';
     } else if (goal === 'emagrecimento_agressivo') {
       targetKcal = get - 750;
-      goalLabel = 'Emagrecimento Agressivo (-750 kcal)';
+      goalLabel = 'Seca Peitoral Extremo (-750 kcal • Máxima Queima)';
     }
 
     // Piso de segurança
-    const minFloor = gender === 'masculino' ? 1300 : 1100;
+    const minFloor = gender === 'masculino' ? 1400 : 1200;
     if (targetKcal < minFloor) targetKcal = minFloor;
 
     // Passo 2: Proteína Diária = 2.2g por kg de peso corporal
@@ -526,9 +547,9 @@ export default function Home() {
       [255, 51, 51],
     ];
     const optTitles = [
-      'Opção 1: Seu Cardápio Principal (Escolha 1)',
-      'Opção 2: Sua Variação Estratégica (Escolha 2)',
-      'Opção 3: Sua Rotação Prática (Escolha 3)',
+      'Opção 1: Seu Cardápio Principal (Seca Peitoral & DIM)',
+      'Opção 2: Sua Variação Estratégica (Inibidores de Aromatase)',
+      'Opção 3: Sua Rotação Prática (Zinco & Alta Proteína)',
     ];
 
     const generatedOptions = [0, 1, 2].map((optIdx) => {
@@ -813,11 +834,119 @@ export default function Home() {
         </button>
       </div>
 
-      <div className="header">
-        <h2>
-          Gerador de <span>Dieta</span>
+      <div className="header" style={{ marginBottom: '20px' }}>
+        <div
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '6px',
+            background: 'rgba(0, 255, 0, 0.1)',
+            border: '1px solid rgba(0, 255, 0, 0.3)',
+            borderRadius: '20px',
+            padding: '4px 14px',
+            fontSize: '11px',
+            fontWeight: 'bold',
+            color: 'var(--primary)',
+            marginBottom: '10px',
+            letterSpacing: '0.5px',
+          }}
+        >
+          <span>🔥 ORDER BUMP EXCLUSIVO • FICHA DE TREINO SECA PEITORAL</span>
+        </div>
+        <h2 style={{ margin: '0 0 6px 0', textTransform: 'uppercase', letterSpacing: '1px' }}>
+          Protocolo <span>Seca Peitoral</span>
         </h2>
-        <p>Inteligência Nutricional & Protocolo Fitness Personalizado.</p>
+        <p style={{ maxWidth: '640px', margin: '0 auto', fontSize: '13px', color: '#ccc', lineHeight: 1.5 }}>
+          <strong>Dieta Anti-Aromatase & Otimização Hormonal Masculina:</strong> Iniba a enzima aromatase no tecido adiposo, reduza o excesso de estrogênio e acelere a queima de gordura peitoral.
+        </p>
+      </div>
+
+      {/* GUIA EDUCATIVO E ESTRATÉGICO ANTI-AROMATASE */}
+      <div
+        style={{
+          background: '#0d0d0d',
+          border: '1px solid #222',
+          borderLeft: '4px solid var(--primary)',
+          borderRadius: '8px',
+          padding: '14px 16px',
+          marginBottom: '20px',
+        }}
+      >
+        <div
+          onClick={() => setShowAromataseGuide(!showAromataseGuide)}
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            cursor: 'pointer',
+            userSelect: 'none',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ fontSize: '18px' }}>🛡️</span>
+            <div>
+              <strong style={{ fontSize: '13px', color: '#fff', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                Guia Estratégico: O Que é a Aromatase e Como Secar o Peitoral
+              </strong>
+              <span style={{ display: 'block', fontSize: '11px', color: 'var(--muted)', marginTop: '2px' }}>
+                Entenda a ciência por trás da dieta complementar à sua Ficha de Treino
+              </span>
+            </div>
+          </div>
+          <button
+            type="button"
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: 'var(--primary)',
+              fontSize: '13px',
+              cursor: 'pointer',
+              fontWeight: 'bold',
+            }}
+          >
+            {showAromataseGuide ? '▲ Recolher' : '▼ Ver Guia'}
+          </button>
+        </div>
+
+        {showAromataseGuide && (
+          <div style={{ marginTop: '14px', borderTop: '1px solid #1c1c1c', paddingTop: '12px', fontSize: '12px', lineHeight: 1.6, color: '#d0d0d0' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '14px' }}>
+              <div style={{ background: '#141414', padding: '12px', borderRadius: '6px', border: '1px solid #222' }}>
+                <strong style={{ color: '#00d0ff', display: 'block', marginBottom: '6px' }}>
+                  1. O Ciclo da Aromatase no Peitoral
+                </strong>
+                A enzima <strong>aromatase</strong> fica concentrada nas células de gordura do homem (especialmente no peito). Ela converte sua <strong>testosterona em estrogênio</strong>. Quanto mais gordura acumulada no tórax, mais aromatase ativa você tem — causando a <em>pseudoginecomastia</em> e acúmulo resistente no peitoral.
+              </div>
+
+              <div style={{ background: '#141414', padding: '12px', borderRadius: '6px', border: '1px solid #222' }}>
+                <strong style={{ color: 'var(--primary)', display: 'block', marginBottom: '6px' }}>
+                  2. Os 5 Alimentos Bloqueadores de Aromatase
+                </strong>
+                • <strong>Brócolis e Crucíferos:</strong> Ricos em DIM e I3C, que bloqueiam a aromatase e depuram estrogênio.<br />
+                • <strong>Cogumelos Paris/Frescos:</strong> Inibem diretamente a ação da enzima nos adipócitos.<br />
+                • <strong>Sementes de Abóbora & Zinco:</strong> Blindam a testosterona livre.<br />
+                • <strong>Chá Verde (EGCG):</strong> Supressor natural comprovado da aromatase.<br />
+                • <strong>Morangos/Frutas Vermelhas:</strong> Resveratrol anti-estrogênico.
+              </div>
+
+              <div style={{ background: '#141414', padding: '12px', borderRadius: '6px', border: '1px solid #222' }}>
+                <strong style={{ color: '#ff5555', display: 'block', marginBottom: '6px' }}>
+                  3. Os Inimigos Que Você Deve Eliminar
+                </strong>
+                • <strong>Cerveja e Álcool:</strong> O lúpulo é um dos fitoestrógenos mais fortes da natureza e o álcool inflama o fígado.<br />
+                • <strong>Açúcar e Farinha Branca:</strong> Picos de insulina ativam a aromatase e derrubam o SHBG.<br />
+                • <strong>Potes Plásticos no Micro-ondas:</strong> Liberam BPA (xenoestrógenos que imitam o hormônio feminino).
+              </div>
+
+              <div style={{ background: '#141414', padding: '12px', borderRadius: '6px', border: '1px solid #222' }}>
+                <strong style={{ color: '#FFD700', display: 'block', marginBottom: '6px' }}>
+                  4. A Sinergia com a Ficha de Treino Seca Peitoral
+                </strong>
+                O treino de musculação pesada rompe fibras peitorais e estimula receptores androgênicos locais. Ao combinar com o déficit calórico calculado e alimentos anti-aromatase deste app, seu organismo é obrigado a queimar as reservas adiposas do peitoral, desenhando um tórax quadrado, rígido e masculino.
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {!showResult ? (
@@ -837,14 +966,13 @@ export default function Home() {
               />
             </div>
             <div className="form-group flex-1">
-              <label>Sexo</label>
+              <label>Sexo Biológico</label>
               <select
                 value={gender}
                 onChange={(e) => setGender(e.target.value as any)}
                 className="form-control"
               >
-                <option value="masculino">Masculino</option>
-                <option value="feminino">Feminino</option>
+                <option value="masculino">Masculino (Otimização Hormonal & Peitoral)</option>
               </select>
             </div>
           </div>
@@ -896,16 +1024,16 @@ export default function Home() {
             </div>
 
             <div className="form-group flex-1">
-              <label>Objetivo</label>
+              <label>Objetivo do Protocolo</label>
               <select
                 value={goal}
                 onChange={(e) => setGoal(e.target.value as any)}
                 className="form-control"
               >
-                <option value="hipertrofia">1) Hipertrofia (Ganhar Músculo / GET + 400 kcal)</option>
-                <option value="emagrecimento">2) Emagrecimento Moderado (Déficit Padrão / GET - 500 kcal)</option>
-                <option value="emagrecimento_agressivo">3) Emagrecimento Agressivo (Déficit Maior / GET - 750 kcal)</option>
-                <option value="recomposicao">4) Recomposição Corporal (Trocar gordura por músculo)</option>
+                <option value="emagrecimento">1) Secar Peitoral Moderado (-500 kcal • Foco Anti-Aromatase) - RECOMENDADO</option>
+                <option value="emagrecimento_agressivo">2) Seca Peitoral Extremo (-750 kcal • Máxima Definição Torácica)</option>
+                <option value="recomposicao">3) Recomposição Peitoral (Trocar Gordura por Músculo no Peito)</option>
+                <option value="hipertrofia">4) Volume e Densidade Peitoral (+400 kcal • Massa Muscular)</option>
               </select>
             </div>
           </div>
@@ -968,16 +1096,16 @@ export default function Home() {
                   lineHeight: '1.4',
                 }}
               >
-                <strong style={{ color: '#00d0ff' }}>💡 Dica:</strong> Para montar sua refeição do seu jeito (ex: <em>Whey, Banana</em>), digite no campo ou toque nas sugestões. O app calcula as pesagens exatas na balança sem colocar nada a mais!
+                <strong style={{ color: '#00d0ff' }}>💡 Dica Estratégica:</strong> As opções padrão já trazem alimentos chave para inibir a aromatase (Brócolis, Cogumelos Paris, Sementes de Abóbora, Chá Verde, Ovos e Carnes Magras). Se quiser alterar qualquer alimento, basta digitar no campo ou tocar nas sugestões. O app calcula as pesagens exatas na balança sem colocar nada a mais!
               </div>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               {getMealSlotsForCount(mealsCount).map((slot) => {
                 const optConfigs: { idx: 0 | 1 | 2; label: string; color: string; border: string }[] = [
-                  { idx: 0, label: '🟢 Opção 1 (Cardápio Principal)', color: 'var(--primary)', border: 'rgba(0, 255, 0, 0.3)' },
-                  { idx: 1, label: '🟡 Opção 2 (Variação Estratégica)', color: '#FFD700', border: 'rgba(255, 215, 0, 0.3)' },
-                  { idx: 2, label: '🔴 Opção 3 (Rotação Prática)', color: '#ff5555', border: 'rgba(255, 85, 85, 0.3)' },
+                  { idx: 0, label: '🟢 Opção 1 (Seca Peitoral Principal)', color: 'var(--primary)', border: 'rgba(0, 255, 0, 0.3)' },
+                  { idx: 1, label: '🟡 Opção 2 (Variação Anti-Aromatase)', color: '#FFD700', border: 'rgba(255, 215, 0, 0.3)' },
+                  { idx: 2, label: '🔴 Opção 3 (Rotação de Zinco & Proteína)', color: '#ff5555', border: 'rgba(255, 85, 85, 0.3)' },
                 ];
 
                 const currentFocusedOpt = focusedOptionIdx[slot.id] !== undefined ? focusedOptionIdx[slot.id] : 0;
@@ -1271,16 +1399,48 @@ export default function Home() {
             onClick={generateDiet}
             disabled={isLoading}
           >
-            {isLoading ? 'GERANDO CARDÁPIOS NA IA...' : 'Gerar 3 Cardápios'}
+            {isLoading ? 'CALCULANDO METAS & ANTI-AROMATASE...' : '⚡ Gerar 3 Cardápios Anti-Aromatase'}
           </button>
         </div>
       ) : (
         calcData && (
           <div id="result">
             <div className="card">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', flexWrap: 'wrap' }}>
+                <span style={{ background: 'rgba(0, 255, 0, 0.15)', color: 'var(--primary)', border: '1px solid var(--primary)', borderRadius: '4px', fontSize: '10px', padding: '2px 8px', fontWeight: 'bold' }}>
+                  ORDER BUMP OFICIAL • SECA PEITORAL
+                </span>
+                <span style={{ background: 'rgba(0, 208, 255, 0.15)', color: '#00d0ff', border: '1px solid #00d0ff', borderRadius: '4px', fontSize: '10px', padding: '2px 8px', fontWeight: 'bold' }}>
+                  PROTOCOLO ANTI-AROMATASE ATIVO
+                </span>
+              </div>
+
               <h3 style={{ marginTop: 0, fontFamily: "'Montserrat', sans-serif", textTransform: 'uppercase' }}>
-                Seu Plano Alimentar Personalizado
+                Seu Protocolo Nutricional Seca Peitoral
               </h3>
+
+              {/* Box de Diretrizes Anti-Aromatase */}
+              <div
+                style={{
+                  background: 'rgba(0, 255, 0, 0.04)',
+                  border: '1px solid rgba(0, 255, 0, 0.3)',
+                  borderRadius: '6px',
+                  padding: '12px 14px',
+                  marginBottom: '16px',
+                  fontSize: '12px',
+                  lineHeight: 1.5,
+                }}
+              >
+                <strong style={{ color: 'var(--primary)', display: 'block', marginBottom: '4px', fontSize: '12px', fontFamily: "'Montserrat', sans-serif" }}>
+                  🛡️ MANDAMENTOS ANTI-AROMATASE PARA POTENCIALIZAR SUA FICHA DE TREINO
+                </strong>
+                <span style={{ color: '#ccc' }}>
+                  • <strong>Crucíferos Diários (DIM):</strong> Mantenha brócolis, couve-flor ou repolho em ao menos uma refeição para acelerar a eliminação tecidual de estrogênio.<br />
+                  • <strong>Blindagem da Testosterona:</strong> 2.2g/kg de proteína e gorduras limpas para manter a testosterona livre elevada enquanto queima a gordura do peito.<br />
+                  • <strong>Chá Verde (EGCG):</strong> 1 a 2 xícaras ao dia auxiliam na redução da atividade da enzima aromatase no peitoral.<br />
+                  • <strong>Corte de Cerveja e Ultraprocessados:</strong> O lúpulo da cerveja contém fitoestrógenos potentes que anulam o efeito do treino de peitoral.
+                </span>
+              </div>
 
               {/* Exibição Visual da TMB, GET e Meta Calórica Diária (Requisito 4) */}
               <div
@@ -1366,7 +1526,7 @@ export default function Home() {
                 </div>
               )}
 
-              {/* CHECKLIST DIÁRIO DE HÁBITOS (ÁGUA & REFEIÇÕES) */}
+              {/* CHECKLIST DIÁRIO DE HÁBITOS (ÁGUA & REFEIÇÕES & ANTI-AROMATASE) */}
               {(() => {
                 const totalWaterBottles = Math.max(1, Math.ceil((calcData.waterL * 1000) / 500));
                 const completedBottles = Math.min(waterCups, totalWaterBottles);
@@ -1375,8 +1535,8 @@ export default function Home() {
                   (_, i) => checkedMeals[`meal_${todayKey}_${i + 1}`]
                 ).length;
                 const mealsPercent = Math.round((checkedMealsCount / calcData.mealsCount) * 100);
-                const totalTasks = totalWaterBottles + calcData.mealsCount;
-                const totalDone = completedBottles + checkedMealsCount;
+                const totalTasks = totalWaterBottles + calcData.mealsCount + 2;
+                const totalDone = completedBottles + checkedMealsCount + (workoutChecked ? 1 : 0) + (greenTeaChecked ? 1 : 0);
                 const overallPercent = Math.round((totalDone / totalTasks) * 100);
 
                 return (
@@ -1412,10 +1572,10 @@ export default function Home() {
                             letterSpacing: '0.5px',
                           }}
                         >
-                          📋 Checklist Diário de Hábitos
+                          📋 Checklist Diário Anti-Aromatase & Treino
                         </h4>
                         <span style={{ fontSize: '11px', color: 'var(--muted)' }}>
-                          Hoje: {todayKey} • Progresso salvo automaticamente
+                          Hoje: {todayKey} • Sinergia com Ficha de Treino Seca Peitoral
                         </span>
                       </div>
                       <div
@@ -1468,11 +1628,100 @@ export default function Home() {
                           fontWeight: 'bold',
                         }}
                       >
-                        🎖️ EXCELENTE! 100% DA MISSÃO CUMPRIDA HOJE! DISCIPLINA ABSOLUTA!
+                        🎖️ EXCELENTE! 100% DAS DIRETRIZES ANTI-AROMATASE E TREINO CUMPRIDAS HOJE!
                       </div>
                     )}
 
-                    {/* Bloco 1: Água */}
+                    {/* Bloco 1: Treino e Hábitos Chave Anti-Aromatase */}
+                    <div style={{ marginBottom: '16px' }}>
+                      <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#FFD700', display: 'block', marginBottom: '8px' }}>
+                        ⚡ Ficha de Treino & Ação Anti-Aromatase
+                      </span>
+
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '8px' }}>
+                        <div
+                          onClick={toggleWorkoutCheck}
+                          style={{
+                            background: workoutChecked ? 'rgba(0, 255, 0, 0.08)' : '#181818',
+                            border: `1px solid ${workoutChecked ? 'var(--primary)' : '#282828'}`,
+                            borderRadius: '6px',
+                            padding: '10px 12px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            cursor: 'pointer',
+                          }}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <div
+                              style={{
+                                width: '18px',
+                                height: '18px',
+                                borderRadius: '4px',
+                                border: `2px solid ${workoutChecked ? 'var(--primary)' : '#555'}`,
+                                background: workoutChecked ? 'var(--primary)' : 'transparent',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                color: '#000',
+                                fontSize: '11px',
+                                fontWeight: 'bold',
+                              }}
+                            >
+                              {workoutChecked && '✓'}
+                            </div>
+                            <span style={{ fontSize: '12px', color: workoutChecked ? '#fff' : '#ccc', fontWeight: 'bold' }}>
+                              🏋️ Ficha Seca Peitoral Feita
+                            </span>
+                          </div>
+                          <span style={{ fontSize: '10px', color: workoutChecked ? 'var(--primary)' : '#555', fontWeight: 'bold' }}>
+                            {workoutChecked ? 'FEITO' : 'PENDENTE'}
+                          </span>
+                        </div>
+
+                        <div
+                          onClick={toggleGreenTeaCheck}
+                          style={{
+                            background: greenTeaChecked ? 'rgba(0, 208, 255, 0.08)' : '#181818',
+                            border: `1px solid ${greenTeaChecked ? '#00d0ff' : '#282828'}`,
+                            borderRadius: '6px',
+                            padding: '10px 12px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            cursor: 'pointer',
+                          }}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <div
+                              style={{
+                                width: '18px',
+                                height: '18px',
+                                borderRadius: '4px',
+                                border: `2px solid ${greenTeaChecked ? '#00d0ff' : '#555'}`,
+                                background: greenTeaChecked ? '#00d0ff' : 'transparent',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                color: '#000',
+                                fontSize: '11px',
+                                fontWeight: 'bold',
+                              }}
+                            >
+                              {greenTeaChecked && '✓'}
+                            </div>
+                            <span style={{ fontSize: '12px', color: greenTeaChecked ? '#fff' : '#ccc', fontWeight: 'bold' }}>
+                              🍵 Chá Verde (EGCG Anti-Aromatase)
+                            </span>
+                          </div>
+                          <span style={{ fontSize: '10px', color: greenTeaChecked ? '#00d0ff' : '#555', fontWeight: 'bold' }}>
+                            {greenTeaChecked ? 'TOMADO' : 'PENDENTE'}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Bloco 2: Água */}
                     <div style={{ marginBottom: '16px' }}>
                       <div
                         style={{
@@ -1529,7 +1778,7 @@ export default function Home() {
                       </div>
                     </div>
 
-                    {/* Bloco 2: Refeições */}
+                    {/* Bloco 3: Refeições */}
                     <div>
                       <div
                         style={{
@@ -1540,7 +1789,7 @@ export default function Home() {
                         }}
                       >
                         <span style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--primary)' }}>
-                          🍽️ Refeições ({calcData.mealsCount} refeições / dia)
+                          🍽️ Refeições ({calcData.mealsCount} refeições na balança)
                         </span>
                         <span style={{ fontSize: '11px', color: 'var(--muted)' }}>
                           {checkedMealsCount} de {calcData.mealsCount} ({mealsPercent}%)
@@ -1653,7 +1902,7 @@ export default function Home() {
                 style={{ marginTop: '15px' }}
                 onClick={handleDownloadPdf}
               >
-                📥 Baixar Dieta em PDF
+                📥 Baixar Protocolo Seca Peitoral em PDF
               </button>
 
               {/* BOTÃO PARA REFAZER CÁLCULO */}

@@ -178,7 +178,22 @@ export function getCarbPortion(foodName: string, targetCarbGrams: number): FoodP
     };
   }
 
-  // 9. MAÇÃ / MAMÃO / FRUTA
+  // 9. MORANGOS / FRUTAS VERMELHAS / MIRTILOS (Rico em Resveratrol Anti-Aromatase)
+  if (
+    lower.includes('morango') ||
+    lower.includes('frutas vermelhas') ||
+    lower.includes('mirtilo') ||
+    lower.includes('amora') ||
+    lower.includes('framboesa')
+  ) {
+    const g = Math.min(200, Math.max(100, Math.round(targetCarbGrams * 12)));
+    return {
+      name: foodName,
+      portion: `${g}g frescos na balança (Rico em Resveratrol e Antocianinas)`,
+    };
+  }
+
+  // 10. MAÇÃ / MAMÃO / FRUTA
   if (lower.includes('maca') || lower.includes('maçã')) {
     const units = Math.min(3, Math.max(1, Math.round(targetCarbGrams / 18)));
     return { name: foodName, portion: `${units} unidade${units > 1 ? 's' : ''} média${units > 1 ? 's' : ''}` };
@@ -190,20 +205,20 @@ export function getCarbPortion(foodName: string, targetCarbGrams: number): FoodP
     return { name: foodName, portion: '1 unidade média fresca (~100g a 120g)' };
   }
 
-  // 10. PÃO INTEGRAL / PÃO DE FORMA
+  // 11. PÃO INTEGRAL / PÃO DE FORMA
   if (lower.includes('pao') || lower.includes('pão')) {
     // 1 fatia = ~12g carbo (~25g de peso)
     const slices = Math.min(4, Math.max(1, Math.round(targetCarbGrams / 12)));
     return { name: foodName, portion: `${slices} fatia${slices > 1 ? 's' : ''} (${slices * 25}g na balança)` };
   }
 
-  // 11. TAPIOCA / GOMA / CREPIOCA
+  // 12. TAPIOCA / GOMA / CREPIOCA
   if (lower.includes('tapioca') || lower.includes('crepioca') || lower.includes('goma')) {
     const g = Math.min(90, Math.max(30, Math.round(targetCarbGrams * 1.8)));
     return { name: foodName, portion: `${g}g de goma na frigideira` };
   }
 
-  // 12. CUSCUZ
+  // 13. CUSCUZ
   if (lower.includes('cuscuz')) {
     const g = Math.min(250, Math.max(80, Math.round(targetCarbGrams * 3.5)));
     return { name: foodName, portion: `${g}g pronto no vapor na balança` };
@@ -215,25 +230,32 @@ export function getCarbPortion(foodName: string, targetCarbGrams: number): FoodP
 }
 
 /**
- * Calcula a porção de gorduras, sementes e oleaginosas.
+ * Calcula a porção de gorduras, sementes e oleaginosas (Foco em Zinco e Anti-Aromatase).
  */
 export function getFatPortion(foodName: string): FoodPortionResult {
   const lower = foodName.toLowerCase().trim();
 
+  // Sementes de Abóbora (Riquíssimas em Zinco - Mineral Anti-Aromatase Nº 1)
+  if (lower.includes('abobora') || lower.includes('abóbora') || lower.includes('pepita')) {
+    return {
+      name: foodName,
+      portion: '20g na balança (~1 a 2 colheres de sopa - Alta concentração de Zinco Anti-Aromatase)',
+    };
+  }
   if (lower.includes('pasta de amendoim') || lower.includes('amendoim')) {
     return { name: foodName, portion: '1 colher de sopa rasa (~15g na balança)' };
   }
   if (lower.includes('castanha') || lower.includes('nozes')) {
-    return { name: foodName, portion: '15g na balança (aprox. 3 a 4 unidades)' };
+    return { name: foodName, portion: '15g na balança (aprox. 3 a 4 unidades - Selênio & Gorduras Boas)' };
   }
   if (lower.includes('azeite')) {
-    return { name: foodName, portion: '1 colher de sobremesa (~5ml no preparo/salada)' };
+    return { name: foodName, portion: '1 colher de sobremesa (~5ml no preparo/salada - Anti-inflamatório)' };
   }
   if (lower.includes('abacate')) {
     return { name: foodName, portion: '80g na balança (~2 colheres de sopa cheias)' };
   }
   if (lower.includes('chia') || lower.includes('linhaca') || lower.includes('linhaça')) {
-    return { name: foodName, portion: '1 colher de sobremesa (~10g)' };
+    return { name: foodName, portion: '1 colher de sobremesa (~10g - Fibras & Ômega-3)' };
   }
 
   return { name: foodName, portion: '1 porção controlada (~10g a 15g)' };
@@ -304,9 +326,16 @@ export function parseAndCalculateMealItems(
     'abacate', 'chia', 'linhaca', 'linhaça'
   ];
 
+  const antiAromataseKeywords = [
+    'cogumelo', 'cogumelos', 'champignon', 'paris', 'shiitake', 'shimeji', 'portobello'
+  ];
+
+  const cruciferousKeywords = [
+    'brocolis', 'brócolis', 'couve-flor', 'couve flor', 'repolho', 'rucula', 'rúcula', 'espinafre', 'couve'
+  ];
+
   const greenKeywords = [
-    'salada', 'alface', 'tomate', 'brocolis', 'brócolis', 'couve', 'cenoura',
-    'legumes', 'folhas', 'pepino', 'rucula', 'rúcula', 'espinafre'
+    'salada', 'alface', 'tomate', 'cenoura', 'legumes', 'folhas', 'pepino'
   ];
 
   const drinkKeywords = ['cafe', 'café', 'cha', 'chá', 'agua', 'água'];
@@ -314,41 +343,53 @@ export function parseAndCalculateMealItems(
   // Categorizar CADA token digitado pelo usuário
   const categorized: {
     token: string;
-    type: 'protein' | 'carb' | 'fat' | 'green' | 'drink' | 'other';
+    type: 'antiAromatase' | 'cruciferous' | 'protein' | 'carb' | 'fat' | 'green' | 'drink' | 'other';
   }[] = [];
 
   rawTokens.forEach((token) => {
     const lower = token.toLowerCase();
 
-    // 1. Bebidas
+    // 1. Inibidores de Aromatase (Cogumelos frescos)
+    if (antiAromataseKeywords.some((k) => lower.includes(k))) {
+      categorized.push({ token, type: 'antiAromatase' });
+      return;
+    }
+    // 2. Crucíferos / DIM Anti-Estrogênicos
+    if (cruciferousKeywords.some((k) => lower.includes(k))) {
+      categorized.push({ token, type: 'cruciferous' });
+      return;
+    }
+    // 3. Bebidas (Chá Verde, Café, Água)
     if (drinkKeywords.some((k) => lower.includes(k))) {
       categorized.push({ token, type: 'drink' });
       return;
     }
-    // 2. Whey / Proteínas
+    // 4. Whey / Proteínas
     if (protKeywords.some((k) => lower.includes(k))) {
       categorized.push({ token, type: 'protein' });
       return;
     }
-    // 3. Carboidratos
+    // 5. Carboidratos
     if (carbKeywords.some((k) => lower.includes(k))) {
       categorized.push({ token, type: 'carb' });
       return;
     }
-    // 4. Gorduras boas
-    if (fatKeywords.some((k) => lower.includes(k))) {
+    // 6. Gorduras boas / Sementes de Abóbora (Zinco)
+    if (fatKeywords.some((k) => lower.includes(k)) || lower.includes('abobora') || lower.includes('abóbora')) {
       categorized.push({ token, type: 'fat' });
       return;
     }
-    // 5. Saladas e vegetais
+    // 7. Saladas e outros vegetais
     if (greenKeywords.some((k) => lower.includes(k))) {
       categorized.push({ token, type: 'green' });
       return;
     }
-    // 6. Outros
+    // 8. Outros
     categorized.push({ token, type: 'other' });
   });
 
+  const antiAromatases = categorized.filter((c) => c.type === 'antiAromatase');
+  const cruciferous = categorized.filter((c) => c.type === 'cruciferous');
   const prots = categorized.filter((c) => c.type === 'protein');
   const carbs = categorized.filter((c) => c.type === 'carb');
   const fats = categorized.filter((c) => c.type === 'fat');
@@ -366,7 +407,23 @@ export function parseAndCalculateMealItems(
     });
   }
 
-  // 2. Processar CARBOIDRATOS digitados pelo usuário
+  // 2. Processar INIBIDORES DE AROMATASE (Cogumelos Paris, Champignon, etc)
+  antiAromatases.forEach((a) => {
+    results.push({
+      name: a.token,
+      portion: '100g frescos refogados no azeite ou grelhados (Inibidor Natural de Aromatase)',
+    });
+  });
+
+  // 3. Processar CRUCÍFEROS (Brócolis, Couve-Flor, Repolho - Ricos em DIM)
+  cruciferous.forEach((c) => {
+    results.push({
+      name: c.token,
+      portion: '150g no vapor na balança (Rico em DIM e I3C - Redutor de Estrogênio)',
+    });
+  });
+
+  // 4. Processar CARBOIDRATOS digitados pelo usuário
   const hasArroz = carbs.some((c) => c.token.toLowerCase().includes('arroz'));
   const hasFeijao = carbs.some((c) => c.token.toLowerCase().includes('feijao') || c.token.toLowerCase().includes('feijão'));
 
@@ -383,26 +440,28 @@ export function parseAndCalculateMealItems(
     });
   }
 
-  // 3. Processar GORDURAS BOAS digitadas pelo usuário (somente se digitado!)
+  // 5. Processar GORDURAS BOAS & SEMENTES DE ZINCO digitadas pelo usuário
   fats.forEach((f) => {
     results.push(getFatPortion(f.token));
   });
 
-  // 4. Processar SALADAS/VEGETAIS digitados pelo usuário (somente se digitado!)
+  // 6. Processar SALADAS/VEGETAIS digitados pelo usuário
   greens.forEach((g) => {
     results.push({
       name: g.token,
-      portion: 'À vontade com folhas e legumes frescos no prato',
+      portion: 'À vontade com folhas frescas no prato',
     });
   });
 
-  // 5. Processar BEBIDAS digitadas pelo usuário (somente se digitado!)
+  // 7. Processar BEBIDAS digitadas pelo usuário (Chá Verde, Café Puro)
   drinks.forEach((d) => {
     const lower = d.token.toLowerCase();
-    if (lower.includes('cafe') || lower.includes('café')) {
-      results.push({ name: d.token, portion: '1 xícara média sem açúcar (100ml a 150ml)' });
+    if (lower.includes('cha verde') || lower.includes('chá verde')) {
+      results.push({ name: d.token, portion: '1 xícara ou copo (200ml a 300ml - Rico em EGCG Inibidor de Aromatase)' });
+    } else if (lower.includes('cafe') || lower.includes('café')) {
+      results.push({ name: d.token, portion: '1 xícara média sem açúcar (100ml a 150ml puro)' });
     } else {
-      results.push({ name: d.token, portion: '1 copo (200ml a 300ml)' });
+      results.push({ name: d.token, portion: '1 copo (200ml a 300ml de água mineral)' });
     }
   });
 
