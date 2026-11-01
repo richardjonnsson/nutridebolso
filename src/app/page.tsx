@@ -4,6 +4,9 @@ import React, { useState, useEffect } from 'react';
 import { generateTacticalPdf, TacticalDietData } from '@/lib/pdfGenerator';
 import { parseAndCalculateMealItems } from '@/lib/foodCalculations';
 import confetti from 'canvas-confetti';
+import WorkoutOperationsTab from '@/components/WorkoutOperationsTab';
+import AromataseGuideTab from '@/components/AromataseGuideTab';
+import ArmorPostureTab from '@/components/ArmorPostureTab';
 
 export interface MealSlotConfig {
   id: number;
@@ -236,6 +239,10 @@ export const getMealSlotsForCount = (count: number): MealSlotConfig[] => {
 };
 
 export default function Home() {
+  const [activeTab, setActiveTab] = useState<'home' | 'workout' | 'diet' | 'aromatase' | 'armor'>('home');
+  const [initialVideoMode, setInitialVideoMode] = useState<'shorts' | 'practical'>('practical');
+  const [showInstallModal, setShowInstallModal] = useState(false);
+
   const [showResult, setShowResult] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -707,161 +714,738 @@ export default function Home() {
     );
   }
 
+  const navigateToTab = (tab: 'home' | 'workout' | 'diet' | 'aromatase' | 'armor', videoMode?: 'shorts' | 'practical') => {
+    if (videoMode) setInitialVideoMode(videoMode);
+    setActiveTab(tab);
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
   // 3. Aplicação Liberada para Aluno Autenticado
   return (
-    <div className="container">
-      {/* Barra Superior do Aluno Conectado */}
-      <div
+    <div>
+      {/* HEADER TÁTICO FIXO ESTILO APP MOBILE + NETFLIX DARK */}
+      <header
         style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          background: '#111',
-          border: '1px solid #222',
-          borderRadius: '6px',
-          padding: '8px 12px',
-          marginBottom: '15px',
-          fontSize: '11px',
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#ccc' }}>
-          <span style={{ color: 'var(--primary)', fontWeight: 'bold' }}>● LICENÇA ATIVA:</span>
-          <span style={{ color: '#fff' }}>{activeUser?.name || activeUser?.email}</span>
-          {activeUser?.role === 'admin' && (
-            <span style={{ background: '#222', color: '#FFD700', padding: '2px 6px', borderRadius: '4px', fontSize: '10px', fontWeight: 'bold' }}>
-              ADMIN
-            </span>
-          )}
-        </div>
-        <button
-          onClick={handleLogout}
-          style={{
-            background: 'transparent',
-            border: 'none',
-            color: '#888',
-            fontSize: '11px',
-            cursor: 'pointer',
-            textDecoration: 'underline',
-          }}
-        >
-          Sair / Trocar e-mail
-        </button>
-      </div>
-
-      <div className="header" style={{ marginBottom: '20px' }}>
-        <div
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '6px',
-            background: 'rgba(0, 255, 0, 0.1)',
-            border: '1px solid rgba(0, 255, 0, 0.3)',
-            borderRadius: '20px',
-            padding: '4px 14px',
-            fontSize: '11px',
-            fontWeight: 'bold',
-            color: 'var(--primary)',
-            marginBottom: '10px',
-            letterSpacing: '0.5px',
-          }}
-        >
-          <span>🔥 ORDER BUMP EXCLUSIVO • FICHA DE TREINO SECA PEITORAL</span>
-        </div>
-        <h2 style={{ margin: '0 0 6px 0', textTransform: 'uppercase', letterSpacing: '1px' }}>
-          Protocolo <span>Seca Peitoral</span>
-        </h2>
-        <p style={{ maxWidth: '640px', margin: '0 auto', fontSize: '13px', color: '#ccc', lineHeight: 1.5 }}>
-          <strong>Dieta Anti-Aromatase & Otimização Hormonal Masculina:</strong> Iniba a enzima aromatase no tecido adiposo, reduza o excesso de estrogênio e acelere a queima de gordura peitoral.
-        </p>
-      </div>
-
-      {/* GUIA EDUCATIVO E ESTRATÉGICO ANTI-AROMATASE */}
-      <div
-        style={{
-          background: '#0d0d0d',
-          border: '1px solid #222',
-          borderLeft: '4px solid var(--primary)',
-          borderRadius: '8px',
-          padding: '14px 16px',
-          marginBottom: '20px',
+          background: 'rgba(12, 12, 12, 0.96)',
+          backdropFilter: 'blur(12px)',
+          borderBottom: '1px solid #00FF00',
+          position: 'sticky',
+          top: 0,
+          zIndex: 100,
+          padding: '12px 16px',
         }}
       >
         <div
-          onClick={() => setShowAromataseGuide(!showAromataseGuide)}
           style={{
+            maxWidth: '840px',
+            margin: '0 auto',
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
-            cursor: 'pointer',
-            userSelect: 'none',
+            gap: '10px',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontSize: '18px' }}>🛡️</span>
+          <div
+            onClick={() => navigateToTab('home')}
+            style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px' }}
+          >
+            <div
+              style={{
+                width: '34px',
+                height: '34px',
+                borderRadius: '8px',
+                background: 'rgba(0, 255, 0, 0.14)',
+                border: '1px solid #00FF00',
+                display: 'grid',
+                placeItems: 'center',
+                fontSize: '18px',
+              }}
+            >
+              🦅
+            </div>
             <div>
-              <strong style={{ fontSize: '13px', color: '#fff', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                Guia Estratégico: O Que é a Aromatase e Como Secar o Peitoral
-              </strong>
-              <span style={{ display: 'block', fontSize: '11px', color: 'var(--muted)', marginTop: '2px' }}>
-                Entenda a ciência por trás da dieta complementar à sua Ficha de Treino
-              </span>
+              <div
+                style={{
+                  fontFamily: "'Montserrat', sans-serif",
+                  fontWeight: 900,
+                  fontSize: '15px',
+                  color: '#fff',
+                  textTransform: 'uppercase',
+                  lineHeight: 1.1,
+                }}
+              >
+                QG <span style={{ color: '#00FF00' }}>Seca Peitoral</span>
+              </div>
+              <div style={{ fontSize: '10px', color: '#999', marginTop: '2px' }}>
+                <span style={{ color: '#00FF00', fontWeight: 700 }}>● ATIVO:</span>{' '}
+                {activeUser?.name || activeUser?.email}
+              </div>
             </div>
           </div>
-          <button
-            type="button"
-            style={{
-              background: 'transparent',
-              border: 'none',
-              color: 'var(--primary)',
-              fontSize: '13px',
-              cursor: 'pointer',
-              fontWeight: 'bold',
-            }}
-          >
-            {showAromataseGuide ? '▲ Recolher' : '▼ Ver Guia'}
-          </button>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <button
+              type="button"
+              onClick={() => setShowInstallModal(true)}
+              style={{
+                background: 'rgba(0, 255, 0, 0.15)',
+                color: '#00FF00',
+                fontSize: '10px',
+                fontWeight: 900,
+                padding: '6px 10px',
+                borderRadius: '6px',
+                border: '1px solid #00FF00',
+                textTransform: 'uppercase',
+                cursor: 'pointer',
+                animation: 'pulse-btn 2s infinite',
+                fontFamily: "'Montserrat', sans-serif",
+              }}
+            >
+              📲 Instalar App
+            </button>
+
+            <button
+              type="button"
+              onClick={handleLogout}
+              style={{
+                background: '#1a1a1a',
+                border: '1px solid #333',
+                color: '#aaa',
+                fontSize: '11px',
+                padding: '6px 10px',
+                borderRadius: '6px',
+                cursor: 'pointer',
+              }}
+            >
+              Sair
+            </button>
+          </div>
         </div>
+      </header>
 
-        {showAromataseGuide && (
-          <div style={{ marginTop: '14px', borderTop: '1px solid #1c1c1c', paddingTop: '12px', fontSize: '12px', lineHeight: 1.6, color: '#d0d0d0' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '14px' }}>
-              <div style={{ background: '#141414', padding: '12px', borderRadius: '6px', border: '1px solid #222' }}>
-                <strong style={{ color: '#00d0ff', display: 'block', marginBottom: '6px' }}>
-                  1. O Ciclo da Aromatase no Peitoral
-                </strong>
-                A enzima <strong>aromatase</strong> fica concentrada nas células de gordura do homem (especialmente no peito). Ela converte sua <strong>testosterona em estrogênio</strong>. Quanto mais gordura acumulada no tórax, mais aromatase ativa você tem — causando a <em>pseudoginecomastia</em> e acúmulo resistente no peitoral.
+      <div className="container">
+        {/* ABA 1: INÍCIO (VITRINE NETFLIX DARK PREMIUM) */}
+        {activeTab === 'home' && (
+          <div style={{ paddingBottom: '20px' }}>
+            {/* HERO BANNER ESTILO NETFLIX */}
+            <div
+              style={{
+                background:
+                  'radial-gradient(circle at 85% 15%, rgba(0, 255, 0, 0.22), rgba(255, 215, 0, 0.06) 45%, #0b0b0b 85%)',
+                border: '1px solid rgba(0, 255, 0, 0.4)',
+                borderRadius: '14px',
+                padding: '24px 20px',
+                marginBottom: '18px',
+                position: 'relative',
+                overflow: 'hidden',
+                boxShadow: '0 12px 35px rgba(0, 0, 0, 0.7)',
+              }}
+            >
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '10px' }}>
+                <span
+                  style={{
+                    background: '#00FF00',
+                    color: '#000',
+                    fontSize: '10px',
+                    fontWeight: 900,
+                    padding: '3px 9px',
+                    borderRadius: '4px',
+                    textTransform: 'uppercase',
+                    fontFamily: "'Montserrat', sans-serif",
+                  }}
+                >
+                  ★ OFICIAL KIWIFY • ACESSO TOTAL LIBERADO
+                </span>
+                <span
+                  style={{
+                    background: 'rgba(255, 215, 0, 0.15)',
+                    border: '1px solid #FFD700',
+                    color: '#FFD700',
+                    fontSize: '10px',
+                    fontWeight: 800,
+                    padding: '3px 9px',
+                    borderRadius: '4px',
+                  }}
+                >
+                  5 ENTREGÁVEIS + VÍDEO-AULA PRÁTICA
+                </span>
               </div>
 
-              <div style={{ background: '#141414', padding: '12px', borderRadius: '6px', border: '1px solid #222' }}>
-                <strong style={{ color: 'var(--primary)', display: 'block', marginBottom: '6px' }}>
-                  2. Os 5 Alimentos Bloqueadores de Aromatase
-                </strong>
-                • <strong>Brócolis e Crucíferos:</strong> Ricos em DIM e I3C, que bloqueiam a aromatase e depuram estrogênio.<br />
-                • <strong>Cogumelos Paris/Frescos:</strong> Inibem diretamente a ação da enzima nos adipócitos.<br />
-                • <strong>Sementes de Abóbora & Zinco:</strong> Blindam a testosterona livre.<br />
-                • <strong>Chá Verde (EGCG):</strong> Supressor natural comprovado da aromatase.<br />
-                • <strong>Morangos/Frutas Vermelhas:</strong> Resveratrol anti-estrogênico.
+              <h1
+                style={{
+                  fontFamily: "'Montserrat', sans-serif",
+                  fontSize: '26px',
+                  fontWeight: 900,
+                  color: '#fff',
+                  textTransform: 'uppercase',
+                  lineHeight: 1.15,
+                  margin: '0 0 10px 0',
+                }}
+              >
+                Operação <span style={{ color: '#00FF00' }}>Seca Peitoral</span>
+              </h1>
+              <p style={{ fontSize: '13px', color: '#ccc', lineHeight: 1.55, maxWidth: '580px', margin: '0 0 18px 0' }}>
+                Seu Quartel-General completo para eliminar a lipomastia: assista à <strong>Vídeo-Aula Prática</strong> fazendo a ficha, siga os <strong>5 exercícios biomecânicos</strong>, gere seus <strong>3 cardápios anti-aromatase na balança</strong> e aplique o <strong>Guia de Trava da Aromatase</strong> e o <strong>Efeito Armadura</strong>.
+              </p>
+
+              <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                <button
+                  type="button"
+                  onClick={() => navigateToTab('workout', 'practical')}
+                  style={{
+                    background: '#00FF00',
+                    color: '#000',
+                    border: 'none',
+                    borderRadius: '8px',
+                    padding: '13px 18px',
+                    fontFamily: "'Montserrat', sans-serif",
+                    fontWeight: 900,
+                    fontSize: '13px',
+                    textTransform: 'uppercase',
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    boxShadow: '0 0 18px rgba(0, 255, 0, 0.35)',
+                  }}
+                >
+                  ▶ Assistir Vídeo-Aula da Ficha
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => navigateToTab('diet')}
+                  style={{
+                    background: '#181818',
+                    color: '#fff',
+                    border: '1px solid #00FF00',
+                    borderRadius: '8px',
+                    padding: '13px 18px',
+                    fontFamily: "'Montserrat', sans-serif",
+                    fontWeight: 800,
+                    fontSize: '13px',
+                    textTransform: 'uppercase',
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                  }}
+                >
+                  🥩 Gerar Minha Dieta (App)
+                </button>
+              </div>
+            </div>
+
+            {/* AVISO DE WEB APP / ATALHO TÁTICO NA TELA INICIAL */}
+            <div
+              onClick={() => setShowInstallModal(true)}
+              style={{
+                background: 'linear-gradient(135deg, rgba(255, 215, 0, 0.14), rgba(17, 17, 17, 0.9))',
+                border: '1px solid rgba(255, 215, 0, 0.45)',
+                borderRadius: '10px',
+                padding: '14px 16px',
+                marginBottom: '24px',
+                display: 'flex',
+                gap: '12px',
+                alignItems: 'center',
+                cursor: 'pointer',
+              }}
+            >
+              <span style={{ fontSize: '24px' }}>📱</span>
+              <p style={{ margin: 0, fontSize: '12px', color: '#ddd', lineHeight: 1.45, flex: 1 }}>
+                <strong style={{ color: '#FFD700' }}>DICA TÁTICA:</strong> Clique nos 3 pontinhos do seu navegador e selecione{' '}
+                <strong style={{ color: '#FFD700' }}>&ldquo;Adicionar à Tela Inicial&rdquo;</strong>. Isso criará um aplicativo no seu celular para você abrir direto na academia.{' '}
+                <span style={{ color: '#00FF00', textDecoration: 'underline', fontWeight: 700 }}>Ver passo a passo →</span>
+              </p>
+            </div>
+
+            {/* TRILHA 1 NETFLIX: ENTREGÁVEIS PRINCIPAIS (TREINO, VÍDEO-AULA & DIETA) */}
+            <div style={{ marginBottom: '26px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                <h2
+                  style={{
+                    fontFamily: "'Montserrat', sans-serif",
+                    fontSize: '16px',
+                    fontWeight: 900,
+                    color: '#fff',
+                    textTransform: 'uppercase',
+                    margin: 0,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                  }}
+                >
+                  <span style={{ color: '#00FF00' }}>▍</span> 1. Operações Principais: Treino, Vídeo-Aula & Dieta
+                </h2>
               </div>
 
-              <div style={{ background: '#141414', padding: '12px', borderRadius: '6px', border: '1px solid #222' }}>
-                <strong style={{ color: '#ff5555', display: 'block', marginBottom: '6px' }}>
-                  3. Os Inimigos Que Você Deve Eliminar
-                </strong>
-                • <strong>Cerveja e Álcool:</strong> O lúpulo é um dos fitoestrógenos mais fortes da natureza e o álcool inflama o fígado.<br />
-                • <strong>Açúcar e Farinha Branca:</strong> Picos de insulina ativam a aromatase e derrubam o SHBG.<br />
-                • <strong>Potes Plásticos no Micro-ondas:</strong> Liberam BPA (xenoestrógenos que imitam o hormônio feminino).
-              </div>
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(245px, 1fr))',
+                  gap: '14px',
+                }}
+              >
+                {/* Card 1: Ficha de Treino Seca Peitoral */}
+                <div
+                  onClick={() => navigateToTab('workout', 'shorts')}
+                  className="netflix-card"
+                  style={{
+                    background: '#111',
+                    border: '1px solid #282828',
+                    borderTop: '4px solid #00FF00',
+                    borderRadius: '10px',
+                    padding: '16px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between',
+                  }}
+                >
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                      <span
+                        style={{
+                          background: 'rgba(0, 255, 0, 0.15)',
+                          color: '#00FF00',
+                          fontSize: '10px',
+                          fontWeight: 900,
+                          padding: '3px 8px',
+                          borderRadius: '4px',
+                        }}
+                      >
+                        ENTREGÁVEL #01 • PRINCIPAL
+                      </span>
+                      <span style={{ fontSize: '20px' }}>🏋️</span>
+                    </div>
+                    <h3
+                      style={{
+                        fontFamily: "'Montserrat', sans-serif",
+                        fontSize: '16px',
+                        color: '#fff',
+                        textTransform: 'uppercase',
+                        margin: '0 0 6px 0',
+                      }}
+                    >
+                      Ficha de Treino Seca Peitoral & Ambiente Metabólico
+                    </h3>
+                    <p style={{ fontSize: '12px', color: '#aaa', lineHeight: 1.5, margin: '0 0 14px 0' }}>
+                      O Plano de Ação + Os 5 exercícios na ordem exata com GIFs biomecânicos, rastreador de séries e protocolo de Jejum + Ioimbina + 4L de Água.
+                    </p>
+                  </div>
+                  <span style={{ color: '#00FF00', fontSize: '12px', fontWeight: 800, textTransform: 'uppercase' }}>
+                    Abrir Ficha de Treino →
+                  </span>
+                </div>
 
-              <div style={{ background: '#141414', padding: '12px', borderRadius: '6px', border: '1px solid #222' }}>
-                <strong style={{ color: '#FFD700', display: 'block', marginBottom: '6px' }}>
-                  4. A Sinergia com a Ficha de Treino Seca Peitoral
-                </strong>
-                O treino de musculação pesada rompe fibras peitorais e estimula receptores androgênicos locais. Ao combinar com o déficit calórico calculado e alimentos anti-aromatase deste app, seu organismo é obrigado a queimar as reservas adiposas do peitoral, desenhando um tórax quadrado, rígido e masculino.
+                {/* Card 2: Vídeo-Aula Prática Executando a Ficha */}
+                <div
+                  onClick={() => navigateToTab('workout', 'practical')}
+                  className="netflix-card"
+                  style={{
+                    background: '#111',
+                    border: '1px solid #282828',
+                    borderTop: '4px solid #FFD700',
+                    borderRadius: '10px',
+                    padding: '16px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between',
+                  }}
+                >
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                      <span
+                        style={{
+                          background: 'rgba(255, 215, 0, 0.15)',
+                          color: '#FFD700',
+                          fontSize: '10px',
+                          fontWeight: 900,
+                          padding: '3px 8px',
+                          borderRadius: '4px',
+                        }}
+                      >
+                        VÍDEO-AULA PRÁTICA • 6:54 MIN
+                      </span>
+                      <span style={{ fontSize: '20px' }}>🎬</span>
+                    </div>
+                    <h3
+                      style={{
+                        fontFamily: "'Montserrat', sans-serif",
+                        fontSize: '16px',
+                        color: '#fff',
+                        textTransform: 'uppercase',
+                        margin: '0 0 6px 0',
+                      }}
+                    >
+                      Vídeo-Aula: Executando a Ficha na Prática
+                    </h3>
+                    <p style={{ fontSize: '12px', color: '#aaa', lineHeight: 1.5, margin: '0 0 14px 0' }}>
+                      Assista à gravação real mostrando exatamente como executar cada exercício, angulação de cotovelos, cadência de 2 segundos e contração máxima.
+                    </p>
+                  </div>
+                  <span style={{ color: '#FFD700', fontSize: '12px', fontWeight: 800, textTransform: 'uppercase' }}>
+                    ▶ Assistir Vídeo-Aula Agora →
+                  </span>
+                </div>
+
+                {/* Card 3: Gerador de Dieta Anti-Aromatase */}
+                <div
+                  onClick={() => navigateToTab('diet')}
+                  className="netflix-card"
+                  style={{
+                    background: '#111',
+                    border: '1px solid #282828',
+                    borderTop: '4px solid #00FF00',
+                    borderRadius: '10px',
+                    padding: '16px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between',
+                  }}
+                >
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                      <span
+                        style={{
+                          background: 'rgba(0, 255, 0, 0.15)',
+                          color: '#00FF00',
+                          fontSize: '10px',
+                          fontWeight: 900,
+                          padding: '3px 8px',
+                          borderRadius: '4px',
+                        }}
+                      >
+                        FERRAMENTA INTERATIVA • APP
+                      </span>
+                      <span style={{ fontSize: '20px' }}>🥩</span>
+                    </div>
+                    <h3
+                      style={{
+                        fontFamily: "'Montserrat', sans-serif",
+                        fontSize: '16px',
+                        color: '#fff',
+                        textTransform: 'uppercase',
+                        margin: '0 0 6px 0',
+                      }}
+                    >
+                      Gerador de Dieta Anti-Aromatase na Balança
+                    </h3>
+                    <p style={{ fontSize: '12px', color: '#aaa', lineHeight: 1.5, margin: '0 0 14px 0' }}>
+                      Calcula sua TMB, GET, Proteína (2.2g/kg), Gordura (0.9g/kg) e Carboidratos, gerando 3 opções completas de cardápio com gramas exatas + PDF.
+                    </p>
+                  </div>
+                  <span style={{ color: '#00FF00', fontSize: '12px', fontWeight: 800, textTransform: 'uppercase' }}>
+                    ⚡ Calcular Minha Dieta →
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* TRILHA 2 NETFLIX: BÔNUS EXCLUSIVOS & DOSSIÊS TÁTICOS */}
+            <div style={{ marginBottom: '26px' }}>
+              <h2
+                style={{
+                  fontFamily: "'Montserrat', sans-serif",
+                  fontSize: '16px',
+                  fontWeight: 900,
+                  color: '#fff',
+                  textTransform: 'uppercase',
+                  margin: '0 0 12px 0',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                }}
+              >
+                <span style={{ color: '#FFD700' }}>▍</span> 2. Bônus Táticos & Guias Especializados
+              </h2>
+
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+                  gap: '14px',
+                }}
+              >
+                {/* Card Bônus 02: Guia de Trava da Aromatase */}
+                <div
+                  onClick={() => navigateToTab('aromatase')}
+                  className="netflix-card"
+                  style={{
+                    background: 'linear-gradient(145deg, #151208, #111111)',
+                    border: '1px solid rgba(255, 215, 0, 0.35)',
+                    borderLeft: '4px solid #FFD700',
+                    borderRadius: '10px',
+                    padding: '18px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between',
+                  }}
+                >
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                      <span
+                        style={{
+                          background: '#FFD700',
+                          color: '#000',
+                          fontSize: '10px',
+                          fontWeight: 900,
+                          padding: '3px 8px',
+                          borderRadius: '4px',
+                        }}
+                      >
+                        GUIA DE TRAVA DA AROMATASE • UNIFICADO
+                      </span>
+                      <span style={{ fontSize: '20px' }}>🛡️</span>
+                    </div>
+                    <h3
+                      style={{
+                        fontFamily: "'Montserrat', sans-serif",
+                        fontSize: '16px',
+                        color: '#fff',
+                        textTransform: 'uppercase',
+                        margin: '0 0 6px 0',
+                      }}
+                    >
+                      Dossiê Tático: Guia de Trava da Aromatase
+                    </h3>
+                    <p style={{ fontSize: '12px', color: '#bbb', lineHeight: 1.5, margin: '0 0 14px 0' }}>
+                      O Ciclo da Aromatase no Peitoral + Lista Negra pesquisável dos 20 Sabotadores + Os 5 Alimentos Bloqueadores & 4 Antídotos Naturais + Plano 30 Dias + Teste de Risco em 1 Minuto.
+                    </p>
+                  </div>
+                  <span style={{ color: '#FFD700', fontSize: '12px', fontWeight: 800, textTransform: 'uppercase' }}>
+                    🛡️ Acessar Guia de Trava da Aromatase →
+                  </span>
+                </div>
+
+                {/* Card Bônus 01: O Efeito Armadura & Postura Alpha */}
+                <div
+                  onClick={() => navigateToTab('armor')}
+                  className="netflix-card"
+                  style={{
+                    background: 'linear-gradient(145deg, #0b151e, #111111)',
+                    border: '1px solid rgba(56, 189, 248, 0.35)',
+                    borderLeft: '4px solid #38bdf8',
+                    borderRadius: '10px',
+                    padding: '18px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between',
+                  }}
+                >
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                      <span
+                        style={{
+                          background: '#38bdf8',
+                          color: '#000',
+                          fontSize: '10px',
+                          fontWeight: 900,
+                          padding: '3px 8px',
+                          borderRadius: '4px',
+                        }}
+                      >
+                        BÔNUS #01 • CAMUFLAGEM IMEDIATA
+                      </span>
+                      <span style={{ fontSize: '20px' }}>⚡</span>
+                    </div>
+                    <h3
+                      style={{
+                        fontFamily: "'Montserrat', sans-serif",
+                        fontSize: '16px',
+                        color: '#fff',
+                        textTransform: 'uppercase',
+                        margin: '0 0 6px 0',
+                      }}
+                    >
+                      O Efeito Armadura & Postura Alpha
+                    </h3>
+                    <p style={{ fontSize: '12px', color: '#bbb', lineHeight: 1.5, margin: '0 0 14px 0' }}>
+                      O Hack de 3 Segundos no espelho + Scanner Biomecânico Interativo (Efeito Cone vs Efeito Cortina) + Engenharia Têxtil (200+ GSM) + Checklist de Bolso.
+                    </p>
+                  </div>
+                  <span style={{ color: '#38bdf8', fontSize: '12px', fontWeight: 800, textTransform: 'uppercase' }}>
+                    ⚡ Acessar Bônus Efeito Armadura →
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* TRILHA 3 NETFLIX: CENTRAL DE ARQUIVOS EM PDF PARA DOWNLOAD */}
+            <div>
+              <h2
+                style={{
+                  fontFamily: "'Montserrat', sans-serif",
+                  fontSize: '16px',
+                  fontWeight: 900,
+                  color: '#fff',
+                  textTransform: 'uppercase',
+                  margin: '0 0 12px 0',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                }}
+              >
+                <span style={{ color: '#38bdf8' }}>▍</span> 3. Apostilas & Materiais em PDF para Download
+              </h2>
+
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+                  gap: '12px',
+                }}
+              >
+                <a
+                  href="/downloads/Ficha_Tatica_Secagem_Peitoral.pdf"
+                  download="Ficha_Tatica_Secagem_Peitoral.pdf"
+                  className="netflix-card"
+                  style={{
+                    background: '#141414',
+                    border: '1px solid #282828',
+                    borderRadius: '10px',
+                    padding: '14px',
+                    textDecoration: 'none',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                  }}
+                >
+                  <span style={{ fontSize: '26px' }}>📄</span>
+                  <div>
+                    <strong style={{ color: '#fff', fontSize: '13px', display: 'block' }}>
+                      Ficha Tática Secagem Peitoral
+                    </strong>
+                    <span style={{ color: '#00FF00', fontSize: '11px', fontWeight: 700 }}>
+                      📥 Baixar PDF Oficial
+                    </span>
+                  </div>
+                </a>
+
+                <a
+                  href="/downloads/Calendario_Seca_Peitoral.pdf"
+                  download="Calendario_Seca_Peitoral.pdf"
+                  className="netflix-card"
+                  style={{
+                    background: '#141414',
+                    border: '1px solid #282828',
+                    borderRadius: '10px',
+                    padding: '14px',
+                    textDecoration: 'none',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                  }}
+                >
+                  <span style={{ fontSize: '26px' }}>📅</span>
+                  <div>
+                    <strong style={{ color: '#fff', fontSize: '13px', display: 'block' }}>
+                      Calendário Seca Peitoral (30 Dias)
+                    </strong>
+                    <span style={{ color: '#FFD700', fontSize: '11px', fontWeight: 700 }}>
+                      📥 Baixar PDF Oficial
+                    </span>
+                  </div>
+                </a>
+
+                <a
+                  href="/bonus-efeito-armadura.html"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="netflix-card"
+                  style={{
+                    background: '#141414',
+                    border: '1px solid #282828',
+                    borderRadius: '10px',
+                    padding: '14px',
+                    textDecoration: 'none',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                  }}
+                >
+                  <span style={{ fontSize: '26px' }}>🛡️</span>
+                  <div>
+                    <strong style={{ color: '#fff', fontSize: '13px', display: 'block' }}>
+                      Apostila O Efeito Armadura
+                    </strong>
+                    <span style={{ color: '#38bdf8', fontSize: '11px', fontWeight: 700 }}>
+                      🖨️ Abrir Versão p/ Impressão / PDF
+                    </span>
+                  </div>
+                </a>
               </div>
             </div>
           </div>
         )}
-      </div>
+
+        {/* ABA 2: TREINO & VÍDEO-AULA (ENTREGÁVEL PRINCIPAL COMPLETO) */}
+        {activeTab === 'workout' && (
+          <WorkoutOperationsTab
+            onNavigateTab={(tab) => navigateToTab(tab)}
+            initialVideoMode={initialVideoMode}
+          />
+        )}
+
+        {/* ABA 4: GUIA DE TRAVA DA AROMATASE (UNIFICADO) */}
+        {activeTab === 'aromatase' && <AromataseGuideTab />}
+
+        {/* ABA 5: BÔNUS 01 - O EFEITO ARMADURA & POSTURA ALPHA */}
+        {activeTab === 'armor' && <ArmorPostureTab />}
+
+        {/* ABA 3: GERADOR DE DIETA ANTI-AROMATASE (APP CALCULADORA + CHECKLIST DIÁRIO) */}
+        {activeTab === 'diet' && (
+          <div>
+            <div className="header" style={{ marginBottom: '20px' }}>
+              <div
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  background: 'rgba(0, 255, 0, 0.1)',
+                  border: '1px solid rgba(0, 255, 0, 0.3)',
+                  borderRadius: '20px',
+                  padding: '4px 14px',
+                  fontSize: '11px',
+                  fontWeight: 'bold',
+                  color: 'var(--primary)',
+                  marginBottom: '10px',
+                  letterSpacing: '0.5px',
+                }}
+              >
+                <span>🥩 FERRAMENTA OFICIAL • GERADOR DE DIETA NA BALANÇA</span>
+              </div>
+              <h2 style={{ margin: '0 0 6px 0', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                Calculadora & Dieta <span>Anti-Aromatase</span>
+              </h2>
+              <p style={{ maxWidth: '640px', margin: '0 auto', fontSize: '13px', color: '#ccc', lineHeight: 1.5 }}>
+                <strong>Otimização Hormonal & Secagem Peitoral:</strong> Calcule suas metas exatas e receba 3 opções completas de cardápio pesadas em gramas na balança + Checklist Diário.
+              </p>
+              <div style={{ marginTop: '10px' }}>
+                <button
+                  type="button"
+                  onClick={() => navigateToTab('aromatase')}
+                  style={{
+                    background: 'rgba(255, 215, 0, 0.12)',
+                    border: '1px solid #FFD700',
+                    color: '#FFD700',
+                    borderRadius: '6px',
+                    padding: '6px 12px',
+                    fontSize: '11px',
+                    fontWeight: 800,
+                    cursor: 'pointer',
+                  }}
+                >
+                  🛡️ Ver Guia Completo de Trava da Aromatase →
+                </button>
+              </div>
+            </div>
 
       {!showResult ? (
         <div className="card" id="form-card">
@@ -1543,6 +2127,181 @@ export default function Home() {
             </div>
           </div>
         )
+      )}
+          </div>
+        )}
+
+        {/* RODAPÉ OFICIAL */}
+        <footer
+          style={{
+            textAlign: 'center',
+            padding: '24px 16px 12px',
+            borderTop: '1px solid #191919',
+            marginTop: '20px',
+            fontSize: '11px',
+            color: '#666',
+            lineHeight: 1.6,
+          }}
+        >
+          <p style={{ margin: 0 }}>
+            Os resultados variam e dependem exclusivamente da sua execução diária e disciplina.
+          </p>
+          <p style={{ margin: '4px 0 0 0', fontWeight: 700, color: '#888' }}>
+            Copyright © 2026 — Rjonnssonfit • Quartel-General Seca Peitoral
+          </p>
+        </footer>
+      </div>
+
+      {/* BARRA DE NAVEGAÇÃO INFERIOR FIXA ESTILO APP MOBILE (PWA) */}
+      <nav
+        aria-label="Navegação Principal do Aplicativo"
+        style={{
+          position: 'fixed',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          zIndex: 120,
+          background: 'rgba(10, 10, 10, 0.96)',
+          backdropFilter: 'blur(14px)',
+          borderTop: '1px solid #242424',
+          padding: '6px 8px 10px',
+        }}
+      >
+        <div
+          style={{
+            maxWidth: '640px',
+            margin: '0 auto',
+            display: 'grid',
+            gridTemplateColumns: 'repeat(5, 1fr)',
+            gap: '4px',
+          }}
+        >
+          {[
+            { id: 'home' as const, icon: '🏠', label: 'Início', color: '#00FF00' },
+            { id: 'workout' as const, icon: '🏋️', label: 'Treino & Vídeo', color: '#00FF00' },
+            { id: 'diet' as const, icon: '🥩', label: 'Dieta (App)', color: '#00FF00' },
+            { id: 'aromatase' as const, icon: '🛡️', label: 'Aromatase', color: '#FFD700' },
+            { id: 'armor' as const, icon: '⚡', label: 'Armadura', color: '#38bdf8' },
+          ].map((nav) => {
+            const isSelected = activeTab === nav.id;
+            return (
+              <button
+                key={nav.id}
+                type="button"
+                onClick={() => navigateToTab(nav.id)}
+                style={{
+                  background: isSelected ? 'rgba(255, 255, 255, 0.06)' : 'transparent',
+                  border: 'none',
+                  borderTop: isSelected ? `2px solid ${nav.color}` : '2px solid transparent',
+                  borderRadius: '6px',
+                  padding: '6px 2px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '3px',
+                  color: isSelected ? nav.color : '#888',
+                  transition: 'all 0.15s',
+                }}
+              >
+                <span style={{ fontSize: '17px', lineHeight: 1 }}>{nav.icon}</span>
+                <span
+                  style={{
+                    fontSize: '10px',
+                    fontWeight: isSelected ? 800 : 600,
+                    letterSpacing: '0.2px',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {nav.label}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </nav>
+
+      {/* MODAL DE INSTALAÇÃO DO APP NO CELULAR (PWA) */}
+      {showInstallModal && (
+        <div
+          onClick={() => setShowInstallModal(false)}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0, 0, 0, 0.85)',
+            zIndex: 250,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '18px',
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: '#121212',
+              border: '1px solid #00FF00',
+              borderRadius: '14px',
+              padding: '22px',
+              maxWidth: '440px',
+              width: '100%',
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+              <h3
+                style={{
+                  margin: 0,
+                  fontFamily: "'Montserrat', sans-serif",
+                  fontSize: '17px',
+                  color: '#fff',
+                  textTransform: 'uppercase',
+                }}
+              >
+                📲 Instalar App no Celular
+              </h3>
+              <button
+                type="button"
+                onClick={() => setShowInstallModal(false)}
+                style={{ background: 'transparent', border: 'none', color: '#888', fontSize: '16px', cursor: 'pointer' }}
+              >
+                ✕
+              </button>
+            </div>
+
+            <p style={{ fontSize: '12px', color: '#ccc', lineHeight: 1.5, margin: '0 0 14px 0' }}>
+              Crie o atalho oficial do <strong>QG Seca Peitoral</strong> na tela inicial do seu celular para acessar sua Ficha, Vídeo-Aula e Dieta com 1 toque na academia:
+            </p>
+
+            <div style={{ background: '#181818', border: '1px solid #2a2a2a', borderRadius: '8px', padding: '12px', marginBottom: '10px' }}>
+              <strong style={{ color: '#00FF00', fontSize: '12px', display: 'block', marginBottom: '4px' }}>
+                🤖 No Android (Chrome):
+              </strong>
+              <span style={{ fontSize: '12px', color: '#bbb', lineHeight: 1.45 }}>
+                1. Toque nos <strong>3 pontinhos (⋮)</strong> no canto superior direito do navegador.<br />
+                2. Selecione <strong>&ldquo;Adicionar à tela inicial&rdquo;</strong> ou <strong>&ldquo;Instalar aplicativo&rdquo;</strong>.
+              </span>
+            </div>
+
+            <div style={{ background: '#181818', border: '1px solid #2a2a2a', borderRadius: '8px', padding: '12px', marginBottom: '16px' }}>
+              <strong style={{ color: '#FFD700', fontSize: '12px', display: 'block', marginBottom: '4px' }}>
+                🍎 No iPhone (Safari):
+              </strong>
+              <span style={{ fontSize: '12px', color: '#bbb', lineHeight: 1.45 }}>
+                1. Toque no ícone de <strong>Compartilhar (quadrado com seta p/ cima)</strong> na barra inferior.<br />
+                2. Role para baixo e toque em <strong>&ldquo;Adicionar à Tela de Início&rdquo;</strong>.
+              </span>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setShowInstallModal(false)}
+              className="btn btn-primary"
+              style={{ padding: '12px' }}
+            >
+              Entendido, Voltar ao App
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );

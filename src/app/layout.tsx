@@ -2,8 +2,9 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Protocolo Seca Peitoral | Dieta Anti-Aromatase & Otimização Hormonal Masculina',
-  description: 'Gerador inteligente de dieta anti-aromatase para homens. Otimização hormonal, redução de estrogênio e eliminação de gordura peitoral com pesagens exatas na balança.',
+  title: 'QG Seca Peitoral | Área de Operações & Entregáveis Oficiais Rjonnssonfit',
+  description: 'Central Oficial de Entregáveis Kiwify: Ficha de Treino Seca Peitoral, Vídeo-Aula Prática, Calculadora de Dieta Anti-Aromatase, Guia de Trava da Aromatase e Bônus O Efeito Armadura.',
+  manifest: '/manifest.json',
 };
 
 export default function RootLayout({
@@ -14,6 +15,9 @@ export default function RootLayout({
   return (
     <html lang="pt-BR">
       <head>
+        <meta name="theme-color" content="#050505" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
