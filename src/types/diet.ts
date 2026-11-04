@@ -7,7 +7,14 @@ export type ActivityLevel =
   | 'ativo'
   | 'muito_ativo';
 
-export type DietGoal = 'hipertrofia' | 'emagrecimento' | 'emagrecimento_agressivo' | 'recomposicao';
+export type DietGoal =
+  | 'emagrecimento_verao_agressivo' // -700 kcal (Foco verão)
+  | 'emagrecimento_moderado'        // -500 kcal
+  | 'emagrecimento_extremo'         // -900 kcal
+  | 'recomposicao'                  // 0 kcal
+  | 'hipertrofia'                   // +350 kcal
+  | 'emagrecimento'                 // retrocompatibilidade (-500 kcal)
+  | 'emagrecimento_agressivo';      // retrocompatibilidade (-750 kcal)
 
 export interface MealRequest {
   mealIndex: number;
@@ -17,7 +24,7 @@ export interface MealRequest {
 }
 
 export interface MealOptionPlan {
-  optionNumber: 1 | 2 | 3;
+  optionNumber: 1 | 2 | 3 | number;
   meals: {
     mealIndex: number;
     name: string;
@@ -28,33 +35,32 @@ export interface MealOptionPlan {
 
 export interface UserDietInput {
   age: number;
-  weight: number; // em kg
-  height: number; // em cm
+  weight: number;
+  height: number;
   gender: Gender;
   activityLevel: ActivityLevel;
   goal: DietGoal;
-  mealsCount?: number; // 3, 4 ou 5 refeições
-  proteins?: string[]; // Proteínas escolhidas pelo usuário
-  carbs?: string[]; // Carboidratos escolhidos pelo usuário
-  mealRequests?: MealRequest[]; // Alimentos especificados para cada refeição
-  optionPlans?: MealOptionPlan[]; // As 3 opções personalizadas de cardápio completo
+  mealsCount?: number;
+  proteins?: string[];
+  carbs?: string[];
+  mealRequests?: MealRequest[];
+  optionPlans?: MealOptionPlan[];
   preferences: string[];
   customNotes?: string;
 }
 
 export interface NutritionalTargets {
-  tmb: number; // Taxa Metabólica Basal
-  get: number; // Gasto Energético Total
-  targetCalories: number; // Meta calórica diária com ajuste do objetivo
-  calorieDiff: number; // +400, -500 ou 0
+  tmb: number; // Taxa Metabólica Basal (Mifflin-St Jeor)
+  get: number; // Gasto Energético Total Diário (TDEE)
+  targetCalories: number; // Meta calórica com déficit/superávit
+  calorieDiff: number; // Ex: -700
   proteinGrams: number;
   proteinCalories: number;
   carbsGrams: number;
   carbsCalories: number;
   fatsGrams: number;
   fatsCalories: number;
-  waterMl: number; // Recomendação de ingestão hídrica diária
-  // Percentuais calóricos
+  waterMl: number; // Meta diária de água
   proteinPercent: number;
   carbsPercent: number;
   fatsPercent: number;
@@ -62,18 +68,18 @@ export interface NutritionalTargets {
 
 export interface FoodItem {
   name: string;
-  portion: string; // Ex: "150g" ou "2 unidades"
+  portion: string;
   calories: number;
   protein: number;
   carbs: number;
   fats: number;
-  tip?: string; // Dica ou substituição rápida
+  tip?: string;
 }
 
 export interface Meal {
   id: string;
-  name: string; // "Café da Manhã", "Almoço", "Lanche da Tarde", "Jantar"
-  timeSuggestion: string; // "07:30", "12:30", etc.
+  name: string;
+  timeSuggestion: string;
   items: FoodItem[];
   totalCalories: number;
   totalProtein: number;
@@ -82,8 +88,8 @@ export interface Meal {
 }
 
 export interface DayOption {
-  optionNumber: 1 | 2 | 3;
-  title: string; // Ex: "Opção 1: Prática e Tradicional"
+  optionNumber: number;
+  title: string;
   tagline: string;
   meals: Meal[];
   totalCalories: number;
@@ -99,4 +105,48 @@ export interface DietPlanResponse {
   recommendations: string[];
   generatedAt: string;
   source: 'gemini' | 'deterministic_fallback';
+}
+
+// ======================== TIPOS DE TREINO ========================
+
+export type WorkoutLocation = 'academia' | 'casa';
+export type WorkoutLevel = 'iniciante' | 'intermediario' | 'avancado';
+export type WorkoutFrequency = 3 | 4 | 5 | 6;
+export type WorkoutDuration = 30 | 45 | 60;
+export type WorkoutFocus = 'queima_geral' | 'definicao_abdomen' | 'superiores' | 'inferiores_gluteos';
+
+export interface ExerciseItem {
+  id: string;
+  name: string;
+  muscle: string;
+  sets: string;
+  reps: string;
+  rest: string;
+  notes: string;
+  isHomeFriendly: boolean;
+}
+
+export interface WorkoutDay {
+  id: string;
+  dayLabel: string;
+  title: string;
+  targetMuscles: string[];
+  exercises: ExerciseItem[];
+  cardioFinisher: {
+    title: string;
+    duration: string;
+    protocol: string;
+    caloriesBurnEst: string;
+  };
+}
+
+export interface WorkoutPlan {
+  location: WorkoutLocation;
+  level: WorkoutLevel;
+  frequency: WorkoutFrequency;
+  duration: WorkoutDuration;
+  focus: WorkoutFocus;
+  hasDumbbellsOrBands?: boolean;
+  days: WorkoutDay[];
+  summerTips: string[];
 }

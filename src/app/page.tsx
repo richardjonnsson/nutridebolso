@@ -1,2310 +1,921 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { generateTacticalPdf, TacticalDietData } from '@/lib/pdfGenerator';
-import { parseAndCalculateMealItems } from '@/lib/foodCalculations';
+import React, { useState, useMemo } from 'react';
+import { calculateNutritionalTargets, GOAL_DETAILS } from '@/lib/calculations';
+import { generateSummerDietPlan, SUMMER_SUBSTITUTIONS } from '@/lib/summerDietGenerator';
+import { generateWorkoutPlan } from '@/lib/workoutGenerator';
+import { generateRJonnssonFitPdf } from '@/lib/pdfGeneratorRjonnsson';
+import {
+  ActivityLevel,
+  DietGoal,
+  Gender,
+  WorkoutDuration,
+  WorkoutFocus,
+  WorkoutFrequency,
+  WorkoutLevel,
+  WorkoutLocation,
+} from '@/types/diet';
 import confetti from 'canvas-confetti';
-import WorkoutOperationsTab from '@/components/WorkoutOperationsTab';
-import AromataseGuideTab from '@/components/AromataseGuideTab';
-import ArmorPostureTab from '@/components/ArmorPostureTab';
+import {
+  Building2,
+  Home,
+  CheckCircle2,
+  Clock,
+  ArrowRight,
+  ArrowLeft,
+  Download,
+  RotateCcw,
+  RefreshCw,
+  Flame,
+  Check,
+  Cpu,
+  Zap,
+  Activity,
+  ShieldCheck,
+  Utensils,
+  Dumbbell,
+} from 'lucide-react';
 
-export interface MealSlotConfig {
-  id: number;
-  name: string;
-  time: string;
-  icon: string;
-  defaultOptions: [string, string, string];
-  placeholders: [string, string, string];
-  quickTags: string[];
-}
+export default function RJonnssonFitPage() {
+  // Controle de Etapa Linear (1: Calculadora/Dieta, 2: Dieta Pronta, 3: Treino, 4: Sucesso/PDF)
+  const [currentStep, setCurrentStep] = useState<number>(1);
 
-export const getMealSlotsForCount = (count: number): MealSlotConfig[] => {
-  if (count === 3) {
-    return [
-      {
-        id: 0,
-        name: 'Almoço (Quebra do Jejum 16h • Foco Anti-Aromatase)',
-        time: '12:00',
-        icon: '🍗',
-        defaultOptions: [
-          'Peito de frango grelhado, brócolis no vapor, arroz branco, feijão carioca',
-          'Carne moída (patinho), cogumelos Paris frescos, batata-doce, salada de rúcula',
-          'Filé de tilápia grelhado, couve-flor no vapor, mandioca na balança, azeite extravirgem',
-        ],
-        placeholders: [
-          'Opção 1: Ex: peito de frango, brócolis, arroz, feijão',
-          'Opção 2: Ex: patinho moído, cogumelos Paris, batata-doce',
-          'Opção 3: Ex: tilápia, couve-flor, mandioca, azeite',
-        ],
-        quickTags: ['Peito de Frango', 'Patinho Moído', 'Brócolis (DIM)', 'Cogumelo Paris', 'Couve-Flor', 'Tilápia', 'Arroz Branco', 'Feijão', 'Batata-Doce', 'Rúcula e Folhas'],
-      },
-      {
-        id: 1,
-        name: 'Café / Lanche da Tarde (Controle Hormonal & Zinco)',
-        time: '16:00',
-        icon: '☕',
-        defaultOptions: [
-          'Whey Protein, sementes de abóbora, 1 banana',
-          'Ovos inteiros mexidos, aveia em flocos, chá verde com limão',
-          'Iogurte desnatado, morangos frescos, sementes de chia',
-        ],
-        placeholders: [
-          'Opção 1: Ex: Whey Protein, sementes de abóbora, banana',
-          'Opção 2: Ex: ovos mexidos, aveia, chá verde',
-          'Opção 3: Ex: iogurte com morangos e sementes',
-        ],
-        quickTags: ['Whey Protein', 'Sementes de Abóbora (Zinco)', 'Chá Verde (EGCG)', 'Morangos (Resveratrol)', 'Ovos Mexidos', 'Aveia em Flocos', '1 Banana'],
-      },
-      {
-        id: 2,
-        name: 'Jantar (Fechamento da Janela • Alta Absorção)',
-        time: '20:00',
-        icon: '🥩',
-        defaultOptions: [
-          'Patinho moído refogado, brócolis no vapor, arroz branco na balança, azeite',
-          'Filé de tilápia grelhado, repolho roxo refogado, batata inglesa cozida',
-          'Peito de frango grelhado, cogumelos refogados no azeite, mandioca na balança',
-        ],
-        placeholders: [
-          'Opção 1: Ex: patinho moído, brócolis, arroz',
-          'Opção 2: Ex: tilápia, repolho roxo, batata inglesa',
-          'Opção 3: Ex: frango, cogumelos, mandioca',
-        ],
-        quickTags: ['Patinho Moído (Zinco)', 'Brócolis (DIM)', 'Cogumelos Paris', 'Peito de Frango', 'Tilápia', 'Repolho Roxo', 'Batata Inglesa', 'Azeite Extravirgem'],
-      },
-    ];
-  }
+  // 1. Dados Pessoais & Metabólicos (Campos Livres para Digitação sem Trava)
+  const [gender, setGender] = useState<Gender>('masculino');
+  const [ageInput, setAgeInput] = useState<string>('28');
+  const [weightInput, setWeightInput] = useState<string>('82');
+  const [heightInput, setHeightInput] = useState<string>('178');
+  const [activityLevel, setActivityLevel] = useState<ActivityLevel>('moderado');
+  const [goal, setGoal] = useState<DietGoal>('emagrecimento_verao_agressivo');
 
-  if (count === 5) {
-    return [
-      {
-        id: 0,
-        name: 'Café da Manhã (Ativação Anti-Aromatase)',
-        time: '07:00',
-        icon: '🍳',
-        defaultOptions: [
-          'Ovos inteiros mexidos com cogumelos Paris, aveia em flocos, chá verde',
-          'Pão integral com ovos mexidos, morangos frescos, café preto sem açúcar',
-          'Crepioca (ovos e tapioca), sementes de abóbora, chá verde com limão',
-        ],
-        placeholders: [
-          'Opção 1: Ex: ovos mexidos, cogumelos, aveia, chá verde',
-          'Opção 2: Ex: pão integral, ovos mexidos, morangos',
-          'Opção 3: Ex: crepioca, sementes de abóbora, chá verde',
-        ],
-        quickTags: ['Ovos Inteiros', 'Cogumelo Paris', 'Aveia em Flocos', 'Sementes de Abóbora (Zinco)', 'Chá Verde (EGCG)', 'Pão Integral', 'Morangos'],
-      },
-      {
-        id: 1,
-        name: 'Lanche da Manhã (Zinco & Antioxidantes)',
-        time: '10:00',
-        icon: '🍎',
-        defaultOptions: [
-          'Morangos frescos com sementes de abóbora na balança',
-          'Ovos cozidos na balança com chá verde com limão',
-          'Iogurte natural desnatado com sementes de chia e frutas vermelhas',
-        ],
-        placeholders: [
-          'Opção 1: Ex: morangos com sementes de abóbora',
-          'Opção 2: Ex: ovos cozidos com chá verde',
-          'Opção 3: Ex: iogurte com sementes e morangos',
-        ],
-        quickTags: ['Morangos (Resveratrol)', 'Sementes de Abóbora (Zinco)', 'Ovos Cozidos', 'Chá Verde (EGCG)'],
-      },
-      {
-        id: 2,
-        name: 'Almoço Principal (Bloqueio de Estrogênio)',
-        time: '13:00',
-        icon: '🍗',
-        defaultOptions: [
-          'Peito de frango grelhado, brócolis no vapor, arroz branco, feijão carioca',
-          'Carne moída (patinho), cogumelos Paris frescos, batata-doce, salada de rúcula',
-          'Filé de tilápia grelhado, couve-flor no vapor, mandioca na balança, azeite',
-        ],
-        placeholders: [
-          'Opção 1: Ex: peito de frango, brócolis, arroz, feijão',
-          'Opção 2: Ex: patinho moído, cogumelos, batata-doce',
-          'Opção 3: Ex: tilápia, couve-flor, mandioca',
-        ],
-        quickTags: ['Peito de Frango', 'Patinho Moído', 'Brócolis (DIM)', 'Cogumelo Paris', 'Couve-Flor', 'Tilápia', 'Arroz Branco', 'Feijão'],
-      },
-      {
-        id: 3,
-        name: 'Café / Lanche da Tarde (Aporte Proteico)',
-        time: '16:30',
-        icon: '☕',
-        defaultOptions: [
-          'Whey Protein, sementes de abóbora, 1 banana',
-          'Ovos inteiros cozidos, aveia em flocos, chá verde com limão',
-          'Iogurte desnatado com aveia em flocos e morangos frescos',
-        ],
-        placeholders: [
-          'Opção 1: Ex: Whey Protein, sementes de abóbora, banana',
-          'Opção 2: Ex: ovos cozidos com aveia e chá verde',
-          'Opção 3: Ex: iogurte com aveia e morangos',
-        ],
-        quickTags: ['Whey Protein', 'Sementes de Abóbora (Zinco)', 'Chá Verde (EGCG)', 'Morangos (Resveratrol)', 'Ovos Cozidos', 'Aveia em Flocos', '1 Banana'],
-      },
-      {
-        id: 4,
-        name: 'Jantar (Recuperação Noturna & Saciedade)',
-        time: '20:00',
-        icon: '🥩',
-        defaultOptions: [
-          'Patinho moído refogado, brócolis no vapor, arroz branco na balança',
-          'Filé de tilápia grelhado, repolho roxo refogado, batata inglesa cozida',
-          'Peito de frango grelhado, mix de cogumelos refogados no azeite, mandioca cozida',
-        ],
-        placeholders: [
-          'Opção 1: Ex: patinho moído, brócolis, arroz',
-          'Opção 2: Ex: tilápia, repolho roxo, batata inglesa',
-          'Opção 3: Ex: frango, cogumelos, mandioca',
-        ],
-        quickTags: ['Patinho Moído (Zinco)', 'Brócolis (DIM)', 'Cogumelos Paris', 'Tilápia', 'Peito de Frango', 'Repolho Roxo', 'Batata Inglesa'],
-      },
-    ];
-  }
+  // Valores numéricos seguros para cálculo
+  const numWeight = useMemo(() => {
+    const clean = weightInput.replace(/[^\d.,]/g, '').replace(',', '.').trim();
+    const val = parseFloat(clean);
+    return isNaN(val) || val <= 0 ? 80 : val;
+  }, [weightInput]);
 
-  // 4 refeições padrão
-  return [
-    {
-      id: 0,
-      name: 'Café da Manhã (Ativação Metabólica Anti-Aromatase)',
-      time: '07:30',
-      icon: '🍳',
-      defaultOptions: [
-        'Ovos inteiros mexidos com cogumelos Paris, aveia em flocos, chá verde',
-        'Pão integral com ovos mexidos, morangos frescos, café puro sem açúcar',
-        'Crepioca (ovos + goma de tapioca), sementes de abóbora, chá verde com limão',
-      ],
-      placeholders: [
-        'Opção 1: Ex: ovos mexidos, cogumelos, aveia, chá verde',
-        'Opção 2: Ex: pão integral, ovos mexidos, morangos',
-        'Opção 3: Ex: crepioca, sementes de abóbora, chá verde',
-      ],
-      quickTags: ['Ovos Inteiros', 'Cogumelo Paris', 'Aveia em Flocos', 'Sementes de Abóbora (Zinco)', 'Chá Verde (EGCG)', 'Pão Integral', 'Morangos'],
-    },
-    {
-      id: 1,
-      name: 'Almoço Principal (Bloqueio de Aromatase & DIM)',
-      time: '12:30',
-      icon: '🍗',
-      defaultOptions: [
-        'Peito de frango grelhado, brócolis no vapor, arroz branco, feijão carioca',
-        'Patinho moído refogado, cogumelos Paris frescos, batata-doce, salada de rúcula',
-        'Filé de tilápia grelhado, couve-flor no vapor, mandioca na balança, azeite',
-      ],
-      placeholders: [
-        'Opção 1: Ex: peito de frango, brócolis, arroz, feijão',
-        'Opção 2: Ex: patinho moído, cogumelos Paris, batata-doce',
-        'Opção 3: Ex: tilápia grelhada, couve-flor, mandioca, azeite',
-      ],
-      quickTags: ['Peito de Frango', 'Patinho Moído', 'Brócolis (DIM)', 'Cogumelo Paris', 'Couve-Flor', 'Tilápia', 'Arroz Branco', 'Feijão', 'Batata-Doce'],
-    },
-    {
-      id: 2,
-      name: 'Café / Lanche da Tarde (Aporte Proteico & Zinco)',
-      time: '16:30',
-      icon: '☕',
-      defaultOptions: [
-        'Whey Protein, sementes de abóbora, 1 banana',
-        'Ovos inteiros cozidos, aveia em flocos, chá verde com limão',
-        'Iogurte desnatado com aveia em flocos e morangos frescos',
-      ],
-      placeholders: [
-        'Opção 1: Ex: Whey Protein, sementes de abóbora, banana',
-        'Opção 2: Ex: ovos cozidos com aveia e chá verde',
-        'Opção 3: Ex: iogurte com aveia e morangos',
-      ],
-      quickTags: ['Whey Protein', 'Sementes de Abóbora (Zinco)', 'Chá Verde (EGCG)', 'Morangos (Resveratrol)', 'Ovos Inteiros', 'Aveia em Flocos', '1 Banana'],
-    },
-    {
-      id: 3,
-      name: 'Jantar (Recuperação Noturna & Saciedade)',
-      time: '20:00',
-      icon: '🥩',
-      defaultOptions: [
-        'Patinho moído refogado, brócolis no vapor, arroz branco na balança, azeite',
-        'Filé de tilápia grelhado, repolho roxo refogado, batata inglesa cozida',
-        'Peito de frango grelhado, mix de cogumelos refogados no azeite, mandioca cozida',
-      ],
-      placeholders: [
-        'Opção 1: Ex: patinho moído, brócolis, arroz, azeite',
-        'Opção 2: Ex: tilápia, repolho roxo, batata inglesa',
-        'Opção 3: Ex: frango grelhado, cogumelos, mandioca',
-      ],
-      quickTags: ['Patinho Moído (Zinco)', 'Brócolis (DIM)', 'Cogumelos Paris', 'Tilápia', 'Peito de Frango', 'Repolho Roxo', 'Batata Inglesa', 'Azeite Extravirgem'],
-    },
-  ];
-};
+  const numHeight = useMemo(() => {
+    const clean = heightInput.replace(/[^\d.,]/g, '').replace(',', '.').trim();
+    let val = parseFloat(clean);
+    if (isNaN(val) || val <= 0) return 175;
+    // Se o usuário digitou em metros (ex: 1.78 ou 1,78), converte automaticamente para cm (178)
+    if (val > 0 && val < 3) val = Math.round(val * 100);
+    return val;
+  }, [heightInput]);
 
-export default function Home() {
-  const [activeTab, setActiveTab] = useState<'home' | 'workout' | 'diet' | 'aromatase' | 'armor'>('home');
-  const [initialVideoMode, setInitialVideoMode] = useState<'shorts' | 'practical'>('practical');
-  const [showInstallModal, setShowInstallModal] = useState(false);
+  const numAge = useMemo(() => {
+    const clean = ageInput.replace(/[^\d]/g, '').trim();
+    const val = parseInt(clean, 10);
+    return isNaN(val) || val <= 0 ? 25 : val;
+  }, [ageInput]);
 
-  const [showResult, setShowResult] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-
-  // 0. Autenticação Kiwify / Acesso de Aluno
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
-  const [loginEmail, setLoginEmail] = useState('');
-  const [activeUser, setActiveUser] = useState<{ email: string; name: string; role?: string } | null>(null);
-  const [authError, setAuthError] = useState<string | null>(null);
-  const [authLoading, setAuthLoading] = useState(false);
-
-  useEffect(() => {
-    const savedEmail = localStorage.getItem('qg_user_email');
-    if (savedEmail) {
-      verifyEmailAccess(savedEmail, true);
-    } else {
-      setIsAuthenticated(false);
-    }
-  }, []);
-
-  const verifyEmailAccess = async (emailToVerify: string, isSilent = false) => {
-    const cleanEmail = emailToVerify.trim().toLowerCase();
-    if (!cleanEmail) return;
-
-    if (!isSilent) setAuthLoading(true);
-    setAuthError(null);
-
-    try {
-      const res = await fetch('/api/auth/verify-access', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: cleanEmail }),
-      });
-
-      const data = await res.json();
-
-      if (data.authorized) {
-        localStorage.setItem('qg_user_email', cleanEmail);
-        setActiveUser({
-          email: cleanEmail,
-          name: data.name || 'Aluno Oficial',
-          role: data.role,
-        });
-        setIsAuthenticated(true);
-      } else {
-        localStorage.removeItem('qg_user_email');
-        setIsAuthenticated(false);
-        setAuthError(data.message || 'Acesso não encontrado para este e-mail.');
-      }
-    } catch {
-      if (!isSilent) setAuthError('Erro ao conectar ao servidor de autenticação. Tente novamente.');
-      setIsAuthenticated(false);
-    } finally {
-      if (!isSilent) setAuthLoading(false);
-    }
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem('qg_user_email');
-    setIsAuthenticated(false);
-    setActiveUser(null);
-    setLoginEmail('');
-    setAuthError(null);
-  };
-
-  // 1. Inputs do Usuário (Requisitos de Interface)
-  const [age, setAge] = useState<number | ''>(28);
-  const [weight, setWeight] = useState<number | ''>(78);
-  const [height, setHeight] = useState<number | ''>(178);
-  const [gender, setGender] = useState<'masculino' | 'feminino'>('masculino');
-  const [activity, setActivity] = useState<number>(1.55); // 1.2 a 1.9
-  const [goal, setGoal] = useState<'hipertrofia' | 'emagrecimento' | 'emagrecimento_agressivo' | 'recomposicao'>('emagrecimento');
+  // 2. Opções da Dieta (Garante 3 opções completas)
   const [mealsCount, setMealsCount] = useState<number>(4);
-  const [showAromataseGuide, setShowAromataseGuide] = useState<boolean>(true);
+  const [dietOptionIndex, setDietOptionIndex] = useState<number>(0);
+  const [showSubstitutions, setShowSubstitutions] = useState<boolean>(false);
+  const [subGroup, setSubGroup] = useState<'Proteínas' | 'Carboidratos' | 'Gorduras Boas'>('Proteínas');
 
-  // Checklist Diário Operacional (Água & Refeições)
-  const todayKey = new Date().toISOString().slice(0, 10);
-  const [waterCups, setWaterCups] = useState<number>(0);
-  const [checkedMeals, setCheckedMeals] = useState<Record<string, boolean>>({});
-  const [workoutChecked, setWorkoutChecked] = useState<boolean>(false);
-  const [greenTeaChecked, setGreenTeaChecked] = useState<boolean>(false);
+  // 3. Opções do Treino
+  const [workoutLocation, setWorkoutLocation] = useState<WorkoutLocation>('academia');
+  const [workoutLevel, setWorkoutLevel] = useState<WorkoutLevel>('intermediario');
+  const [workoutFrequency, setWorkoutFrequency] = useState<WorkoutFrequency>(4);
+  const [workoutDuration, setWorkoutDuration] = useState<WorkoutDuration>(45);
+  const [workoutFocus, setWorkoutFocus] = useState<WorkoutFocus>('queima_geral');
+  const [selectedDayIndex, setSelectedDayIndex] = useState<number>(0);
 
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const savedWater = localStorage.getItem(`qg_water_${todayKey}`);
-      if (savedWater) setWaterCups(Number(savedWater));
+  // 4. Checklist Diário
+  const [habits, setHabits] = useState([
+    { id: 1, label: 'Bater a meta diária de água calculada (35-40ml/kg)', done: false },
+    { id: 2, label: 'Pesar todas as refeições na balança de cozinha', done: false },
+    { id: 3, label: 'Atingir a meta de proteína para proteger a massa magra', done: false },
+    { id: 4, label: 'Concluir o treino de força programado para o dia', done: false },
+    { id: 5, label: 'Executar o finalizador de cárdio / caminhar 8.000 passos', done: false },
+  ]);
 
-      const savedMeals = localStorage.getItem(`qg_meals_${todayKey}`);
-      if (savedMeals) {
-        try {
-          setCheckedMeals(JSON.parse(savedMeals));
-        } catch {}
-      }
-
-      const savedWorkout = localStorage.getItem(`qg_workout_${todayKey}`);
-      if (savedWorkout) setWorkoutChecked(savedWorkout === 'true');
-
-      const savedTea = localStorage.getItem(`qg_tea_${todayKey}`);
-      if (savedTea) setGreenTeaChecked(savedTea === 'true');
-    }
-  }, [todayKey]);
-
-  const toggleWaterCup = (index: number) => {
-    const newCups = waterCups === index + 1 ? index : index + 1;
-    setWaterCups(newCups);
-    localStorage.setItem(`qg_water_${todayKey}`, String(newCups));
-  };
-
-  const toggleMealCheck = (mealKey: string) => {
-    const updated = { ...checkedMeals, [mealKey]: !checkedMeals[mealKey] };
-    setCheckedMeals(updated);
-    localStorage.setItem(`qg_meals_${todayKey}`, JSON.stringify(updated));
-  };
-
-  const toggleWorkoutCheck = () => {
-    const val = !workoutChecked;
-    setWorkoutChecked(val);
-    localStorage.setItem(`qg_workout_${todayKey}`, String(val));
-  };
-
-  const toggleGreenTeaCheck = () => {
-    const val = !greenTeaChecked;
-    setGreenTeaChecked(val);
-    localStorage.setItem(`qg_tea_${todayKey}`, String(val));
-  };
-
-  // 2. Resultados Calculados
-  const [calcData, setCalcData] = useState<{
-    tmb: number;
-    get: number;
-    kcal: number;
-    prot: number;
-    carb: number;
-    fat: number;
-    waterL: number;
-    mealsCount: number;
-    goalLabel: string;
-    activityLabel: string;
-    options: {
-      title: string;
-      color: string;
-      rgbColor: [number, number, number];
-      mealsList: { name: string; time: string; desc: string }[];
-    }[];
-  } | null>(null);
-
-  // 3. Lógica Estrita de Cálculo Solicitada:
-  // 1. Calcule as Calorias Totais (GET) conforme o objetivo (Hipertrofia, Emagrecimento, etc).
-  // 2. Calcule a Proteína Diária: 2.2g por kg de peso corporal. (Multiplique por 4 para achar as calorias da proteína).
-  // 3. Calcule a Gordura Diária: 0.9g por kg de peso corporal. (Multiplique por 9 para achar as calorias da gordura).
-  // 4. Calcule o Carboidrato Diário: Subtraia as calorias da proteína e da gordura do GET. O que sobrar, divida por 4 para achar as gramas de carbo.
-  const generateDiet = async () => {
-    if (!age || !weight || !height) {
-      alert('Por favor, informe Idade, Peso e Altura para calcular!');
-      return;
-    }
-
-    setIsLoading(true);
-
-    const w = Number(weight);
-    const h = Number(height);
-    const a = Number(age);
-
-    // Passo 1: Mifflin-St Jeor TMB e Calorias Totais (GET ajustado pelo objetivo)
-    const base = 10 * w + 6.25 * h - 5 * a;
-    const tmb = Math.round(gender === 'masculino' ? base + 5 : base - 161);
-    const get = Math.round(tmb * activity);
-
-    let targetKcal = get;
-    let goalLabel = 'Recomposição Corporal (Trocar Gordura por Músculo)';
-
-    if (goal === 'hipertrofia') {
-      targetKcal = get + 400;
-      goalLabel = 'Hipertrofia & Volume (+400 kcal • Massa Muscular)';
-    } else if (goal === 'emagrecimento') {
-      targetKcal = get - 500;
-      goalLabel = 'Emagrecimento Moderado (-500 kcal • Foco Anti-Aromatase)';
-    } else if (goal === 'emagrecimento_agressivo') {
-      targetKcal = get - 750;
-      goalLabel = 'Emagrecimento Agressivo (-750 kcal • Máxima Queima)';
-    }
-
-    // Piso de segurança
-    const minFloor = gender === 'masculino' ? 1400 : 1200;
-    if (targetKcal < minFloor) targetKcal = minFloor;
-
-    // Passo 2: Proteína Diária = 2.2g por kg de peso corporal
-    const protGrams = Math.round(w * 2.2);
-    const protCalories = protGrams * 4;
-
-    // Passo 3: Gordura Diária = 0.9g por kg de peso corporal
-    const fatGrams = Math.round(w * 0.9);
-    const fatCalories = fatGrams * 9;
-
-    // Passo 4: Carboidrato Diário = Subtraia proteína e gordura do GET. O que sobrar, divida por 4
-    const carbCalories = Math.max(0, targetKcal - protCalories - fatCalories);
-    const carbGrams = Math.round(carbCalories / 4);
-
-    // Ingestão hídrica: 35ml por kg
-    const waterL = Number(((w * 35) / 1000).toFixed(1));
-
-    // Porcionamento das refeições conforme a quantidade escolhida (3, 4 ou 5)
-    const pMeal = protGrams / mealsCount;
-    const cMeal = carbGrams / mealsCount;
-
-    // Configurações e as 3 opções de cada refeição geradas estritamente com base na calculadora
-    const currentSlots = getMealSlotsForCount(mealsCount);
-    const optionPlans = [0, 1, 2].map((optIdx) => ({
-      optionNumber: (optIdx + 1) as 1 | 2 | 3,
-      meals: currentSlots.map((slot) => ({
-        mealIndex: slot.id + 1,
-        name: slot.name,
-        timeSuggestion: slot.time,
-        userFoods: slot.defaultOptions[optIdx] ?? '',
-      })),
-    }));
-
-    // GERAÇÃO MATEMÁTICA 100% FIEL ÀS METAS CALCULADAS
-    // Calcula as gramaturas exatas na balança para cada refeição de cada opção
-    const optColors = ['var(--primary)', '#FFD700', '#ff3333'];
-    const optRgb: [number, number, number][] = [
-      [0, 255, 0],
-      [255, 215, 0],
-      [255, 51, 51],
-    ];
-    const optTitles = [
-      'Opção 1: Seu Cardápio Principal (Crucíferos & DIM)',
-      'Opção 2: Sua Variação Estratégica (Inibidores de Aromatase)',
-      'Opção 3: Sua Rotação Prática (Zinco & Alta Proteína)',
-    ];
-
-    const generatedOptions = [0, 1, 2].map((optIdx) => {
-      const mealsList = currentSlots.map((slot) => {
-        const mealFoods = slot.defaultOptions[optIdx] ?? '';
-        const items = parseAndCalculateMealItems(mealFoods, pMeal, cMeal, fatGrams / mealsCount, slot.id + optIdx);
-        return {
-          name: slot.name,
-          time: slot.time,
-          desc: items.map((it) => `<strong>${it.name}:</strong> ${it.portion}`).join('<br>'),
-        };
-      });
-
-      return {
-        title: optTitles[optIdx],
-        color: optColors[optIdx],
-        rgbColor: optRgb[optIdx],
-        mealsList,
-      };
+  // Cálculos reativos
+  const targets = useMemo(() => {
+    return calculateNutritionalTargets({
+      age: numAge,
+      weight: numWeight,
+      height: numHeight,
+      gender,
+      activityLevel,
+      goal,
     });
+  }, [numAge, numWeight, numHeight, gender, activityLevel, goal]);
 
-    // Enviar dados em background para registro e telemetria (sem bloquear nem sobrepor)
-    const activityMap: Record<number, string> = {
-      1.2: 'sedentario',
-      1.375: 'leve',
-      1.55: 'moderado',
-      1.725: 'ativo',
-      1.9: 'muito_ativo',
-    };
+  // Sempre gera 3 opções completas de cardápios
+  const dietOptions = useMemo(() => {
+    return generateSummerDietPlan(targets, mealsCount);
+  }, [targets, mealsCount]);
 
-    fetch('/api/generate-diet', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        age: a,
-        weight: w,
-        height: h,
-        gender,
-        activityLevel: activityMap[activity] || 'moderado',
-        goal,
-        mealsCount,
-        optionPlans,
-        preferences: optionPlans[0].meals.map((m) => `${m.name}: ${m.userFoods}`),
-        customNotes: optionPlans
-          .map((o) => `Opção ${o.optionNumber}: ` + o.meals.map((m) => `${m.name} [${m.userFoods}]`).join(', '))
-          .join(' | '),
-      }),
-    }).catch(() => {});
-
-    const activityLabelMap: Record<number, string> = {
-      1.2: 'Sedentário (1.2)',
-      1.375: 'Leve (1.375)',
-      1.55: 'Moderado (1.55)',
-      1.725: 'Ativo (1.725)',
-      1.9: 'Muito Ativo (1.9)',
-    };
-
-    setCalcData({
-      tmb,
-      get,
-      kcal: targetKcal,
-      prot: protGrams,
-      carb: carbGrams,
-      fat: fatGrams,
-      waterL,
-      mealsCount,
-      goalLabel,
-      activityLabel: activityLabelMap[activity] || 'Moderado (1.55)',
-      options: generatedOptions,
+  const workoutPlan = useMemo(() => {
+    return generateWorkoutPlan({
+      location: workoutLocation,
+      level: workoutLevel,
+      frequency: workoutFrequency,
+      duration: workoutDuration,
+      focus: workoutFocus,
     });
+  }, [workoutLocation, workoutLevel, workoutFrequency, workoutDuration, workoutFocus]);
 
-    setIsLoading(false);
-    setShowResult(true);
+  const activeDiet = dietOptions[dietOptionIndex] || dietOptions[0];
+  const activeWorkoutDay = workoutPlan.days[selectedDayIndex] || workoutPlan.days[0];
 
+  // Disparo do download do PDF oficial com todas as 3 opções de cardápios
+  const triggerPdfDownload = () => {
+    const goalTitle = GOAL_DETAILS[goal]?.label || 'Déficit Agressivo de Verão (-700 kcal)';
+    generateRJonnssonFitPdf({
+      userName: 'Atleta RJonnssonFit',
+      age: numAge,
+      weight: numWeight,
+      height: numHeight,
+      gender,
+      activityLevel: activityLevel.toUpperCase(),
+      goalTitle,
+      targets,
+      dietOptions, // Envia todas as 3 opções de cardápio para impressão!
+      workoutPlan,
+    });
+  };
+
+  // Finalizar e gerar o PDF
+  const handleFinish = () => {
+    triggerPdfDownload();
+    setCurrentStep(4);
     confetti({
-      particleCount: 50,
-      spread: 60,
+      particleCount: 110,
+      spread: 75,
       origin: { y: 0.6 },
+      colors: ['#00f2fe', '#00ff9d', '#ffffff', '#8b5cf6'],
     });
-
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleDownloadPdf = () => {
-    if (!calcData) return;
-
-    const currentSlots = getMealSlotsForCount(calcData.mealsCount);
-    const pdfData: TacticalDietData = {
-      tmb: calcData.tmb,
-      get: calcData.get,
-      kcal: calcData.kcal,
-      prot: calcData.prot,
-      carb: calcData.carb,
-      fat: calcData.fat,
-      waterL: calcData.waterL,
-      goal: calcData.goalLabel,
-      gender: gender === 'masculino' ? 'Homem' : 'Mulher',
-      age: Number(age),
-      weight: Number(weight),
-      height: Number(height),
-      activityLevel: calcData.activityLabel,
-      mealsCount: calcData.mealsCount,
-      fastingProtocol: calcData.mealsCount === 3,
-      preferences: currentSlots.map((s) => {
-        const o1 = s.defaultOptions[0] ?? '';
-        const o2 = s.defaultOptions[1] ?? '';
-        const o3 = s.defaultOptions[2] ?? '';
-        return `${s.name}: [Op 1: ${o1}] | [Op 2: ${o2}] | [Op 3: ${o3}]`;
-      }),
-      options: calcData.options.map((m) => ({
-        title: m.title,
-        color: m.rgbColor,
-        meals: m.mealsList.map((item) => ({
-          name: item.name,
-          time: item.time,
-          desc: item.desc,
-        })),
-      })),
-    };
-
-    generateTacticalPdf(pdfData);
+  const toggleHabit = (id: number) => {
+    setHabits((prev) => prev.map((h) => (h.id === id ? { ...h, done: !h.done } : h)));
   };
 
-  // 1. Tela de Carregamento inicial da autenticação
-  if (isAuthenticated === null) {
-    return (
-      <div className="container" style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div className="card" style={{ textAlign: 'center', padding: '30px', maxWidth: '400px', width: '100%' }}>
-          <p style={{ color: 'var(--primary)', fontFamily: "'Montserrat', sans-serif", fontSize: '13px', margin: 0, letterSpacing: '1px' }}>
-            VERIFICANDO LICENÇA...
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  // 2. Tela de Bloqueio por E-mail (Apenas compradores da Kiwify entram)
-  if (!isAuthenticated) {
-    return (
-      <div className="container">
-        <div className="header">
-          <h2>
-            Acesso <span>Restrito</span>
-          </h2>
-          <p>Área exclusiva para alunos e membros cadastrados.</p>
-        </div>
-
-        <div className="card" id="form-card">
-          <div style={{ textAlign: 'center', marginBottom: '22px' }}>
-            <div
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                width: '56px',
-                height: '56px',
-                borderRadius: '50%',
-                background: '#161616',
-                border: '1px solid #333',
-                fontSize: '24px',
-                marginBottom: '12px',
-              }}
-            >
-              🔒
-            </div>
-            <h3 style={{ margin: 0, fontFamily: "'Montserrat', sans-serif", fontSize: '18px', color: '#fff', textTransform: 'uppercase' }}>
-              Identificação do Comprador
-            </h3>
-            <p style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '6px', lineHeight: 1.4 }}>
-              Digite o e-mail que você utilizou no checkout da sua compra na Kiwify para liberar sua licença.
-            </p>
-          </div>
-
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              verifyEmailAccess(loginEmail);
-            }}
-          >
-            <div className="form-group">
-              <label>Seu E-mail da Compra (Kiwify)</label>
-              <input
-                type="email"
-                required
-                value={loginEmail}
-                onChange={(e) => {
-                  setLoginEmail(e.target.value);
-                  setAuthError(null);
-                }}
-                className="form-control"
-                placeholder="Ex: seunome@email.com"
-                autoFocus
-              />
-            </div>
-
-            {authError && (
-              <div
-                style={{
-                  background: 'rgba(255, 51, 51, 0.1)',
-                  border: '1px solid #ff3333',
-                  borderRadius: '6px',
-                  padding: '10px 12px',
-                  color: '#ff6666',
-                  fontSize: '12px',
-                  marginBottom: '15px',
-                  lineHeight: 1.4,
-                }}
-              >
-                ⚠️ {authError}
-              </div>
-            )}
-
-            <button
-              type="submit"
-              className="btn btn-primary"
-              disabled={authLoading || !loginEmail}
-              style={{ width: '100%' }}
-            >
-              {authLoading ? 'VALIDANDO COMPRA NA KIWIFY...' : '🔓 LIBERAR MEU ACESSO'}
-            </button>
-          </form>
-
-          <div
-            style={{
-              marginTop: '25px',
-              paddingTop: '20px',
-              borderTop: '1px solid #222',
-              textAlign: 'center',
-              fontSize: '12px',
-              color: 'var(--muted)',
-            }}
-          >
-            <span>Ainda não possui sua licença oficial?</span>
-            <br />
-            <span style={{ color: 'var(--primary)', fontWeight: 'bold', display: 'inline-block', marginTop: '6px' }}>
-              Adquira na Kiwify para liberação imediata
-            </span>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  const navigateToTab = (tab: 'home' | 'workout' | 'diet' | 'aromatase' | 'armor', videoMode?: 'shorts' | 'practical') => {
-    if (videoMode) setInitialVideoMode(videoMode);
-    setActiveTab(tab);
-    if (typeof window !== 'undefined') {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-  };
-
-  // 3. Aplicação Liberada para Aluno Autenticado
   return (
-    <div style={{ width: '100%', maxWidth: '100vw', overflowX: 'hidden' }}>
-      {/* HEADER TÁTICO FIXO ESTILO APP MOBILE + NETFLIX DARK */}
-      <header
-        style={{
-          background: 'rgba(12, 12, 12, 0.96)',
-          backdropFilter: 'blur(12px)',
-          borderBottom: '1px solid #00FF00',
-          position: 'sticky',
-          top: 0,
-          zIndex: 100,
-          padding: '10px 14px',
-          width: '100%',
-        }}
-      >
-        <div
-          style={{
-            maxWidth: '540px',
-            margin: '0 auto',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            gap: '8px',
-          }}
-        >
-          <div
-            onClick={() => navigateToTab('home')}
-            style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px' }}
-          >
-            <div
-              style={{
-                width: '34px',
-                height: '34px',
-                borderRadius: '8px',
-                background: 'rgba(0, 255, 0, 0.14)',
-                border: '1px solid #00FF00',
-                display: 'grid',
-                placeItems: 'center',
-                fontSize: '18px',
-              }}
-            >
-              🦅
-            </div>
-            <div>
-              <div
-                style={{
-                  fontFamily: "'Montserrat', sans-serif",
-                  fontWeight: 900,
-                  fontSize: '15px',
-                  color: '#fff',
-                  textTransform: 'uppercase',
-                  lineHeight: 1.1,
-                }}
-              >
-                QG <span style={{ color: '#00FF00' }}>Seca Peitoral</span>
-              </div>
-              <div style={{ fontSize: '10px', color: '#999', marginTop: '2px' }}>
-                <span style={{ color: '#00FF00', fontWeight: 700 }}>● ATIVO:</span>{' '}
-                {activeUser?.name || activeUser?.email}
-              </div>
+    <div className="min-h-screen bg-[#06080e] text-[#d1d5db] flex flex-col">
+      {/* NAVBAR TECNOLÓGICA */}
+      <nav className="tactical-navbar">
+        <a href="#" className="tactical-logo">
+          <Dumbbell className="w-5 h-5 text-[#00f2fe]" />
+          <span>Rjonnsson<strong className="text-white">Fit</strong></span>
+        </a>
+
+        {/* Indicador de Etapa Simples & Limpo */}
+        <div className="text-xs font-bold uppercase tracking-wider flex items-center">
+          <span className="text-[#00f2fe] flex items-center gap-2 font-mono bg-[#00f2fe]/10 border border-[#00f2fe]/25 px-3 py-1.5 rounded-full shadow-sm shadow-[#00f2fe]/10">
+            <span className="w-2 h-2 rounded-full bg-[#00ff9d] animate-pulse" />
+            Etapa {currentStep} de 4
+          </span>
+        </div>
+      </nav>
+
+      {/* CONTAINER PRINCIPAL CENTRALIZADO (900px) */}
+      <main className="tactical-container flex-1">
+        {/* STEPPER TECNOLÓGICO HIGH-TECH DE 4 ETAPAS */}
+        <div className="tech-stepper">
+          <div className={`step-node ${currentStep >= 1 ? 'active' : ''} ${currentStep === 1 ? 'current' : ''}`}>
+            <div className="node-badge">01</div>
+            <div className="node-info">
+              <span className="node-title">METABOLISMO</span>
+              <span className="node-sub">TMB & Gasto</span>
             </div>
           </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <button
-              type="button"
-              onClick={() => setShowInstallModal(true)}
-              style={{
-                background: 'rgba(0, 255, 0, 0.15)',
-                color: '#00FF00',
-                fontSize: '10px',
-                fontWeight: 900,
-                padding: '6px 10px',
-                borderRadius: '6px',
-                border: '1px solid #00FF00',
-                textTransform: 'uppercase',
-                cursor: 'pointer',
-                animation: 'pulse-btn 2s infinite',
-                fontFamily: "'Montserrat', sans-serif",
-              }}
-            >
-              📲 Instalar App
-            </button>
-
-            <button
-              type="button"
-              onClick={handleLogout}
-              style={{
-                background: '#1a1a1a',
-                border: '1px solid #333',
-                color: '#aaa',
-                fontSize: '11px',
-                padding: '6px 10px',
-                borderRadius: '6px',
-                cursor: 'pointer',
-              }}
-            >
-              Sair
-            </button>
+          <div className={`step-connector ${currentStep >= 2 ? 'active' : ''}`} />
+          <div className={`step-node ${currentStep >= 2 ? 'active' : ''} ${currentStep === 2 ? 'current' : ''}`}>
+            <div className="node-badge">02</div>
+            <div className="node-info">
+              <span className="node-title">3 CARDÁPIOS</span>
+              <span className="node-sub">Variações Verão</span>
+            </div>
+          </div>
+          <div className={`step-connector ${currentStep >= 3 ? 'active' : ''}`} />
+          <div className={`step-node ${currentStep >= 3 ? 'active' : ''} ${currentStep === 3 ? 'current' : ''}`}>
+            <div className="node-badge">03</div>
+            <div className="node-info">
+              <span className="node-title">TREINO</span>
+              <span className="node-sub">Academia / Casa</span>
+            </div>
+          </div>
+          <div className={`step-connector ${currentStep >= 4 ? 'active' : ''}`} />
+          <div className={`step-node ${currentStep >= 4 ? 'active' : ''} ${currentStep === 4 ? 'current' : ''}`}>
+            <div className="node-badge">04</div>
+            <div className="node-info">
+              <span className="node-title">PDF OFICIAL</span>
+              <span className="node-sub">Download 100%</span>
+            </div>
           </div>
         </div>
-      </header>
 
-      <div className="container">
-        {/* ABA 1: INÍCIO (VITRINE NETFLIX DARK PREMIUM) */}
-        {activeTab === 'home' && (
-          <div style={{ paddingBottom: '20px' }}>
-            {/* HERO BANNER ESTILO NETFLIX */}
-            <div
-              style={{
-                background:
-                  'radial-gradient(circle at 85% 15%, rgba(0, 255, 0, 0.22), rgba(255, 215, 0, 0.06) 45%, #0b0b0b 85%)',
-                border: '1px solid rgba(0, 255, 0, 0.4)',
-                borderRadius: '14px',
-                padding: '24px 20px',
-                marginBottom: '18px',
-                position: 'relative',
-                overflow: 'hidden',
-                boxShadow: '0 12px 35px rgba(0, 0, 0, 0.7)',
-              }}
-            >
-              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '10px' }}>
-                <span
-                  style={{
-                    background: '#00FF00',
-                    color: '#000',
-                    fontSize: '10px',
-                    fontWeight: 900,
-                    padding: '3px 9px',
-                    borderRadius: '4px',
-                    textTransform: 'uppercase',
-                    fontFamily: "'Montserrat', sans-serif",
-                  }}
-                >
-                  ★ OFICIAL KIWIFY • ACESSO TOTAL LIBERADO
-                </span>
-                <span
-                  style={{
-                    background: 'rgba(255, 215, 0, 0.15)',
-                    border: '1px solid #FFD700',
-                    color: '#FFD700',
-                    fontSize: '10px',
-                    fontWeight: 800,
-                    padding: '3px 9px',
-                    borderRadius: '4px',
-                  }}
-                >
-                  5 ENTREGÁVEIS + VÍDEO-AULA PRÁTICA
-                </span>
-              </div>
-
-              <h1
-                style={{
-                  fontFamily: "'Montserrat', sans-serif",
-                  fontSize: '26px',
-                  fontWeight: 900,
-                  color: '#fff',
-                  textTransform: 'uppercase',
-                  lineHeight: 1.15,
-                  margin: '0 0 10px 0',
-                }}
-              >
-                Operação <span style={{ color: '#00FF00' }}>Seca Peitoral</span>
-              </h1>
-              <p style={{ fontSize: '13px', color: '#ccc', lineHeight: 1.55, maxWidth: '580px', margin: '0 0 18px 0' }}>
-                Seu Quartel-General completo para eliminar a lipomastia: assista à <strong>Vídeo-Aula Prática</strong> fazendo a ficha, siga os <strong>5 exercícios biomecânicos</strong>, gere seus <strong>3 cardápios anti-aromatase na balança</strong> e aplique o <strong>Guia de Trava da Aromatase</strong> e o <strong>Efeito Armadura</strong>.
-              </p>
-
-              <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-                <button
-                  type="button"
-                  onClick={() => navigateToTab('workout', 'practical')}
-                  style={{
-                    background: '#00FF00',
-                    color: '#000',
-                    border: 'none',
-                    borderRadius: '8px',
-                    padding: '13px 18px',
-                    fontFamily: "'Montserrat', sans-serif",
-                    fontWeight: 900,
-                    fontSize: '13px',
-                    textTransform: 'uppercase',
-                    cursor: 'pointer',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    boxShadow: '0 0 18px rgba(0, 255, 0, 0.35)',
-                  }}
-                >
-                  ▶ Assistir Vídeo-Aula da Ficha
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => navigateToTab('diet')}
-                  style={{
-                    background: '#181818',
-                    color: '#fff',
-                    border: '1px solid #00FF00',
-                    borderRadius: '8px',
-                    padding: '13px 18px',
-                    fontFamily: "'Montserrat', sans-serif",
-                    fontWeight: 800,
-                    fontSize: '13px',
-                    textTransform: 'uppercase',
-                    cursor: 'pointer',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                  }}
-                >
-                  🥩 Gerar Minha Dieta (App)
-                </button>
-              </div>
-            </div>
-
-            {/* AVISO DE WEB APP / ATALHO TÁTICO NA TELA INICIAL */}
-            <div
-              onClick={() => setShowInstallModal(true)}
-              style={{
-                background: 'linear-gradient(135deg, rgba(255, 215, 0, 0.14), rgba(17, 17, 17, 0.9))',
-                border: '1px solid rgba(255, 215, 0, 0.45)',
-                borderRadius: '10px',
-                padding: '14px 16px',
-                marginBottom: '24px',
-                display: 'flex',
-                gap: '12px',
-                alignItems: 'center',
-                cursor: 'pointer',
-              }}
-            >
-              <span style={{ fontSize: '24px' }}>📱</span>
-              <p style={{ margin: 0, fontSize: '12px', color: '#ddd', lineHeight: 1.45, flex: 1 }}>
-                <strong style={{ color: '#FFD700' }}>DICA TÁTICA:</strong> Clique nos 3 pontinhos do seu navegador e selecione{' '}
-                <strong style={{ color: '#FFD700' }}>&ldquo;Adicionar à Tela Inicial&rdquo;</strong>. Isso criará um aplicativo no seu celular para você abrir direto na academia.{' '}
-                <span style={{ color: '#00FF00', textDecoration: 'underline', fontWeight: 700 }}>Ver passo a passo →</span>
-              </p>
-            </div>
-
-            {/* TRILHA 1 NETFLIX: ENTREGÁVEIS PRINCIPAIS (TREINO, VÍDEO-AULA & DIETA) */}
-            <div style={{ marginBottom: '26px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                <h2
-                  style={{
-                    fontFamily: "'Montserrat', sans-serif",
-                    fontSize: '16px',
-                    fontWeight: 900,
-                    color: '#fff',
-                    textTransform: 'uppercase',
-                    margin: 0,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                  }}
-                >
-                  <span style={{ color: '#00FF00' }}>▍</span> 1. Operações Principais: Treino, Vídeo-Aula & Dieta
-                </h2>
-              </div>
-
-              <div
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(245px, 1fr))',
-                  gap: '14px',
-                }}
-              >
-                {/* Card 1: Ficha de Treino Seca Peitoral */}
-                <div
-                  onClick={() => navigateToTab('workout', 'shorts')}
-                  className="netflix-card"
-                  style={{
-                    background: '#111',
-                    border: '1px solid #282828',
-                    borderTop: '4px solid #00FF00',
-                    borderRadius: '10px',
-                    padding: '16px',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'space-between',
-                  }}
-                >
-                  <div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                      <span
-                        style={{
-                          background: 'rgba(0, 255, 0, 0.15)',
-                          color: '#00FF00',
-                          fontSize: '10px',
-                          fontWeight: 900,
-                          padding: '3px 8px',
-                          borderRadius: '4px',
-                        }}
-                      >
-                        ENTREGÁVEL #01 • PRINCIPAL
-                      </span>
-                      <span style={{ fontSize: '20px' }}>🏋️</span>
-                    </div>
-                    <h3
-                      style={{
-                        fontFamily: "'Montserrat', sans-serif",
-                        fontSize: '16px',
-                        color: '#fff',
-                        textTransform: 'uppercase',
-                        margin: '0 0 6px 0',
-                      }}
-                    >
-                      Ficha de Treino Seca Peitoral & Ambiente Metabólico
-                    </h3>
-                    <p style={{ fontSize: '12px', color: '#aaa', lineHeight: 1.5, margin: '0 0 14px 0' }}>
-                      O Plano de Ação + Os 5 exercícios na ordem exata com GIFs biomecânicos, rastreador de séries e protocolo de Jejum + Ioimbina + 4L de Água.
-                    </p>
-                  </div>
-                  <span style={{ color: '#00FF00', fontSize: '12px', fontWeight: 800, textTransform: 'uppercase' }}>
-                    Abrir Ficha de Treino →
-                  </span>
-                </div>
-
-                {/* Card 2: Vídeo-Aula Prática Executando a Ficha */}
-                <div
-                  onClick={() => navigateToTab('workout', 'practical')}
-                  className="netflix-card"
-                  style={{
-                    background: '#111',
-                    border: '1px solid #282828',
-                    borderTop: '4px solid #FFD700',
-                    borderRadius: '10px',
-                    padding: '16px',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'space-between',
-                  }}
-                >
-                  <div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                      <span
-                        style={{
-                          background: 'rgba(255, 215, 0, 0.15)',
-                          color: '#FFD700',
-                          fontSize: '10px',
-                          fontWeight: 900,
-                          padding: '3px 8px',
-                          borderRadius: '4px',
-                        }}
-                      >
-                        VÍDEO-AULA PRÁTICA • 6:54 MIN
-                      </span>
-                      <span style={{ fontSize: '20px' }}>🎬</span>
-                    </div>
-                    <h3
-                      style={{
-                        fontFamily: "'Montserrat', sans-serif",
-                        fontSize: '16px',
-                        color: '#fff',
-                        textTransform: 'uppercase',
-                        margin: '0 0 6px 0',
-                      }}
-                    >
-                      Vídeo-Aula: Executando a Ficha na Prática
-                    </h3>
-                    <p style={{ fontSize: '12px', color: '#aaa', lineHeight: 1.5, margin: '0 0 14px 0' }}>
-                      Assista à gravação real mostrando exatamente como executar cada exercício, angulação de cotovelos, cadência de 2 segundos e contração máxima.
-                    </p>
-                  </div>
-                  <span style={{ color: '#FFD700', fontSize: '12px', fontWeight: 800, textTransform: 'uppercase' }}>
-                    ▶ Assistir Vídeo-Aula Agora →
-                  </span>
-                </div>
-
-                {/* Card 3: Gerador de Dieta Anti-Aromatase */}
-                <div
-                  onClick={() => navigateToTab('diet')}
-                  className="netflix-card"
-                  style={{
-                    background: '#111',
-                    border: '1px solid #282828',
-                    borderTop: '4px solid #00FF00',
-                    borderRadius: '10px',
-                    padding: '16px',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'space-between',
-                  }}
-                >
-                  <div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                      <span
-                        style={{
-                          background: 'rgba(0, 255, 0, 0.15)',
-                          color: '#00FF00',
-                          fontSize: '10px',
-                          fontWeight: 900,
-                          padding: '3px 8px',
-                          borderRadius: '4px',
-                        }}
-                      >
-                        FERRAMENTA INTERATIVA • APP
-                      </span>
-                      <span style={{ fontSize: '20px' }}>🥩</span>
-                    </div>
-                    <h3
-                      style={{
-                        fontFamily: "'Montserrat', sans-serif",
-                        fontSize: '16px',
-                        color: '#fff',
-                        textTransform: 'uppercase',
-                        margin: '0 0 6px 0',
-                      }}
-                    >
-                      Gerador de Dieta Anti-Aromatase na Balança
-                    </h3>
-                    <p style={{ fontSize: '12px', color: '#aaa', lineHeight: 1.5, margin: '0 0 14px 0' }}>
-                      Calcula sua TMB, GET, Proteína (2.2g/kg), Gordura (0.9g/kg) e Carboidratos, gerando 3 opções completas de cardápio com gramas exatas + PDF.
-                    </p>
-                  </div>
-                  <span style={{ color: '#00FF00', fontSize: '12px', fontWeight: 800, textTransform: 'uppercase' }}>
-                    ⚡ Calcular Minha Dieta →
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* TRILHA 2 NETFLIX: BÔNUS EXCLUSIVOS & DOSSIÊS TÁTICOS */}
-            <div style={{ marginBottom: '26px' }}>
-              <h2
-                style={{
-                  fontFamily: "'Montserrat', sans-serif",
-                  fontSize: '16px',
-                  fontWeight: 900,
-                  color: '#fff',
-                  textTransform: 'uppercase',
-                  margin: '0 0 12px 0',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                }}
-              >
-                <span style={{ color: '#FFD700' }}>▍</span> 2. Bônus Táticos & Guias Especializados
-              </h2>
-
-              <div
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-                  gap: '14px',
-                }}
-              >
-                {/* Card Bônus 02: Guia de Trava da Aromatase */}
-                <div
-                  onClick={() => navigateToTab('aromatase')}
-                  className="netflix-card"
-                  style={{
-                    background: 'linear-gradient(145deg, #151208, #111111)',
-                    border: '1px solid rgba(255, 215, 0, 0.35)',
-                    borderLeft: '4px solid #FFD700',
-                    borderRadius: '10px',
-                    padding: '18px',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'space-between',
-                  }}
-                >
-                  <div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                      <span
-                        style={{
-                          background: '#FFD700',
-                          color: '#000',
-                          fontSize: '10px',
-                          fontWeight: 900,
-                          padding: '3px 8px',
-                          borderRadius: '4px',
-                        }}
-                      >
-                        GUIA DE TRAVA DA AROMATASE • UNIFICADO
-                      </span>
-                      <span style={{ fontSize: '20px' }}>🛡️</span>
-                    </div>
-                    <h3
-                      style={{
-                        fontFamily: "'Montserrat', sans-serif",
-                        fontSize: '16px',
-                        color: '#fff',
-                        textTransform: 'uppercase',
-                        margin: '0 0 6px 0',
-                      }}
-                    >
-                      Dossiê Tático: Guia de Trava da Aromatase
-                    </h3>
-                    <p style={{ fontSize: '12px', color: '#bbb', lineHeight: 1.5, margin: '0 0 14px 0' }}>
-                      O Ciclo da Aromatase no Peitoral + Lista Negra pesquisável dos 20 Sabotadores + Os 5 Alimentos Bloqueadores & 4 Antídotos Naturais + Plano 30 Dias + Teste de Risco em 1 Minuto.
-                    </p>
-                  </div>
-                  <span style={{ color: '#FFD700', fontSize: '12px', fontWeight: 800, textTransform: 'uppercase' }}>
-                    🛡️ Acessar Guia de Trava da Aromatase →
-                  </span>
-                </div>
-
-                {/* Card Bônus 01: O Efeito Armadura & Postura Alpha */}
-                <div
-                  onClick={() => navigateToTab('armor')}
-                  className="netflix-card"
-                  style={{
-                    background: 'linear-gradient(145deg, #0b151e, #111111)',
-                    border: '1px solid rgba(56, 189, 248, 0.35)',
-                    borderLeft: '4px solid #38bdf8',
-                    borderRadius: '10px',
-                    padding: '18px',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'space-between',
-                  }}
-                >
-                  <div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                      <span
-                        style={{
-                          background: '#38bdf8',
-                          color: '#000',
-                          fontSize: '10px',
-                          fontWeight: 900,
-                          padding: '3px 8px',
-                          borderRadius: '4px',
-                        }}
-                      >
-                        BÔNUS #01 • CAMUFLAGEM IMEDIATA
-                      </span>
-                      <span style={{ fontSize: '20px' }}>⚡</span>
-                    </div>
-                    <h3
-                      style={{
-                        fontFamily: "'Montserrat', sans-serif",
-                        fontSize: '16px',
-                        color: '#fff',
-                        textTransform: 'uppercase',
-                        margin: '0 0 6px 0',
-                      }}
-                    >
-                      O Efeito Armadura & Postura Alpha
-                    </h3>
-                    <p style={{ fontSize: '12px', color: '#bbb', lineHeight: 1.5, margin: '0 0 14px 0' }}>
-                      O Hack de 3 Segundos no espelho + Scanner Biomecânico Interativo (Efeito Cone vs Efeito Cortina) + Engenharia Têxtil (200+ GSM) + Checklist de Bolso.
-                    </p>
-                  </div>
-                  <span style={{ color: '#38bdf8', fontSize: '12px', fontWeight: 800, textTransform: 'uppercase' }}>
-                    ⚡ Acessar Bônus Efeito Armadura →
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* TRILHA 3 NETFLIX: CENTRAL DE ARQUIVOS EM PDF PARA DOWNLOAD */}
-            <div>
-              <h2
-                style={{
-                  fontFamily: "'Montserrat', sans-serif",
-                  fontSize: '16px',
-                  fontWeight: 900,
-                  color: '#fff',
-                  textTransform: 'uppercase',
-                  margin: '0 0 12px 0',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                }}
-              >
-                <span style={{ color: '#38bdf8' }}>▍</span> 3. Apostilas & Materiais em PDF para Download
-              </h2>
-
-              <div
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-                  gap: '12px',
-                }}
-              >
-                <a
-                  href="/downloads/Ficha_Tatica_Secagem_Peitoral.pdf"
-                  download="Ficha_Tatica_Secagem_Peitoral.pdf"
-                  className="netflix-card"
-                  style={{
-                    background: '#141414',
-                    border: '1px solid #282828',
-                    borderRadius: '10px',
-                    padding: '14px',
-                    textDecoration: 'none',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '12px',
-                  }}
-                >
-                  <span style={{ fontSize: '26px' }}>📄</span>
-                  <div>
-                    <strong style={{ color: '#fff', fontSize: '13px', display: 'block' }}>
-                      Ficha Tática Secagem Peitoral
-                    </strong>
-                    <span style={{ color: '#00FF00', fontSize: '11px', fontWeight: 700 }}>
-                      📥 Baixar PDF Oficial
-                    </span>
-                  </div>
-                </a>
-
-                <a
-                  href="/downloads/Calendario_Seca_Peitoral.pdf"
-                  download="Calendario_Seca_Peitoral.pdf"
-                  className="netflix-card"
-                  style={{
-                    background: '#141414',
-                    border: '1px solid #282828',
-                    borderRadius: '10px',
-                    padding: '14px',
-                    textDecoration: 'none',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '12px',
-                  }}
-                >
-                  <span style={{ fontSize: '26px' }}>📅</span>
-                  <div>
-                    <strong style={{ color: '#fff', fontSize: '13px', display: 'block' }}>
-                      Calendário Seca Peitoral (30 Dias)
-                    </strong>
-                    <span style={{ color: '#FFD700', fontSize: '11px', fontWeight: 700 }}>
-                      📥 Baixar PDF Oficial
-                    </span>
-                  </div>
-                </a>
-
-                <a
-                  href="/bonus-efeito-armadura.html"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="netflix-card"
-                  style={{
-                    background: '#141414',
-                    border: '1px solid #282828',
-                    borderRadius: '10px',
-                    padding: '14px',
-                    textDecoration: 'none',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '12px',
-                  }}
-                >
-                  <span style={{ fontSize: '26px' }}>🛡️</span>
-                  <div>
-                    <strong style={{ color: '#fff', fontSize: '13px', display: 'block' }}>
-                      Apostila O Efeito Armadura
-                    </strong>
-                    <span style={{ color: '#38bdf8', fontSize: '11px', fontWeight: 700 }}>
-                      🖨️ Abrir Versão p/ Impressão / PDF
-                    </span>
-                  </div>
-                </a>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* ABA 2: TREINO & VÍDEO-AULA (ENTREGÁVEL PRINCIPAL COMPLETO) */}
-        {activeTab === 'workout' && (
-          <WorkoutOperationsTab
-            onNavigateTab={(tab) => navigateToTab(tab)}
-            initialVideoMode={initialVideoMode}
-          />
-        )}
-
-        {/* ABA 4: GUIA DE TRAVA DA AROMATASE (UNIFICADO) */}
-        {activeTab === 'aromatase' && <AromataseGuideTab />}
-
-        {/* ABA 5: BÔNUS 01 - O EFEITO ARMADURA & POSTURA ALPHA */}
-        {activeTab === 'armor' && <ArmorPostureTab />}
-
-        {/* ABA 3: GERADOR DE DIETA ANTI-AROMATASE (APP CALCULADORA + CHECKLIST DIÁRIO) */}
-        {activeTab === 'diet' && (
+        {/* ================================================================ */}
+        {/* ETAPA 1: CALCULADORA & CONFIGURAÇÃO DA DIETA                      */}
+        {/* ================================================================ */}
+        {currentStep === 1 && (
           <div>
-            <div className="header" style={{ marginBottom: '20px' }}>
-              <div
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  background: 'rgba(0, 255, 0, 0.1)',
-                  border: '1px solid rgba(0, 255, 0, 0.3)',
-                  borderRadius: '20px',
-                  padding: '4px 14px',
-                  fontSize: '11px',
-                  fontWeight: 'bold',
-                  color: 'var(--primary)',
-                  marginBottom: '10px',
-                  letterSpacing: '0.5px',
-                }}
-              >
-                <span>🥩 FERRAMENTA OFICIAL • GERADOR DE DIETA NA BALANÇA</span>
-              </div>
-              <h2 style={{ margin: '0 0 6px 0', textTransform: 'uppercase', letterSpacing: '1px' }}>
-                Calculadora & Dieta <span>Anti-Aromatase</span>
-              </h2>
-              <p style={{ maxWidth: '640px', margin: '0 auto', fontSize: '13px', color: '#ccc', lineHeight: 1.5 }}>
-                <strong>Otimização Hormonal & Secagem Peitoral:</strong> Calcule suas metas exatas e receba 3 opções completas de cardápio pesadas em gramas na balança + Checklist Diário.
-              </p>
-              <div style={{ marginTop: '10px' }}>
+            <div className="text-center mb-3">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-mono font-bold tracking-wider uppercase bg-[#00f2fe]/10 text-[#00f2fe] border border-[#00f2fe]/25">
+                <Zap className="w-3 h-3" /> BIO-METABOLIC ENGINE V4.0
+              </span>
+            </div>
+
+            <h1 className="section-title">
+              Calculadora de Metabolismo | <span>Projeto Verão</span>
+            </h1>
+            <p className="subtitle">
+              Insira seus dados biométricos. Nosso algoritmo calcula a Taxa Metabólica Basal (Mifflin-St Jeor), o gasto real e estrutura as 3 opções de cardápios com déficit de -700 kcal.
+            </p>
+
+            <div className="calc-wrapper">
+              <div>
+                {/* Linha 1: Gênero & Idade */}
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Gênero Biológico:</label>
+                    <select
+                      value={gender}
+                      onChange={(e) => setGender(e.target.value as Gender)}
+                    >
+                      <option value="masculino">Masculino</option>
+                      <option value="feminino">Feminino</option>
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label>Idade (anos):</label>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      value={ageInput}
+                      onChange={(e) => setAgeInput(e.target.value)}
+                      placeholder="Ex: 28"
+                    />
+                  </div>
+                </div>
+
+                {/* Linha 2: Peso & Altura (Livre para Digitação) */}
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Peso Corporal (kg):</label>
+                    <input
+                      type="text"
+                      inputMode="decimal"
+                      value={weightInput}
+                      onChange={(e) => setWeightInput(e.target.value)}
+                      placeholder="Ex: 82 ou 82.5"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Altura (cm):</label>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      value={heightInput}
+                      onChange={(e) => setHeightInput(e.target.value)}
+                      placeholder="Ex: 178"
+                    />
+                  </div>
+                </div>
+
+                {/* Linha 3: Nível de Atividade */}
+                <div className="form-group">
+                  <label>Rotina & Nível de Atividade Física:</label>
+                  <select
+                    value={activityLevel}
+                    onChange={(e) => setActivityLevel(e.target.value as ActivityLevel)}
+                  >
+                    <option value="sedentario">Sedentário (Trabalho sentado, sem exercícios regulares)</option>
+                    <option value="leve">Leve (Caminhadas ou exercícios leves 1 a 3x por semana)</option>
+                    <option value="moderado">Moderado (Treino de musculação ou cárdio 3 a 5x por semana)</option>
+                    <option value="ativo">Muito Ativo (Treino intenso 6 a 7x por semana)</option>
+                    <option value="muito_ativo">Extremo (Atleta de alto rendimento ou trabalho físico pesado)</option>
+                  </select>
+                </div>
+
+                {/* Linha 4: Quantidade de Refeições */}
+                <div className="form-group">
+                  <label>Divisão Diária de Refeições Desejada:</label>
+                  <select
+                    value={mealsCount}
+                    onChange={(e) => setMealsCount(Number(e.target.value))}
+                  >
+                    <option value="3">3 Refeições por Dia (Almoço, Lanche/Pré-Treino e Jantar - Estilo Jejum)</option>
+                    <option value="4">4 Refeições por Dia (Café da Manhã, Almoço, Lanche e Jantar - Padrão Atleta)</option>
+                    <option value="5">5 Refeições por Dia (Café, Lanche, Almoço, Lanche da Tarde e Jantar - Fracionada)</option>
+                  </select>
+                </div>
+
+                {/* Linha 5: Estratégia Calórica de Queima */}
+                <div className="form-group">
+                  <label>Estratégia Calórica do Projeto Verão:</label>
+                  <select
+                    value={goal}
+                    onChange={(e) => setGoal(e.target.value as DietGoal)}
+                  >
+                    <option value="emagrecimento_verao_agressivo">
+                      🔥 Déficit Agressivo de Verão (-700 kcal) • Queima Rápida & Máxima Retenção Muscular [RECOMENDADO]
+                    </option>
+                    <option value="emagrecimento_moderado">
+                      ⚡ Déficit Moderado (-500 kcal) • Ritmo Sustentável Contínuo
+                    </option>
+                    <option value="emagrecimento_extremo">
+                      ⚠️ Corte Acelerado (-900 kcal) • Choque Metabólico de Curto Prazo
+                    </option>
+                    <option value="recomposicao">
+                      ⚖️ Recomposição Corporal (0 kcal) • Troca de Gordura por Músculo em Manutenção
+                    </option>
+                  </select>
+                </div>
+
+                {/* Painel de Telemetria Metabólica em Tempo Real */}
+                <div className="p-4 rounded-xl bg-[#080d16] border border-[#00f2fe]/20 mb-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+                  <div>
+                    <span className="text-slate-400 font-mono text-[11px] block">TMB BASAL (REPOUSO):</span>
+                    <span className="text-lg font-black text-white font-mono">{targets.tmb} kcal</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-400 font-mono text-[11px] block">GASTO TOTAL DIÁRIO (TDEE):</span>
+                    <span className="text-lg font-black text-white font-mono">{targets.get} kcal</span>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-[#00f2fe] font-mono text-[11px] font-bold block">META PARA SECAR (-700 kcal):</span>
+                    <span className="text-xl font-black text-[#00ff9d] font-mono">{targets.targetCalories} kcal</span>
+                  </div>
+                </div>
+
+                {/* Botão de Avanço Tech */}
                 <button
                   type="button"
-                  onClick={() => navigateToTab('aromatase')}
-                  style={{
-                    background: 'rgba(255, 215, 0, 0.12)',
-                    border: '1px solid #FFD700',
-                    color: '#FFD700',
-                    borderRadius: '6px',
-                    padding: '6px 12px',
-                    fontSize: '11px',
-                    fontWeight: 800,
-                    cursor: 'pointer',
+                  onClick={() => {
+                    setCurrentStep(2);
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
                   }}
+                  className="btn-primary"
                 >
-                  🛡️ Ver Guia Completo de Trava da Aromatase →
+                  <span>GERAR 3 OPÇÕES DE CARDÁPIO & AVANÇAR</span>
+                  <ArrowRight className="w-5 h-5" />
                 </button>
               </div>
             </div>
-
-      {!showResult ? (
-        <div className="card" id="form-card">
-          {/* Linha 1: Idade e Sexo */}
-          <div className="flex-row">
-            <div className="form-group flex-1">
-              <label>Idade (anos)</label>
-              <input
-                type="number"
-                value={age}
-                onChange={(e) => setAge(e.target.value === '' ? '' : Number(e.target.value))}
-                className="form-control"
-                placeholder="Ex: 28"
-                min="10"
-                max="110"
-              />
-            </div>
-            <div className="form-group flex-1">
-              <label>Sexo Biológico</label>
-              <select
-                value={gender}
-                onChange={(e) => setGender(e.target.value as any)}
-                className="form-control"
-              >
-                <option value="masculino">Masculino (Otimização Hormonal Masculina)</option>
-              </select>
-            </div>
           </div>
+        )}
 
-          {/* Linha 2: Peso e Altura */}
-          <div className="flex-row">
-            <div className="form-group flex-1">
-              <label>Peso (kg)</label>
-              <input
-                type="number"
-                step="0.5"
-                value={weight}
-                onChange={(e) => setWeight(e.target.value === '' ? '' : Number(e.target.value))}
-                className="form-control"
-                placeholder="Ex: 78"
-                min="30"
-                max="250"
-              />
-            </div>
-            <div className="form-group flex-1">
-              <label>Altura (cm)</label>
-              <input
-                type="number"
-                value={height}
-                onChange={(e) => setHeight(e.target.value === '' ? '' : Number(e.target.value))}
-                className="form-control"
-                placeholder="Ex: 178"
-                min="100"
-                max="240"
-              />
-            </div>
-          </div>
-
-          {/* Linha 3: Nível de Atividade Física e Objetivo */}
-          <div className="flex-row">
-            <div className="form-group flex-1">
-              <label>Nível de Atividade Física</label>
-              <select
-                value={activity}
-                onChange={(e) => setActivity(Number(e.target.value))}
-                className="form-control"
-              >
-                <option value={1.2}>Sedentário (Pouco ou nenhum exercício - 1.2)</option>
-                <option value={1.375}>Leve (Exercício leve 1 a 3 dias/sem - 1.375)</option>
-                <option value={1.55}>Moderado (Exercício moderado 3 a 5 dias/sem - 1.55)</option>
-                <option value={1.725}>Ativo (Exercício pesado 6 a 7 dias/sem - 1.725)</option>
-                <option value={1.9}>Muito Ativo (Trabalho braçal / 2x treinos - 1.9)</option>
-              </select>
+        {/* ================================================================ */}
+        {/* ETAPA 2: SUA DIETA PRONTA & 3 OPÇÕES DE CARDÁPIOS               */}
+        {/* ================================================================ */}
+        {currentStep === 2 && (
+          <div>
+            <div className="text-center mb-3">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-mono font-bold tracking-wider uppercase bg-[#00ff9d]/10 text-[#00ff9d] border border-[#00ff9d]/25">
+                <CheckCircle2 className="w-3 h-3" /> 3 VARIAÇÕES CALCULADAS NA BALANÇA
+              </span>
             </div>
 
-            <div className="form-group flex-1">
-              <label>Objetivo do Protocolo</label>
-              <select
-                value={goal}
-                onChange={(e) => setGoal(e.target.value as any)}
-                className="form-control"
-              >
-                <option value="emagrecimento">1) Emagrecimento Moderado (-500 kcal • Foco Anti-Aromatase) - RECOMENDADO</option>
-                <option value="emagrecimento_agressivo">2) Emagrecimento Agressivo (-750 kcal • Máxima Definição)</option>
-                <option value="recomposicao">3) Recomposição Corporal (Trocar Gordura por Músculo)</option>
-                <option value="hipertrofia">4) Hipertrofia & Volume (+400 kcal • Massa Muscular)</option>
-              </select>
-            </div>
-          </div>
-
-          {/* Linha 4: Quantidade de Refeições Diárias */}
-          <div className="form-group">
-            <label>Quantidade de Refeições por Dia</label>
-            <select
-              value={mealsCount}
-              onChange={(e) => setMealsCount(Number(e.target.value))}
-              className="form-control"
-            >
-              <option value={3}>3 Refeições por Dia (Protocolo de Jejum Intermitente 16/8)</option>
-              <option value={4}>4 Refeições por Dia (Padrão Equilibrado)</option>
-              <option value={5}>5 Refeições por Dia (Fracionamento Contínuo)</option>
-            </select>
-
-            {mealsCount === 3 && (
-              <div
-                style={{
-                  background: 'rgba(0, 255, 0, 0.05)',
-                  border: '1px solid var(--primary)',
-                  borderRadius: '6px',
-                  padding: '12px 14px',
-                  marginTop: '10px',
-                  fontSize: '12px',
-                  lineHeight: '1.45',
-                }}
-              >
-                <strong style={{ color: 'var(--primary)', display: 'block', marginBottom: '4px', fontSize: '13px' }}>
-                  ⏱️ PROTOCOLO DE JEJUM INTERMITENTE 16/8 SELECIONADO
-                </strong>
-                <span style={{ color: '#d5d5d5' }}>
-                  • <strong>16 Horas de Jejum Diário:</strong> das 20:00 até as 12:00 do dia seguinte (permitido água, café e chás sem açúcar).<br />
-                  • <strong>Janela Alimentar de 8 Horas:</strong> 3 refeições estratégicas (Almoço às 12:00, Lanche às 16:00 e Jantar às 20:00).<br />
-                  • <strong>Benefícios Comprovados:</strong> Estímulo à autofagia celular (reciclagem celular), redução acelerada de gordura corporal, melhora drástica da sensibilidade à insulina e foco mental superior pela manhã.
-                </span>
-              </div>
-            )}
-          </div>
-
-          {/* Card: Cardápios 100% Gerados nas Quantidades da Calculadora */}
-          <div
-            style={{
-              background: 'rgba(0, 255, 0, 0.04)',
-              border: '1px solid rgba(0, 255, 0, 0.3)',
-              borderRadius: '8px',
-              padding: '16px 18px',
-              marginTop: '20px',
-              marginBottom: '16px',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-              <span style={{ fontSize: '20px' }}>⚡</span>
-              <strong style={{ color: 'var(--primary)', fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                Cardápios 100% Gerados nas Quantidades da Calculadora
-              </strong>
-            </div>
-            <p style={{ fontSize: '12px', color: '#ccc', margin: 0, lineHeight: 1.55 }}>
-              O sistema calcula as calorias e macronutrientes exatos do seu corpo e entrega <strong>3 opções completas de cardápio</strong> para as suas <strong>{mealsCount} refeições diárias</strong>. Cada alimento (proteínas magras, carboidratos limpos, gorduras boas e vegetais anti-aromatase como brócolis, cogumelos e sementes de abóbora) já virá com a pesagem precisa em gramas na balança para você seguir sem erro.
+            <h1 className="section-title">
+              Sua Dieta de Verão | <span>3 Opções Prontas</span>
+            </h1>
+            <p className="subtitle">
+              Seus números metabólicos calculados com precisão. Abaixo você tem 3 opções de cardápios completos para alternar e não enjoar da dieta.
             </p>
-          </div>
 
-          <button
-            className="btn btn-primary"
-            style={{ marginTop: '10px' }}
-            onClick={generateDiet}
-            disabled={isLoading}
-          >
-            {isLoading ? 'CALCULANDO METAS & GERANDO CARDÁPIOS...' : '⚡ Gerar 3 Cardápios Anti-Aromatase'}
-          </button>
-        </div>
-      ) : (
-        calcData && (
-          <div id="result">
-            <div className="card">
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', flexWrap: 'wrap' }}>
-                <span style={{ background: 'rgba(0, 255, 0, 0.15)', color: 'var(--primary)', border: '1px solid var(--primary)', borderRadius: '4px', fontSize: '10px', padding: '2px 8px', fontWeight: 'bold' }}>
-                  ORDER BUMP OFICIAL • SECA PEITORAL
-                </span>
-                <span style={{ background: 'rgba(0, 208, 255, 0.15)', color: '#00d0ff', border: '1px solid #00d0ff', borderRadius: '4px', fontSize: '10px', padding: '2px 8px', fontWeight: 'bold' }}>
-                  PROTOCOLO ANTI-AROMATASE ATIVO
-                </span>
-              </div>
-
-              <h3 style={{ marginTop: 0, fontFamily: "'Montserrat', sans-serif", textTransform: 'uppercase' }}>
-                Seu Protocolo Nutricional Seca Peitoral
-              </h3>
-
-              {/* Box de Diretrizes Anti-Aromatase */}
-              <div
-                style={{
-                  background: 'rgba(0, 255, 0, 0.04)',
-                  border: '1px solid rgba(0, 255, 0, 0.3)',
-                  borderRadius: '6px',
-                  padding: '12px 14px',
-                  marginBottom: '16px',
-                  fontSize: '12px',
-                  lineHeight: 1.5,
-                }}
-              >
-                <strong style={{ color: 'var(--primary)', display: 'block', marginBottom: '4px', fontSize: '12px', fontFamily: "'Montserrat', sans-serif" }}>
-                  🛡️ MANDAMENTOS ANTI-AROMATASE PARA POTENCIALIZAR SUA FICHA DE TREINO
-                </strong>
-                <span style={{ color: '#ccc' }}>
-                  • <strong>Crucíferos Diários (DIM):</strong> Mantenha brócolis, couve-flor ou repolho em ao menos uma refeição para acelerar a eliminação tecidual de estrogênio.<br />
-                  • <strong>Blindagem da Testosterona:</strong> 2.2g/kg de proteína e gorduras limpas para manter a testosterona livre elevada enquanto queima a gordura do peito.<br />
-                  • <strong>Chá Verde (EGCG):</strong> 1 a 2 xícaras ao dia auxiliam na redução da atividade da enzima aromatase no peitoral.<br />
-                  • <strong>Corte de Cerveja e Ultraprocessados:</strong> O lúpulo da cerveja contém fitoestrógenos potentes que anulam o efeito do treino de peitoral.
-                </span>
-              </div>
-
-              {/* Exibição Visual da TMB, GET e Meta Calórica Diária (Requisito 4) */}
-              <div
-                style={{
-                  background: '#161616',
-                  border: '1px solid #222',
-                  borderRadius: '6px',
-                  padding: '12px 14px',
-                  marginBottom: '15px',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  flexWrap: 'wrap',
-                  gap: '8px',
-                }}
-              >
-                <div>
-                  <span style={{ fontSize: '10px', color: 'var(--muted)', textTransform: 'uppercase', display: 'block', fontWeight: 'bold' }}>
-                    TMB (Basal)
-                  </span>
-                  <strong style={{ fontSize: '15px', color: '#fff', fontFamily: "'Montserrat', sans-serif" }}>
-                    {calcData.tmb} <span style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: 'normal' }}>kcal</span>
-                  </strong>
+            <div className="calc-wrapper">
+              {/* Grid das Métricas Base de Telemetria com TMB e GET bem distintos */}
+              <div className="result-grid">
+                <div className="result-box" style={{ borderColor: 'rgba(0, 242, 254, 0.35)' }}>
+                  <h4 style={{ color: 'var(--primary-cyan)' }}>Taxa Metabólica Basal (TMB)</h4>
+                  <p>{targets.tmb} <small style={{ fontSize: '14px', color: '#64748b' }}>kcal</small></p>
+                  <div className="result-tip">Gasto biológico mínimo do corpo em repouso (Mifflin-St Jeor).</div>
                 </div>
 
-                <div>
-                  <span style={{ fontSize: '10px', color: 'var(--muted)', textTransform: 'uppercase', display: 'block', fontWeight: 'bold' }}>
-                    GET (Gasto Total)
-                  </span>
-                  <strong style={{ fontSize: '15px', color: '#fff', fontFamily: "'Montserrat', sans-serif" }}>
-                    {calcData.get} <span style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: 'normal' }}>kcal</span>
-                  </strong>
+                <div className="result-box">
+                  <h4>Gasto Total Diário (TDEE)</h4>
+                  <p>{targets.get} <small style={{ fontSize: '14px', color: '#64748b' }}>kcal</small></p>
+                  <div className="result-tip">Gasto real somando sua taxa basal com sua rotina de exercícios.</div>
                 </div>
 
-                <div>
-                  <span style={{ fontSize: '10px', color: 'var(--primary)', textTransform: 'uppercase', display: 'block', fontWeight: 'bold' }}>
-                    Meta Diária Alvo
-                  </span>
-                  <strong style={{ fontSize: '16px', color: 'var(--primary)', fontFamily: "'Montserrat', sans-serif" }}>
-                    {calcData.kcal} <span style={{ fontSize: '11px', color: 'var(--primary)', fontWeight: 'normal' }}>kcal/dia</span>
-                  </strong>
-                </div>
-
-                <div>
-                  <span style={{ fontSize: '10px', color: '#00d0ff', textTransform: 'uppercase', display: 'block', fontWeight: 'bold' }}>
-                    Água Mínima
-                  </span>
-                  <strong style={{ fontSize: '15px', color: '#00d0ff', fontFamily: "'Montserrat', sans-serif" }}>
-                    {calcData.waterL} <span style={{ fontSize: '11px', color: '#00d0ff', fontWeight: 'normal' }}>L/dia</span>
-                  </strong>
-                </div>
-              </div>
-
-              {/* Linha dos Macros Diários */}
-              <p style={{ fontSize: '12px', color: 'var(--muted)', marginBottom: '16px', lineHeight: 1.5 }}>
-                Metas Diárias de Macronutrientes (<span style={{ color: 'var(--primary)', fontWeight: 'bold' }}>{calcData.goalLabel}</span>):<br />
-                <strong style={{ color: '#fff' }}>{calcData.prot}g</strong> Proteína (2.2g/kg) |{' '}
-                <strong style={{ color: '#00FF00' }}>{calcData.carb}g</strong> Carbo |{' '}
-                <strong style={{ color: '#fff' }}>{calcData.fat}g</strong> Gordura (0.9g/kg).
-                <br />
-                <br />
-                <em>*Todos os pesos abaixo referem-se ao alimento já preparado/cozido na balança de precisão.</em>
-              </p>
-
-              {/* Box de Jejum Intermitente se forem 3 refeições */}
-              {calcData.mealsCount === 3 && (
-                <div
-                  style={{
-                    background: 'rgba(0, 255, 0, 0.05)',
-                    border: '1px solid var(--primary)',
-                    borderRadius: '6px',
-                    padding: '12px 14px',
-                    marginBottom: '18px',
-                  }}
-                >
-                  <strong style={{ color: 'var(--primary)', fontSize: '13px', display: 'block', marginBottom: '4px', fontFamily: "'Montserrat', sans-serif" }}>
-                    ⚡ PROTOCOLO DE JEJUM INTERMITENTE 16/8 ATIVO
-                  </strong>
-                  <p style={{ margin: 0, fontSize: '12px', color: '#e0e0e0', lineHeight: 1.5 }}>
-                    • <strong>Tempo em Jejum:</strong> 16 horas contínuas (das 20:00 até as 12:00 do dia seguinte). Consumo liberado: água pura, café preto e chás sem açúcar.<br />
-                    • <strong>Janela Alimentar:</strong> 8 horas (das 12:00 às 20:00 com 3 refeições densas em nutrientes).<br />
-                    • <strong>Benefícios Científicos:</strong> Indução da autofagia celular (reciclagem biológica de proteínas oxidadas), melhora substancial da sensibilidade à insulina e redução contínua de gordura visceral.
+                <div className="result-box" style={{ borderColor: 'rgba(0, 255, 157, 0.45)', boxShadow: '0 0 15px rgba(0, 255, 157, 0.1)' }}>
+                  <h4 style={{ color: 'var(--primary-mint)' }}>Meta Calórica (-700 kcal)</h4>
+                  <p style={{ color: 'var(--primary-mint)' }}>
+                    {targets.targetCalories} <small style={{ fontSize: '14px', color: '#64748b' }}>kcal</small>
                   </p>
+                  <div className="result-tip">Déficit estratégico de {targets.calorieDiff} kcal para derreter gordura.</div>
                 </div>
-              )}
 
-              {/* CHECKLIST DIÁRIO DE HÁBITOS (ÁGUA & REFEIÇÕES & ANTI-AROMATASE) */}
-              {(() => {
-                const totalWaterBottles = Math.max(1, Math.ceil((calcData.waterL * 1000) / 500));
-                const completedBottles = Math.min(waterCups, totalWaterBottles);
-                const waterPercent = Math.min(100, Math.round((completedBottles / totalWaterBottles) * 100));
-                const checkedMealsCount = Array.from({ length: calcData.mealsCount }).filter(
-                  (_, i) => checkedMeals[`meal_${todayKey}_${i + 1}`]
-                ).length;
-                const mealsPercent = Math.round((checkedMealsCount / calcData.mealsCount) * 100);
-                const totalTasks = totalWaterBottles + calcData.mealsCount + 2;
-                const totalDone = completedBottles + checkedMealsCount + (workoutChecked ? 1 : 0) + (greenTeaChecked ? 1 : 0);
-                const overallPercent = Math.round((totalDone / totalTasks) * 100);
+                <div className="result-box" style={{ borderColor: 'rgba(139, 92, 246, 0.45)' }}>
+                  <h4 style={{ color: '#a78bfa' }}>Proteína Diária (2.2g/kg)</h4>
+                  <p>{targets.proteinGrams} <small style={{ fontSize: '14px', color: '#64748b' }}>g</small></p>
+                  <div className="result-tip">Blindagem muscular essencial durante o déficit calórico agressivo.</div>
+                </div>
 
-                return (
-                  <div
-                    style={{
-                      background: '#121212',
-                      border: '1px solid #262626',
-                      borderRadius: '8px',
-                      padding: '16px',
-                      marginBottom: '20px',
-                    }}
-                  >
-                    <div
-                      style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        flexWrap: 'wrap',
-                        gap: '8px',
-                        marginBottom: '12px',
-                        borderBottom: '1px solid #222',
-                        paddingBottom: '10px',
-                      }}
-                    >
-                      <div>
-                        <h4
-                          style={{
-                            margin: 0,
-                            fontFamily: "'Montserrat', sans-serif",
-                            fontSize: '14px',
-                            color: '#fff',
-                            textTransform: 'uppercase',
-                            letterSpacing: '0.5px',
-                          }}
-                        >
-                          📋 Checklist Diário Anti-Aromatase & Treino
-                        </h4>
-                        <span style={{ fontSize: '11px', color: 'var(--muted)' }}>
-                          Hoje: {todayKey} • Sinergia com Ficha de Treino Seca Peitoral
-                        </span>
-                      </div>
-                      <div
-                        style={{
-                          background: overallPercent === 100 ? 'rgba(0, 255, 0, 0.2)' : '#1a1a1a',
-                          border: `1px solid ${overallPercent === 100 ? 'var(--primary)' : '#333'}`,
-                          padding: '4px 10px',
-                          borderRadius: '12px',
-                          fontSize: '11px',
-                          color: overallPercent === 100 ? 'var(--primary)' : '#fff',
-                          fontWeight: 'bold',
-                        }}
-                      >
-                        {overallPercent}% CONCLUÍDO
-                      </div>
-                    </div>
+                <div className="result-box">
+                  <h4>Meta Hídrica Diária</h4>
+                  <p>{(targets.waterMl / 1000).toFixed(1)} <small style={{ fontSize: '14px', color: '#64748b' }}>Litros</small></p>
+                  <div className="result-tip">~{Math.round(targets.waterMl / 500)} garrafas de 500ml ao longo do dia.</div>
+                </div>
+              </div>
 
-                    {/* Barra de Progresso Geral */}
-                    <div
-                      style={{
-                        width: '100%',
-                        height: '6px',
-                        background: '#222',
-                        borderRadius: '3px',
-                        overflow: 'hidden',
-                        marginBottom: '16px',
-                      }}
-                    >
-                      <div
-                        style={{
-                          width: `${overallPercent}%`,
-                          height: '100%',
-                          background: 'linear-gradient(90deg, #00d0ff, var(--primary))',
-                          transition: 'width 0.3s ease',
-                        }}
-                      />
-                    </div>
-
-                    {overallPercent === 100 && (
-                      <div
-                        style={{
-                          background: 'rgba(0, 255, 0, 0.1)',
-                          border: '1px solid var(--primary)',
-                          borderRadius: '6px',
-                          padding: '10px 12px',
-                          marginBottom: '16px',
-                          textAlign: 'center',
-                          color: 'var(--primary)',
-                          fontSize: '12px',
-                          fontWeight: 'bold',
-                        }}
-                      >
-                        🎖️ EXCELENTE! 100% DAS DIRETRIZES ANTI-AROMATASE E TREINO CUMPRIDAS HOJE!
-                      </div>
-                    )}
-
-                    {/* Bloco 1: Treino e Hábitos Chave Anti-Aromatase */}
-                    <div style={{ marginBottom: '16px' }}>
-                      <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#FFD700', display: 'block', marginBottom: '8px' }}>
-                        ⚡ Ficha de Treino & Ação Anti-Aromatase
-                      </span>
-
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '8px' }}>
-                        <div
-                          onClick={toggleWorkoutCheck}
-                          style={{
-                            background: workoutChecked ? 'rgba(0, 255, 0, 0.08)' : '#181818',
-                            border: `1px solid ${workoutChecked ? 'var(--primary)' : '#282828'}`,
-                            borderRadius: '6px',
-                            padding: '10px 12px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'space-between',
-                            cursor: 'pointer',
-                          }}
-                        >
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <div
-                              style={{
-                                width: '18px',
-                                height: '18px',
-                                borderRadius: '4px',
-                                border: `2px solid ${workoutChecked ? 'var(--primary)' : '#555'}`,
-                                background: workoutChecked ? 'var(--primary)' : 'transparent',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                color: '#000',
-                                fontSize: '11px',
-                                fontWeight: 'bold',
-                              }}
-                            >
-                              {workoutChecked && '✓'}
-                            </div>
-                            <span style={{ fontSize: '12px', color: workoutChecked ? '#fff' : '#ccc', fontWeight: 'bold' }}>
-                              🏋️ Ficha Seca Peitoral Feita
-                            </span>
-                          </div>
-                          <span style={{ fontSize: '10px', color: workoutChecked ? 'var(--primary)' : '#555', fontWeight: 'bold' }}>
-                            {workoutChecked ? 'FEITO' : 'PENDENTE'}
-                          </span>
-                        </div>
-
-                        <div
-                          onClick={toggleGreenTeaCheck}
-                          style={{
-                            background: greenTeaChecked ? 'rgba(0, 208, 255, 0.08)' : '#181818',
-                            border: `1px solid ${greenTeaChecked ? '#00d0ff' : '#282828'}`,
-                            borderRadius: '6px',
-                            padding: '10px 12px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'space-between',
-                            cursor: 'pointer',
-                          }}
-                        >
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <div
-                              style={{
-                                width: '18px',
-                                height: '18px',
-                                borderRadius: '4px',
-                                border: `2px solid ${greenTeaChecked ? '#00d0ff' : '#555'}`,
-                                background: greenTeaChecked ? '#00d0ff' : 'transparent',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                color: '#000',
-                                fontSize: '11px',
-                                fontWeight: 'bold',
-                              }}
-                            >
-                              {greenTeaChecked && '✓'}
-                            </div>
-                            <span style={{ fontSize: '12px', color: greenTeaChecked ? '#fff' : '#ccc', fontWeight: 'bold' }}>
-                              🍵 Chá Verde (EGCG Anti-Aromatase)
-                            </span>
-                          </div>
-                          <span style={{ fontSize: '10px', color: greenTeaChecked ? '#00d0ff' : '#555', fontWeight: 'bold' }}>
-                            {greenTeaChecked ? 'TOMADO' : 'PENDENTE'}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Bloco 2: Água */}
-                    <div style={{ marginBottom: '16px' }}>
-                      <div
-                        style={{
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'center',
-                          marginBottom: '6px',
-                        }}
-                      >
-                        <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#00d0ff' }}>
-                          💧 Hidratação ({calcData.waterL}L / dia)
-                        </span>
-                        <span style={{ fontSize: '11px', color: 'var(--muted)' }}>
-                          {(completedBottles * 0.5).toFixed(1)}L de {calcData.waterL}L ({waterPercent}%)
-                        </span>
-                      </div>
-
-                      <div
-                        style={{
-                          display: 'grid',
-                          gridTemplateColumns: 'repeat(auto-fill, minmax(105px, 1fr))',
-                          gap: '6px',
-                          marginTop: '6px',
-                        }}
-                      >
-                        {Array.from({ length: totalWaterBottles }).map((_, bIdx) => {
-                          const isDrank = bIdx < waterCups;
-                          return (
-                            <button
-                              key={bIdx}
-                              type="button"
-                              onClick={() => toggleWaterCup(bIdx)}
-                              style={{
-                                background: isDrank ? 'rgba(0, 208, 255, 0.12)' : '#181818',
-                                border: `1px solid ${isDrank ? '#00d0ff' : '#282828'}`,
-                                color: isDrank ? '#00d0ff' : '#777',
-                                borderRadius: '6px',
-                                padding: '8px 6px',
-                                fontSize: '11px',
-                                cursor: 'pointer',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'center',
-                                gap: '3px',
-                                transition: 'all 0.2s',
-                              }}
-                            >
-                              <span style={{ fontSize: '14px' }}>{isDrank ? '💧' : '⚪'}</span>
-                              <span style={{ fontWeight: 'bold' }}>500ml</span>
-                              <span style={{ fontSize: '9px', opacity: 0.8 }}>Garrafa #{bIdx + 1}</span>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-
-                    {/* Bloco 3: Refeições */}
-                    <div>
-                      <div
-                        style={{
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'center',
-                          marginBottom: '8px',
-                        }}
-                      >
-                        <span style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--primary)' }}>
-                          🍽️ Refeições ({calcData.mealsCount} refeições na balança)
-                        </span>
-                        <span style={{ fontSize: '11px', color: 'var(--muted)' }}>
-                          {checkedMealsCount} de {calcData.mealsCount} ({mealsPercent}%)
-                        </span>
-                      </div>
-
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                        {Array.from({ length: calcData.mealsCount }).map((_, mIdx) => {
-                          const mealKey = `meal_${todayKey}_${mIdx + 1}`;
-                          const isDone = !!checkedMeals[mealKey];
-
-                          const slot = getMealSlotsForCount(calcData.mealsCount)[mIdx];
-                          const mealName = slot ? `${slot.name} (${slot.time})` : `Refeição ${mIdx + 1}`;
-
-                          return (
-                            <div
-                              key={mIdx}
-                              onClick={() => toggleMealCheck(mealKey)}
-                              style={{
-                                background: isDone ? 'rgba(0, 255, 0, 0.08)' : '#181818',
-                                border: `1px solid ${isDone ? 'var(--primary)' : '#282828'}`,
-                                borderRadius: '6px',
-                                padding: '10px 12px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'space-between',
-                                cursor: 'pointer',
-                                transition: 'all 0.2s',
-                              }}
-                            >
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                <div
-                                  style={{
-                                    width: '18px',
-                                    height: '18px',
-                                    borderRadius: '4px',
-                                    border: `2px solid ${isDone ? 'var(--primary)' : '#555'}`,
-                                    background: isDone ? 'var(--primary)' : 'transparent',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    color: '#000',
-                                    fontSize: '11px',
-                                    fontWeight: 'bold',
-                                  }}
-                                >
-                                  {isDone && '✓'}
-                                </div>
-                                <span
-                                  style={{
-                                    fontSize: '12px',
-                                    color: isDone ? '#fff' : '#ccc',
-                                    textDecoration: isDone ? 'line-through' : 'none',
-                                    opacity: isDone ? 0.8 : 1,
-                                  }}
-                                >
-                                  <strong>Refeição {mIdx + 1}:</strong> {mealName}
-                                </span>
-                              </div>
-                              <span
-                                style={{
-                                  fontSize: '10px',
-                                  textTransform: 'uppercase',
-                                  fontWeight: 'bold',
-                                  color: isDone ? 'var(--primary)' : '#555',
-                                }}
-                              >
-                                {isDone ? 'CONCLUÍDA' : 'PENDENTE'}
-                              </span>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
+              {/* 3 Opções de Cardápios em Destaque Interativo */}
+              <div className="mb-6">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <Utensils className="w-4 h-4 text-[#00f2fe]" />
+                    <span className="text-xs font-black uppercase text-white tracking-wide">
+                      3 Cardápios de Verão Calculados (Todos inclusos no seu PDF):
+                    </span>
                   </div>
-                );
-              })()}
+                  <span className="text-[10px] font-mono font-bold text-[#00ff9d] bg-[#00ff9d]/10 px-2.5 py-0.5 rounded border border-[#00ff9d]/25">
+                    3 VARIAÇÕES DISPONÍVEIS
+                  </span>
+                </div>
 
-              {/* As 3 Opções de Cardápios */}
-              <div id="menus-container">
-                {calcData.options.map((menu, idx) => (
-                  <div
-                    key={idx}
-                    className="menu-box"
-                    style={{ borderLeftColor: menu.color }}
-                  >
-                    <div className="menu-title" style={{ color: menu.color }}>
-                      <span>{menu.title}</span>
-                      <span style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: 'normal' }}>
-                        {calcData.mealsCount} Refeições
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  {dietOptions.map((opt, idx) => (
+                    <button
+                      key={opt.optionNumber}
+                      type="button"
+                      onClick={() => setDietOptionIndex(idx)}
+                      className={`p-4 rounded-xl border text-left cursor-pointer transition-all ${
+                        dietOptionIndex === idx
+                          ? 'bg-[#00f2fe]/10 border-[#00f2fe] shadow-lg shadow-[#00f2fe]/15 ring-1 ring-[#00f2fe]/50'
+                          : 'bg-[#090e18] border-[#1e293b] hover:border-[#00f2fe]/40 opacity-80 hover:opacity-100'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <span className={`text-[10px] font-mono font-black uppercase px-2 py-0.5 rounded ${
+                          dietOptionIndex === idx ? 'bg-[#00f2fe] text-slate-950' : 'bg-[#151f30] text-slate-400'
+                        }`}>
+                          Opção 0{idx + 1}
+                        </span>
+                        <span className="text-xs font-black text-[#00ff9d] font-mono">
+                          ~{targets.targetCalories} kcal
+                        </span>
+                      </div>
+                      <span className="text-xs font-black text-white block">
+                        {opt.title.replace(`Opção ${opt.optionNumber}: `, '')}
                       </span>
+                      <span className="text-[11px] text-slate-400 block mt-1 leading-tight line-clamp-2">
+                        {opt.tagline}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+
+                {/* Banner de Garantia Oficial de Inclusão no PDF */}
+                <div className="mt-3 p-3 rounded-lg bg-[#00f2fe]/5 border border-[#00f2fe]/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-[#00ff9d] flex-shrink-0" />
+                    <span className="text-slate-300">
+                      Visualizando agora: <strong className="text-white">{activeDiet.title}</strong>
+                    </span>
+                  </div>
+                  <span className="font-mono text-[10px] text-[#00f2fe] font-bold">
+                    ✓ TODAS AS 3 OPÇÕES SERÃO IMPRESSAS NO SEU PDF FINAL
+                  </span>
+                </div>
+              </div>
+
+              {/* Lista das Refeições do Cardápio Selecionado */}
+              <div className="space-y-4 mb-6">
+                {activeDiet.meals.map((meal, mealIdx) => (
+                  <div
+                    key={meal.id}
+                    className="p-5 rounded-xl bg-[#090e18] border border-[#1e293b] hover:border-[#00f2fe]/30 transition-all space-y-3"
+                  >
+                    <div className="flex items-center justify-between pb-2 border-b border-[#162032]">
+                      <div className="flex items-center gap-2.5">
+                        <span className="w-6 h-6 rounded bg-[#00f2fe]/15 text-[#00f2fe] font-mono font-black text-xs flex items-center justify-center border border-[#00f2fe]/30">
+                          0{mealIdx + 1}
+                        </span>
+                        <div>
+                          <span className="font-extrabold text-sm text-white block">{meal.name}</span>
+                          <span className="text-[11px] text-slate-400 flex items-center gap-1 mt-0.5 font-mono">
+                            <Clock className="w-3 h-3 text-[#00f2fe]" /> Horário Sugerido: {meal.timeSuggestion}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="text-right">
+                        <span className="text-sm font-black text-[#00ff9d] font-mono block">
+                          {meal.totalCalories} kcal
+                        </span>
+                        <span className="text-[10px] text-slate-400 font-mono">
+                          P: {meal.totalProtein}g | C: {meal.totalCarbs}g | G: {meal.totalFats}g
+                        </span>
+                      </div>
                     </div>
 
-                    {menu.mealsList.map((m, mIdx) => (
-                      <div key={mIdx} className="meal">
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <strong>{m.name}</strong>
-                          <span style={{ fontSize: '11px', color: '#666', fontFamily: 'monospace' }}>{m.time}</span>
+                    {/* Alimentos Pesados */}
+                    <div className="space-y-2 pt-1">
+                      {meal.items.map((item, itIdx) => (
+                        <div
+                          key={itIdx}
+                          className="p-2.5 rounded-lg bg-[#0f1624] border border-[#1a2538] flex items-center justify-between gap-3 text-xs"
+                        >
+                          <div>
+                            <span className="font-bold text-slate-200 block">{item.name}</span>
+                            {item.tip && (
+                              <span className="text-[11px] text-slate-400 block">{item.tip}</span>
+                            )}
+                          </div>
+                          <span className="font-mono font-bold text-[#00f2fe] bg-[#00f2fe]/10 px-2.5 py-1 rounded border border-[#00f2fe]/20 flex-shrink-0">
+                            {item.portion}
+                          </span>
                         </div>
-                        <span dangerouslySetInnerHTML={{ __html: m.desc }} />
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
                 ))}
               </div>
 
-              {/* BOTÃO BAIXAR DIETA EM PDF */}
-              <button
-                className="btn btn-primary"
-                style={{ marginTop: '15px' }}
-                onClick={handleDownloadPdf}
-              >
-                📥 Baixar Protocolo Seca Peitoral em PDF
-              </button>
+              {/* Tabela de Substituições Inteligentes */}
+              <div className="mb-6">
+                <button
+                  type="button"
+                  onClick={() => setShowSubstitutions(!showSubstitutions)}
+                  className="w-full p-3.5 rounded-xl bg-[#090e18] border border-[#1e293b] text-xs font-bold text-white flex items-center justify-between cursor-pointer hover:border-[#00f2fe]/50"
+                >
+                  <div className="flex items-center gap-2">
+                    <RefreshCw className="w-4 h-4 text-[#00f2fe]" />
+                    <span>Tabela Oficial de Substituições de Alimentos na Balança</span>
+                  </div>
+                  <span className="text-slate-400 font-mono text-[11px]">
+                    {showSubstitutions ? '▲ OCULTAR' : '▼ VER EQUIVALÊNCIAS'}
+                  </span>
+                </button>
 
-              {/* BOTÃO PARA REFAZER CÁLCULO */}
+                {showSubstitutions && (
+                  <div className="p-4 bg-[#090e18] border border-[#1e293b] border-t-0 rounded-b-xl space-y-3">
+                    <div className="flex gap-2">
+                      {(['Proteínas', 'Carboidratos', 'Gorduras Boas'] as const).map((grp) => (
+                        <button
+                          key={grp}
+                          type="button"
+                          onClick={() => setSubGroup(grp)}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-bold cursor-pointer transition-all ${
+                            subGroup === grp
+                              ? 'bg-[#00f2fe] text-slate-950 font-black'
+                              : 'bg-[#0f1624] text-slate-400 hover:text-white'
+                          }`}
+                        >
+                          {grp}
+                        </button>
+                      ))}
+                    </div>
+
+                    <div className="space-y-3 pt-2">
+                      {SUMMER_SUBSTITUTIONS.filter((s) => s.group === subGroup).map((sub, i) => (
+                        <div key={i} className="p-3 bg-[#0c121e] rounded-lg border border-[#1e293b] text-xs space-y-2">
+                          <span className="font-bold text-[#00f2fe] block border-b border-[#1e293b] pb-1">
+                            Alimento de Referência: {sub.baseFood}
+                          </span>
+                          <ul className="space-y-1">
+                            {sub.equivalents.map((eq, eqIdx) => (
+                              <li key={eqIdx} className="text-slate-300 flex items-center gap-2">
+                                <CheckCircle2 className="w-3.5 h-3.5 text-[#00ff9d] flex-shrink-0" />
+                                <span>{eq}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Botão de Avanço Tech */}
               <button
-                className="btn"
-                style={{
-                  background: 'transparent',
-                  border: '1px solid #333',
-                  color: '#888',
-                  fontSize: '12px',
-                  marginTop: '10px',
-                }}
+                type="button"
                 onClick={() => {
-                  setShowResult(false);
+                  setCurrentStep(3);
                   window.scrollTo({ top: 0, behavior: 'smooth' });
                 }}
+                className="btn-primary"
               >
-                Refazer Cálculo / Alterar Dados
+                <span>AVANÇAR PARA MONTAR MEU TREINO</span>
+                <ArrowRight className="w-5 h-5" />
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setCurrentStep(1);
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                className="btn-secondary"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                <span>Voltar e Ajustar Dados</span>
               </button>
             </div>
-          </div>
-        )
-      )}
           </div>
         )}
 
-        {/* RODAPÉ OFICIAL */}
-        <footer
-          style={{
-            textAlign: 'center',
-            padding: '24px 16px 12px',
-            borderTop: '1px solid #191919',
-            marginTop: '20px',
-            fontSize: '11px',
-            color: '#666',
-            lineHeight: 1.6,
-          }}
-        >
-          <p style={{ margin: 0 }}>
-            Os resultados variam e dependem exclusivamente da sua execução diária e disciplina.
-          </p>
-          <p style={{ margin: '4px 0 0 0', fontWeight: 700, color: '#888' }}>
-            Copyright © 2026 — Rjonnssonfit • Quartel-General Seca Peitoral
-          </p>
-        </footer>
-      </div>
-
-      {/* BARRA DE NAVEGAÇÃO INFERIOR FIXA ESTILO APP MOBILE (PWA) */}
-      <nav
-        aria-label="Navegação Principal do Aplicativo"
-        style={{
-          position: 'fixed',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          width: '100%',
-          zIndex: 120,
-          background: 'rgba(10, 10, 10, 0.96)',
-          backdropFilter: 'blur(14px)',
-          borderTop: '1px solid #242424',
-          padding: '6px 8px 10px',
-        }}
-      >
-        <div
-          style={{
-            maxWidth: '540px',
-            margin: '0 auto',
-            display: 'grid',
-            gridTemplateColumns: 'repeat(5, 1fr)',
-            gap: '2px',
-          }}
-        >
-          {[
-            { id: 'home' as const, icon: '🏠', label: 'Início', color: '#00FF00' },
-            { id: 'workout' as const, icon: '🏋️', label: 'Treino & Vídeo', color: '#00FF00' },
-            { id: 'diet' as const, icon: '🥩', label: 'Dieta (App)', color: '#00FF00' },
-            { id: 'aromatase' as const, icon: '🛡️', label: 'Aromatase', color: '#FFD700' },
-            { id: 'armor' as const, icon: '⚡', label: 'Armadura', color: '#38bdf8' },
-          ].map((nav) => {
-            const isSelected = activeTab === nav.id;
-            return (
-              <button
-                key={nav.id}
-                type="button"
-                onClick={() => navigateToTab(nav.id)}
-                style={{
-                  background: isSelected ? 'rgba(255, 255, 255, 0.06)' : 'transparent',
-                  border: 'none',
-                  borderTop: isSelected ? `2px solid ${nav.color}` : '2px solid transparent',
-                  borderRadius: '6px',
-                  padding: '6px 2px',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  gap: '3px',
-                  color: isSelected ? nav.color : '#888',
-                  transition: 'all 0.15s',
-                }}
-              >
-                <span style={{ fontSize: '17px', lineHeight: 1 }}>{nav.icon}</span>
-                <span
-                  style={{
-                    fontSize: '10px',
-                    fontWeight: isSelected ? 800 : 600,
-                    letterSpacing: '0.2px',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  {nav.label}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      </nav>
-
-      {/* MODAL DE INSTALAÇÃO DO APP NO CELULAR (PWA) */}
-      {showInstallModal && (
-        <div
-          onClick={() => setShowInstallModal(false)}
-          style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(0, 0, 0, 0.85)',
-            zIndex: 250,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '18px',
-          }}
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            style={{
-              background: '#121212',
-              border: '1px solid #00FF00',
-              borderRadius: '14px',
-              padding: '22px',
-              maxWidth: '440px',
-              width: '100%',
-            }}
-          >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-              <h3
-                style={{
-                  margin: 0,
-                  fontFamily: "'Montserrat', sans-serif",
-                  fontSize: '17px',
-                  color: '#fff',
-                  textTransform: 'uppercase',
-                }}
-              >
-                📲 Instalar App no Celular
-              </h3>
-              <button
-                type="button"
-                onClick={() => setShowInstallModal(false)}
-                style={{ background: 'transparent', border: 'none', color: '#888', fontSize: '16px', cursor: 'pointer' }}
-              >
-                ✕
-              </button>
+        {/* ================================================================ */}
+        {/* ETAPA 3: MONTADOR DE TREINO PERSONALIZADO                        */}
+        {/* ================================================================ */}
+        {currentStep === 3 && (
+          <div>
+            <div className="text-center mb-3">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-mono font-bold tracking-wider uppercase bg-[#8b5cf6]/10 text-[#a78bfa] border border-[#8b5cf6]/25">
+                <Activity className="w-3 h-3" /> HYBRID TRAINING ENGINE
+              </span>
             </div>
 
-            <p style={{ fontSize: '12px', color: '#ccc', lineHeight: 1.5, margin: '0 0 14px 0' }}>
-              Crie o atalho oficial do <strong>QG Seca Peitoral</strong> na tela inicial do seu celular para acessar sua Ficha, Vídeo-Aula e Dieta com 1 toque na academia:
+            <h1 className="section-title">
+              Montador de Treino | <span>Academia ou Casa</span>
+            </h1>
+            <p className="subtitle">
+              Defina seu local de treinamento e frequência semanal. A ficha é estruturada com sobrecarga progressiva e finalizador metabólico para derreter gordura.
             </p>
 
-            <div style={{ background: '#181818', border: '1px solid #2a2a2a', borderRadius: '8px', padding: '12px', marginBottom: '10px' }}>
-              <strong style={{ color: '#00FF00', fontSize: '12px', display: 'block', marginBottom: '4px' }}>
-                🤖 No Android (Chrome):
-              </strong>
-              <span style={{ fontSize: '12px', color: '#bbb', lineHeight: 1.45 }}>
-                1. Toque nos <strong>3 pontinhos (⋮)</strong> no canto superior direito do navegador.<br />
-                2. Selecione <strong>&ldquo;Adicionar à tela inicial&rdquo;</strong> ou <strong>&ldquo;Instalar aplicativo&rdquo;</strong>.
-              </span>
-            </div>
+            <div className="calc-wrapper">
+              {/* 1. Escolha de Ambiente: Academia ou Casa */}
+              <div className="form-group">
+                <label>Ambiente de Treinamento:</label>
+                <div className="form-row">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setWorkoutLocation('academia');
+                      setSelectedDayIndex(0);
+                    }}
+                    className={`p-4 rounded-xl border text-left cursor-pointer flex-1 transition-all flex items-center gap-3.5 ${
+                      workoutLocation === 'academia'
+                        ? 'bg-[#00f2fe]/10 border-[#00f2fe] text-white shadow-lg shadow-[#00f2fe]/10'
+                        : 'bg-[#090e18] border-[#1e293b] text-slate-400 hover:border-slate-500'
+                    }`}
+                  >
+                    <div className={`p-2.5 rounded-lg ${workoutLocation === 'academia' ? 'bg-[#00f2fe] text-slate-950' : 'bg-[#151f30] text-slate-300'}`}>
+                      <Building2 className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <span className="font-black text-sm block text-white uppercase">🏢 Treino em Academia</span>
+                      <span className="text-[11px] text-slate-400 block mt-0.5">Musculação com halteres, barras, máquinas e esteira</span>
+                    </div>
+                  </button>
 
-            <div style={{ background: '#181818', border: '1px solid #2a2a2a', borderRadius: '8px', padding: '12px', marginBottom: '16px' }}>
-              <strong style={{ color: '#FFD700', fontSize: '12px', display: 'block', marginBottom: '4px' }}>
-                🍎 No iPhone (Safari):
-              </strong>
-              <span style={{ fontSize: '12px', color: '#bbb', lineHeight: 1.45 }}>
-                1. Toque no ícone de <strong>Compartilhar (quadrado com seta p/ cima)</strong> na barra inferior.<br />
-                2. Role para baixo e toque em <strong>&ldquo;Adicionar à Tela de Início&rdquo;</strong>.
-              </span>
-            </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setWorkoutLocation('casa');
+                      setSelectedDayIndex(0);
+                    }}
+                    className={`p-4 rounded-xl border text-left cursor-pointer flex-1 transition-all flex items-center gap-3.5 ${
+                      workoutLocation === 'casa'
+                        ? 'bg-[#00f2fe]/10 border-[#00f2fe] text-white shadow-lg shadow-[#00f2fe]/10'
+                        : 'bg-[#090e18] border-[#1e293b] text-slate-400 hover:border-slate-500'
+                    }`}
+                  >
+                    <div className={`p-2.5 rounded-lg ${workoutLocation === 'casa' ? 'bg-[#00f2fe] text-slate-950' : 'bg-[#151f30] text-slate-300'}`}>
+                      <Home className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <span className="font-black text-sm block text-white uppercase">🏠 Treino em Casa</span>
+                      <span className="text-[11px] text-slate-400 block mt-0.5">Calistenia funcional com peso do corpo e circuitos HIIT</span>
+                    </div>
+                  </button>
+                </div>
+              </div>
 
-            <button
-              type="button"
-              onClick={() => setShowInstallModal(false)}
-              className="btn btn-primary"
-              style={{ padding: '12px' }}
-            >
-              Entendido, Voltar ao App
-            </button>
+              {/* 2. Filtros de Nível, Frequência e Duração */}
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Nível Atual:</label>
+                  <select
+                    value={workoutLevel}
+                    onChange={(e) => setWorkoutLevel(e.target.value as WorkoutLevel)}
+                  >
+                    <option value="iniciante">Iniciante (Iniciando ou retornando agora)</option>
+                    <option value="intermediario">Intermediário (Treina com consistência)</option>
+                    <option value="avancado">Avançado (Alta intensidade de treino)</option>
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label>Frequência Semanal:</label>
+                  <select
+                    value={workoutFrequency}
+                    onChange={(e) => {
+                      setWorkoutFrequency(Number(e.target.value) as WorkoutFrequency);
+                      setSelectedDayIndex(0);
+                    }}
+                  >
+                    <option value="3">3 Dias por Semana (Full Body / ABC)</option>
+                    <option value="4">4 Dias por Semana (Upper / Lower)</option>
+                    <option value="5">5 Dias por Semana (Push / Pull / Legs)</option>
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label>Tempo por Treino:</label>
+                  <select
+                    value={workoutDuration}
+                    onChange={(e) => setWorkoutDuration(Number(e.target.value) as WorkoutDuration)}
+                  >
+                    <option value="30">30 Minutos (Express / Alta Densidade)</option>
+                    <option value="45">45 Minutos (Hipertrofia & Queima Equilibrada)</option>
+                    <option value="60">60 Minutos (Completo com Cárdio Longo)</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* 3. Seleção dos Dias de Treino */}
+              <div className="form-group">
+                <label>Ficha Dividida ({workoutPlan.days.length} Dias na Semana):</label>
+                <div className="flex gap-2 overflow-x-auto pb-1">
+                  {workoutPlan.days.map((day, idx) => (
+                    <button
+                      key={day.id}
+                      type="button"
+                      onClick={() => setSelectedDayIndex(idx)}
+                      className={`px-4 py-2 rounded-lg text-xs font-black uppercase cursor-pointer flex-shrink-0 transition-all font-mono ${
+                        selectedDayIndex === idx
+                          ? 'bg-gradient-to-r from-[#00f2fe] to-[#00ff9d] text-slate-950'
+                          : 'bg-[#090e18] text-slate-400 hover:text-white border border-[#1e293b]'
+                      }`}
+                    >
+                      {day.dayLabel}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* 4. Detalhes dos Exercícios do Dia */}
+              <div className="p-5 rounded-xl bg-[#090e18] border border-[#1e293b] space-y-4 mb-6">
+                <div className="pb-3 border-b border-[#162032]">
+                  <span className="text-[11px] font-bold text-[#00f2fe] uppercase tracking-wider block font-mono">
+                    {activeWorkoutDay.dayLabel} • {workoutLocation === 'academia' ? 'Academia' : 'Em Casa'}
+                  </span>
+                  <span className="text-base font-black text-white block mt-0.5">{activeWorkoutDay.title}</span>
+                </div>
+
+                <div className="space-y-3">
+                  {activeWorkoutDay.exercises.map((ex, exIdx) => (
+                    <div
+                      key={ex.id}
+                      className="p-3.5 rounded-lg bg-[#0f1624] border border-[#1a2538] flex items-start justify-between gap-3 text-xs"
+                    >
+                      <div className="flex items-start gap-2.5">
+                        <span className="w-5 h-5 rounded bg-[#00f2fe]/15 text-[#00f2fe] font-mono font-black text-[11px] flex items-center justify-center flex-shrink-0 mt-0.5">
+                          {exIdx + 1}
+                        </span>
+                        <div>
+                          <span className="font-extrabold text-white text-sm block">{ex.name}</span>
+                          <span className="text-[11px] text-slate-400 block mt-0.5">
+                            <strong className="text-slate-300">Técnica:</strong> {ex.notes}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="text-right flex-shrink-0">
+                        <span className="font-mono font-black text-[#00ff9d] block text-sm">
+                          {ex.sets} × {ex.reps}
+                        </span>
+                        <span className="text-[10px] text-slate-500 font-mono block mt-0.5">
+                          Descanso: {ex.rest}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Finalizador Queimador de Verão */}
+                <div className="p-4 rounded-lg bg-[#081816] border border-[#00ff9d]/30 space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-black text-white flex items-center gap-1.5 uppercase">
+                      <Flame className="w-4 h-4 text-[#00ff9d]" /> Finalizador: {activeWorkoutDay.cardioFinisher.title}
+                    </span>
+                    <span className="text-[10px] font-black font-mono text-[#00ff9d] bg-[#00ff9d]/15 px-2.5 py-0.5 rounded border border-[#00ff9d]/30">
+                      Gasto: {activeWorkoutDay.cardioFinisher.caloriesBurnEst}
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-300 leading-relaxed">
+                    {activeWorkoutDay.cardioFinisher.protocol}
+                  </p>
+                </div>
+              </div>
+
+              {/* Botão de Finalização & Download */}
+              <button
+                type="button"
+                onClick={handleFinish}
+                className="btn-primary"
+              >
+                <Download className="w-5 h-5" />
+                <span>FINALIZAR & BAIXAR PROTOCOLO EM PDF (3 DIETAS + TREINO)</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setCurrentStep(2);
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                className="btn-secondary"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                <span>Voltar para a Dieta</span>
+              </button>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+
+        {/* ================================================================ */}
+        {/* ETAPA 4: PROTOCOLO CONCLUÍDO & DOWNLOAD DO PDF                   */}
+        {/* ================================================================ */}
+        {currentStep === 4 && (
+          <div>
+            <div className="text-center mb-3">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-mono font-bold tracking-wider uppercase bg-[#00ff9d]/10 text-[#00ff9d] border border-[#00ff9d]/25">
+                <ShieldCheck className="w-3 h-3" /> PROTOCOLO LIBERADO COM SUCESSO
+              </span>
+            </div>
+
+            <h1 className="section-title">
+              Protocolo Concluído | <span>Download Liberado</span>
+            </h1>
+            <p className="subtitle">
+              Seu plano oficial RJonnssonFit com Diagnóstico Metabólico, as 3 Opções de Cardápios na Balança e Ficha de Treino foi finalizado com sucesso!
+            </p>
+
+            <div className="calc-wrapper text-center space-y-6">
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-[#00f2fe]/20 to-[#00ff9d]/20 text-[#00ff9d] border-2 border-[#00ff9d] mx-auto flex items-center justify-center font-black shadow-lg shadow-[#00ff9d]/20">
+                <Check className="w-8 h-8 stroke-[3]" />
+              </div>
+
+              <div>
+                <h3 className="text-xl font-black text-white uppercase tracking-tight">
+                  Seu PDF Oficial RJonnssonFit está Pronto!
+                </h3>
+                <p className="text-xs text-slate-400 mt-1 max-w-md mx-auto leading-relaxed">
+                  O download do documento formatado com as <strong>3 opções de cardápios</strong> e o treino completo começou automaticamente.
+                </p>
+              </div>
+
+              {/* Botão de Baixar Novamente */}
+              <button
+                type="button"
+                onClick={triggerPdfDownload}
+                className="btn-primary"
+              >
+                <Download className="w-5 h-5" />
+                <span>BAIXAR PDF NOVAMENTE</span>
+              </button>
+
+              {/* Checklist Diário de Compromissos do Verão */}
+              <div className="p-6 rounded-xl bg-[#090e18] border border-[#1e293b] text-left space-y-3">
+                <h4 className="text-xs font-black uppercase tracking-wider text-[#00f2fe] border-b border-[#1e293b] pb-2 font-mono">
+                  CHECKLIST DIÁRIO DE DISCIPLINA • PROJETO VERÃO
+                </h4>
+
+                <div className="space-y-2">
+                  {habits.map((h) => (
+                    <button
+                      key={h.id}
+                      type="button"
+                      onClick={() => toggleHabit(h.id)}
+                      className="w-full p-3 rounded-lg bg-[#0f1624] border border-[#1e293b] flex items-center justify-between text-left hover:border-[#00f2fe]/40 transition-colors cursor-pointer"
+                    >
+                      <span className={`text-xs ${h.done ? 'line-through text-slate-500' : 'text-slate-200 font-bold'}`}>
+                        {h.label}
+                      </span>
+                      <div
+                        className={`w-5 h-5 rounded flex items-center justify-center border transition-all ${
+                          h.done ? 'bg-[#00ff9d] border-[#00ff9d] text-slate-950 font-black' : 'border-slate-600'
+                        }`}
+                      >
+                        {h.done && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Botão para Criar Novo Plano */}
+              <button
+                type="button"
+                onClick={() => {
+                  setCurrentStep(1);
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                className="btn-secondary"
+              >
+                <RotateCcw className="w-4 h-4" />
+                <span>Refazer Cálculo ou Criar Novo Plano</span>
+              </button>
+            </div>
+          </div>
+        )}
+      </main>
+
+      {/* FOOTER */}
+      <footer className="footer">
+        &copy; {new Date().getFullYear()} Rjonnssonfit | Cyber-Metabolic Engine • Projeto Verão 2026/2027.
+      </footer>
     </div>
   );
 }
