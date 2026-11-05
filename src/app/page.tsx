@@ -227,7 +227,7 @@ export default function RJonnssonFitPage() {
               Calculadora de Metabolismo | <span>Projeto Verão</span>
             </h1>
             <p className="subtitle">
-              Insira seus dados biométricos. Nosso algoritmo calcula a Taxa Metabólica Basal (Mifflin-St Jeor), o gasto real e estrutura as 3 opções de cardápios com déficit de -700 kcal.
+              Insira seus dados biométricos. Nosso algoritmo calcula a Taxa Metabólica Basal (Mifflin-St Jeor), o gasto real e estrutura as 3 opções de cardápios com o déficit estratégico selecionado.
             </p>
 
             <div className="calc-wrapper">
@@ -341,7 +341,9 @@ export default function RJonnssonFitPage() {
                     <span className="text-lg font-black text-white font-mono">{targets.get} kcal</span>
                   </div>
                   <div className="text-right">
-                    <span className="text-[#00f2fe] font-mono text-[11px] font-bold block">META PARA SECAR (-700 kcal):</span>
+                    <span className="text-[#00f2fe] font-mono text-[11px] font-bold block">
+                      META CALÓRICA ({targets.calorieDiff > 0 ? `+${targets.calorieDiff}` : targets.calorieDiff} kcal):
+                    </span>
                     <span className="text-xl font-black text-[#00ff9d] font-mono">{targets.targetCalories} kcal</span>
                   </div>
                 </div>
@@ -397,7 +399,9 @@ export default function RJonnssonFitPage() {
                 </div>
 
                 <div className="result-box" style={{ borderColor: 'rgba(0, 255, 157, 0.45)', boxShadow: '0 0 15px rgba(0, 255, 157, 0.1)' }}>
-                  <h4 style={{ color: 'var(--primary-mint)' }}>Meta Calórica (-700 kcal)</h4>
+                  <h4 style={{ color: 'var(--primary-mint)' }}>
+                    Meta Calórica ({targets.calorieDiff > 0 ? `+${targets.calorieDiff}` : targets.calorieDiff} kcal)
+                  </h4>
                   <p style={{ color: 'var(--primary-mint)' }}>
                     {targets.targetCalories} <small style={{ fontSize: '14px', color: '#64748b' }}>kcal</small>
                   </p>
