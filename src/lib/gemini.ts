@@ -65,7 +65,7 @@ ${optionDirectives || mealDirectives || `- Fontes de Proteína selecionadas: ${u
 ${customNotes ? `Observações adicionais: ${customNotes}` : ''}
 
 REGRAS:
-1. Monte as 3 opções de cardápio (Opção 1, Opção 2 e Opção 3) correspondendo fielmente às escolhas de alimentos que o cliente fez para cada uma delas, prescrevendo as gramaturas exatas na balança (peso do alimento já pronto/cozido) para bater rigorosamente as metas.
+1. Monte as 3 opções de cardápio (Opção 1, Opção 2 e Opção 3) priorizando alimentos POPULARES, ACESSÍVEIS E DE BAIXO CUSTO da rotina brasileira (arroz, feijão, ovos inteiros, frango, carne moída, batata inglesa/doce, mandioca, pão comum, cuscuz, aveia e banana). Evite ingredientes caros ou elitizados (como salmão, aspargos, queijos importados, suplementos caros etc.).
 2. Divida em ${mealsCount} refeições. ${fastingDirective}
 3. Mostre as gramaturas aproximadas na balança (peso do alimento já cozido/preparado) ao lado de cada item para fechar a matemática dos macros com rigor.
 
