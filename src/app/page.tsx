@@ -236,23 +236,13 @@ export default function RJonnssonFitPage() {
                 <div className="form-row">
                   <div className="form-group">
                     <label>Gênero Biológico:</label>
-                    <div className="grid grid-cols-2 gap-2 p-1 rounded-xl bg-[#080c14] border border-[#1a2538] h-[52px]">
-                      {(['masculino', 'feminino'] as const).map((g) => (
-                        <button
-                          key={g}
-                          type="button"
-                          onClick={() => setGender(g)}
-                          className={`rounded-lg text-xs font-black uppercase tracking-wider transition-all duration-200 cursor-pointer font-mono flex items-center justify-center gap-1.5 active:scale-95 ${
-                            gender === g
-                              ? 'bg-gradient-to-r from-[#00f2fe] to-[#00ff9d] text-slate-950 shadow-md shadow-[#00f2fe]/25 font-black'
-                              : 'bg-transparent text-slate-400 hover:text-white hover:bg-white/5'
-                          }`}
-                        >
-                          {gender === g && <Check className="w-3 h-3 stroke-[3]" />}
-                          {g === 'masculino' ? '♂ Homem' : '♀ Mulher'}
-                        </button>
-                      ))}
-                    </div>
+                    <select
+                      value={gender}
+                      onChange={(e) => setGender(e.target.value as Gender)}
+                    >
+                      <option value="masculino">Masculino</option>
+                      <option value="feminino">Feminino</option>
+                    </select>
                   </div>
                   <div className="form-group">
                     <label>Idade (anos):</label>
@@ -308,23 +298,14 @@ export default function RJonnssonFitPage() {
                 {/* Linha 4: Quantidade de Refeições */}
                 <div className="form-group">
                   <label>Divisão Diária de Refeições Desejada:</label>
-                  <div className="grid grid-cols-3 gap-2 p-1.5 rounded-xl bg-[#080c14] border border-[#1a2538] h-[52px]">
-                    {([3, 4, 5] as const).map((m) => (
-                      <button
-                        key={m}
-                        type="button"
-                        onClick={() => setMealsCount(m)}
-                        className={`rounded-lg text-xs font-black uppercase tracking-wider transition-all duration-200 cursor-pointer font-mono flex items-center justify-center gap-1.5 active:scale-95 ${
-                          mealsCount === m
-                            ? 'bg-gradient-to-r from-[#00f2fe] to-[#00ff9d] text-slate-950 shadow-md shadow-[#00f2fe]/25 font-black'
-                            : 'bg-transparent text-slate-400 hover:text-white hover:bg-white/5'
-                        }`}
-                      >
-                        {mealsCount === m && <Check className="w-3 h-3 stroke-[3]" />}
-                        {m} Refeições
-                      </button>
-                    ))}
-                  </div>
+                  <select
+                    value={mealsCount}
+                    onChange={(e) => setMealsCount(Number(e.target.value))}
+                  >
+                    <option value="3">3 Refeições por Dia (Almoço, Lanche/Pré-Treino e Jantar - Estilo Jejum)</option>
+                    <option value="4">4 Refeições por Dia (Café da Manhã, Almoço, Lanche e Jantar - Padrão Atleta)</option>
+                    <option value="5">5 Refeições por Dia (Café, Lanche, Almoço, Lanche da Tarde e Jantar - Fracionada)</option>
+                  </select>
                 </div>
 
                 {/* Linha 5: Estratégia Calórica de Queima */}
@@ -454,42 +435,41 @@ export default function RJonnssonFitPage() {
                   </span>
                 </div>
 
-                {/* Botões Segmentados Reais de Seleção */}
-                <div className="grid grid-cols-3 gap-2 p-1.5 rounded-2xl bg-[#080c14] border border-[#1a2538] h-[56px] mb-3">
+                {/* 3 Opções de Cardápios em Destaque Interativo */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
                   {dietOptions.map((opt, idx) => (
                     <button
                       key={opt.optionNumber}
                       type="button"
                       onClick={() => setDietOptionIndex(idx)}
-                      className={`rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-200 cursor-pointer font-mono flex items-center justify-center gap-2 active:scale-95 ${
+                      className={`p-4 rounded-xl border text-left cursor-pointer transition-all ${
                         dietOptionIndex === idx
-                          ? 'bg-gradient-to-r from-[#00f2fe] to-[#00ff9d] text-slate-950 shadow-lg shadow-[#00f2fe]/25 font-black scale-[1.01]'
-                          : 'bg-transparent text-slate-400 hover:text-white hover:bg-white/5'
+                          ? 'bg-[#00f2fe]/10 border-[#00f2fe] shadow-lg shadow-[#00f2fe]/15 ring-1 ring-[#00f2fe]/50'
+                          : 'bg-[#090e18] border-[#1e293b] hover:border-[#00f2fe]/40 opacity-80 hover:opacity-100 hover:bg-[#0c1220]'
                       }`}
                     >
-                      {dietOptionIndex === idx && <Check className="w-3.5 h-3.5 stroke-[3]" />}
-                      Opção 0{idx + 1}
+                      <div className="flex items-center justify-between mb-2">
+                        <span className={`text-[10px] font-mono font-black uppercase px-2 py-0.5 rounded ${
+                          dietOptionIndex === idx ? 'bg-[#00f2fe] text-slate-950 font-bold' : 'bg-[#151f30] text-slate-400'
+                        }`}>
+                          Opção 0{idx + 1}
+                        </span>
+                        <span className="text-xs font-black text-[#00ff9d] font-mono">
+                          ~{targets.targetCalories} kcal
+                        </span>
+                      </div>
+                      <span className="text-xs font-black text-white block">
+                        {opt.title.replace(`Opção ${opt.optionNumber}: `, '')}
+                      </span>
+                      <span className="text-[11px] text-slate-400 block mt-1 leading-tight line-clamp-2">
+                        {opt.tagline}
+                      </span>
                     </button>
                   ))}
                 </div>
 
-                {/* Banner Informativo do Cardápio Ativo */}
-                <div className="p-4 rounded-xl bg-[#0c1220] border border-[#1e293b] flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
-                  <div>
-                    <span className="text-xs font-mono font-black text-[#00f2fe] uppercase block">
-                      Cardápio Ativo: {activeDiet.title}
-                    </span>
-                    <span className="text-xs text-slate-300 mt-0.5 block">
-                      {activeDiet.tagline}
-                    </span>
-                  </div>
-                  <span className="font-mono text-xs font-black text-[#00ff9d] bg-[#00ff9d]/10 px-3 py-1 rounded-full border border-[#00ff9d]/20 whitespace-nowrap self-start sm:self-auto">
-                    ~{targets.targetCalories} kcal • P: {targets.proteinGrams}g
-                  </span>
-                </div>
-
                 {/* Banner de Garantia Oficial de Inclusão no PDF */}
-                <div className="mt-3 p-3 rounded-lg bg-[#00f2fe]/5 border border-[#00f2fe]/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs">
+                <div className="mb-6 p-3 rounded-lg bg-[#00f2fe]/5 border border-[#00f2fe]/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs">
                   <div className="flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-[#00ff9d] flex-shrink-0" />
                     <span className="text-slate-300">
@@ -661,22 +641,26 @@ export default function RJonnssonFitPage() {
               {/* 1. Escolha de Ambiente: Academia ou Casa */}
               <div className="form-group">
                 <label>Ambiente de Treinamento:</label>
-                <div className="grid grid-cols-2 gap-2 p-1.5 rounded-2xl bg-[#080c14] border border-[#1a2538] h-[58px] mb-2">
+                <div className="form-row">
                   <button
                     type="button"
                     onClick={() => {
                       setWorkoutLocation('academia');
                       setSelectedDayIndex(0);
                     }}
-                    className={`rounded-xl text-xs sm:text-sm font-black uppercase tracking-wider transition-all duration-200 cursor-pointer font-mono flex items-center justify-center gap-2 active:scale-95 ${
+                    className={`p-4 rounded-xl border text-left cursor-pointer flex-1 transition-all flex items-center gap-3.5 ${
                       workoutLocation === 'academia'
-                        ? 'bg-gradient-to-r from-[#00f2fe] to-[#00ff9d] text-slate-950 shadow-lg shadow-[#00f2fe]/25 font-black scale-[1.01]'
-                        : 'bg-transparent text-slate-400 hover:text-white hover:bg-white/5'
+                        ? 'bg-[#00f2fe]/10 border-[#00f2fe] text-white shadow-lg shadow-[#00f2fe]/15'
+                        : 'bg-[#090e18] border-[#1e293b] text-slate-400 hover:border-slate-500 hover:bg-[#0c1220]'
                     }`}
                   >
-                    <Building2 className="w-4 h-4" />
-                    {workoutLocation === 'academia' && <Check className="w-3.5 h-3.5 stroke-[3]" />}
-                    Academia
+                    <div className={`p-2.5 rounded-lg ${workoutLocation === 'academia' ? 'bg-[#00f2fe] text-slate-950 shadow-sm' : 'bg-[#151f30] text-slate-300'}`}>
+                      <Building2 className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <span className="font-black text-sm block text-white uppercase">🏢 Treino em Academia</span>
+                      <span className="text-[11px] text-slate-400 block mt-0.5">Musculação com halteres, barras, máquinas e esteira</span>
+                    </div>
                   </button>
 
                   <button
@@ -685,93 +669,62 @@ export default function RJonnssonFitPage() {
                       setWorkoutLocation('casa');
                       setSelectedDayIndex(0);
                     }}
-                    className={`rounded-xl text-xs sm:text-sm font-black uppercase tracking-wider transition-all duration-200 cursor-pointer font-mono flex items-center justify-center gap-2 active:scale-95 ${
+                    className={`p-4 rounded-xl border text-left cursor-pointer flex-1 transition-all flex items-center gap-3.5 ${
                       workoutLocation === 'casa'
-                        ? 'bg-gradient-to-r from-[#00f2fe] to-[#00ff9d] text-slate-950 shadow-lg shadow-[#00f2fe]/25 font-black scale-[1.01]'
-                        : 'bg-transparent text-slate-400 hover:text-white hover:bg-white/5'
+                        ? 'bg-[#00f2fe]/10 border-[#00f2fe] text-white shadow-lg shadow-[#00f2fe]/15'
+                        : 'bg-[#090e18] border-[#1e293b] text-slate-400 hover:border-slate-500 hover:bg-[#0c1220]'
                     }`}
                   >
-                    <Home className="w-4 h-4" />
-                    {workoutLocation === 'casa' && <Check className="w-3.5 h-3.5 stroke-[3]" />}
-                    Em Casa
+                    <div className={`p-2.5 rounded-lg ${workoutLocation === 'casa' ? 'bg-[#00f2fe] text-slate-950 shadow-sm' : 'bg-[#151f30] text-slate-300'}`}>
+                      <Home className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <span className="font-black text-sm block text-white uppercase">🏠 Treino em Casa</span>
+                      <span className="text-[11px] text-slate-400 block mt-0.5">Calistenia funcional com peso do corpo e circuitos HIIT</span>
+                    </div>
                   </button>
-                </div>
-                <div className="text-[11px] text-slate-400 font-mono px-1">
-                  {workoutLocation === 'academia' 
-                    ? '🏢 Musculação completa com aparelhos, halteres, barras e cárdio.' 
-                    : '🏠 Treino funcional com peso do corpo, calistenia e circuitos aceleradores.'}
                 </div>
               </div>
 
-              {/* 2. Filtros de Nível, Frequência e Duração como Botões Segmentados Reais */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                {/* Nível Atual */}
-                <div className="form-group mb-0">
+              {/* 2. Filtros de Nível, Frequência e Duração */}
+              <div className="form-row">
+                <div className="form-group">
                   <label>Nível Atual:</label>
-                  <div className="grid grid-cols-3 gap-1.5 p-1 rounded-xl bg-[#080c14] border border-[#1a2538] h-[52px]">
-                    {(['iniciante', 'intermediario', 'avancado'] as const).map((lvl) => (
-                      <button
-                        key={lvl}
-                        type="button"
-                        onClick={() => setWorkoutLevel(lvl)}
-                        className={`rounded-lg text-[11px] font-black uppercase tracking-wider transition-all duration-200 cursor-pointer font-mono flex items-center justify-center gap-1 active:scale-95 ${
-                          workoutLevel === lvl
-                            ? 'bg-gradient-to-r from-[#00f2fe] to-[#00ff9d] text-slate-950 shadow-md shadow-[#00f2fe]/25 font-black'
-                            : 'bg-transparent text-slate-400 hover:text-white hover:bg-white/5'
-                        }`}
-                      >
-                        {workoutLevel === lvl && <Check className="w-3 h-3 stroke-[3]" />}
-                        {lvl === 'iniciante' ? 'Iniciante' : lvl === 'intermediario' ? 'Médio' : 'Avançado'}
-                      </button>
-                    ))}
-                  </div>
+                  <select
+                    value={workoutLevel}
+                    onChange={(e) => setWorkoutLevel(e.target.value as WorkoutLevel)}
+                  >
+                    <option value="iniciante">Iniciante (Iniciando ou retornando agora)</option>
+                    <option value="intermediario">Intermediário (Treina com consistência)</option>
+                    <option value="avancado">Avançado (Alta intensidade de treino)</option>
+                  </select>
                 </div>
 
-                {/* Frequência Semanal */}
-                <div className="form-group mb-0">
+                <div className="form-group">
                   <label>Frequência Semanal:</label>
-                  <div className="grid grid-cols-3 gap-1.5 p-1 rounded-xl bg-[#080c14] border border-[#1a2538] h-[52px]">
-                    {([3, 4, 5] as const).map((freq) => (
-                      <button
-                        key={freq}
-                        type="button"
-                        onClick={() => {
-                          setWorkoutFrequency(freq);
-                          setSelectedDayIndex(0);
-                        }}
-                        className={`rounded-lg text-[11px] font-black uppercase tracking-wider transition-all duration-200 cursor-pointer font-mono flex items-center justify-center gap-1 active:scale-95 ${
-                          workoutFrequency === freq
-                            ? 'bg-gradient-to-r from-[#00f2fe] to-[#00ff9d] text-slate-950 shadow-md shadow-[#00f2fe]/25 font-black'
-                            : 'bg-transparent text-slate-400 hover:text-white hover:bg-white/5'
-                        }`}
-                      >
-                        {workoutFrequency === freq && <Check className="w-3 h-3 stroke-[3]" />}
-                        {freq} Dias
-                      </button>
-                    ))}
-                  </div>
+                  <select
+                    value={workoutFrequency}
+                    onChange={(e) => {
+                      setWorkoutFrequency(Number(e.target.value) as WorkoutFrequency);
+                      setSelectedDayIndex(0);
+                    }}
+                  >
+                    <option value="3">3 Dias por Semana (Full Body / ABC)</option>
+                    <option value="4">4 Dias por Semana (Upper / Lower)</option>
+                    <option value="5">5 Dias por Semana (Push / Pull / Legs)</option>
+                  </select>
                 </div>
 
-                {/* Tempo por Treino */}
-                <div className="form-group mb-0">
+                <div className="form-group">
                   <label>Tempo por Treino:</label>
-                  <div className="grid grid-cols-3 gap-1.5 p-1 rounded-xl bg-[#080c14] border border-[#1a2538] h-[52px]">
-                    {([30, 45, 60] as const).map((dur) => (
-                      <button
-                        key={dur}
-                        type="button"
-                        onClick={() => setWorkoutDuration(dur)}
-                        className={`rounded-lg text-[11px] font-black uppercase tracking-wider transition-all duration-200 cursor-pointer font-mono flex items-center justify-center gap-1 active:scale-95 ${
-                          workoutDuration === dur
-                            ? 'bg-gradient-to-r from-[#00f2fe] to-[#00ff9d] text-slate-950 shadow-md shadow-[#00f2fe]/25 font-black'
-                            : 'bg-transparent text-slate-400 hover:text-white hover:bg-white/5'
-                        }`}
-                      >
-                        {workoutDuration === dur && <Check className="w-3 h-3 stroke-[3]" />}
-                        {dur} min
-                      </button>
-                    ))}
-                  </div>
+                  <select
+                    value={workoutDuration}
+                    onChange={(e) => setWorkoutDuration(Number(e.target.value) as WorkoutDuration)}
+                  >
+                    <option value="30">30 Minutos (Express / Alta Densidade)</option>
+                    <option value="45">45 Minutos (Hipertrofia & Queima Equilibrada)</option>
+                    <option value="60">60 Minutos (Completo com Cárdio Longo)</option>
+                  </select>
                 </div>
               </div>
 
