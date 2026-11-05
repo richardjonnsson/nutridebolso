@@ -641,49 +641,16 @@ export default function RJonnssonFitPage() {
               {/* 1. Escolha de Ambiente: Academia ou Casa */}
               <div className="form-group">
                 <label>Ambiente de Treinamento:</label>
-                <div className="form-row">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setWorkoutLocation('academia');
-                      setSelectedDayIndex(0);
-                    }}
-                    className={`p-4 rounded-xl border text-left cursor-pointer flex-1 transition-all flex items-center gap-3.5 ${
-                      workoutLocation === 'academia'
-                        ? 'bg-[#00f2fe]/10 border-[#00f2fe] text-white shadow-lg shadow-[#00f2fe]/15'
-                        : 'bg-[#090e18] border-[#1e293b] text-slate-400 hover:border-slate-500 hover:bg-[#0c1220]'
-                    }`}
-                  >
-                    <div className={`p-2.5 rounded-lg ${workoutLocation === 'academia' ? 'bg-[#00f2fe] text-slate-950 shadow-sm' : 'bg-[#151f30] text-slate-300'}`}>
-                      <Building2 className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <span className="font-black text-sm block text-white uppercase">🏢 Treino em Academia</span>
-                      <span className="text-[11px] text-slate-400 block mt-0.5">Musculação com halteres, barras, máquinas e esteira</span>
-                    </div>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setWorkoutLocation('casa');
-                      setSelectedDayIndex(0);
-                    }}
-                    className={`p-4 rounded-xl border text-left cursor-pointer flex-1 transition-all flex items-center gap-3.5 ${
-                      workoutLocation === 'casa'
-                        ? 'bg-[#00f2fe]/10 border-[#00f2fe] text-white shadow-lg shadow-[#00f2fe]/15'
-                        : 'bg-[#090e18] border-[#1e293b] text-slate-400 hover:border-slate-500 hover:bg-[#0c1220]'
-                    }`}
-                  >
-                    <div className={`p-2.5 rounded-lg ${workoutLocation === 'casa' ? 'bg-[#00f2fe] text-slate-950 shadow-sm' : 'bg-[#151f30] text-slate-300'}`}>
-                      <Home className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <span className="font-black text-sm block text-white uppercase">🏠 Treino em Casa</span>
-                      <span className="text-[11px] text-slate-400 block mt-0.5">Calistenia funcional com peso do corpo e circuitos HIIT</span>
-                    </div>
-                  </button>
-                </div>
+                <select
+                  value={workoutLocation}
+                  onChange={(e) => {
+                    setWorkoutLocation(e.target.value as WorkoutLocation);
+                    setSelectedDayIndex(0);
+                  }}
+                >
+                  <option value="academia">🏢 Treino em Academia (Musculação completa, aparelhos, halteres e esteira)</option>
+                  <option value="casa">🏠 Treino em Casa (Calistenia funcional, peso do corpo e circuitos HIIT)</option>
+                </select>
               </div>
 
               {/* 2. Filtros de Nível, Frequência e Duração */}
