@@ -127,7 +127,7 @@ export default function RJonnssonFitPage() {
   const triggerPdfDownload = () => {
     const goalTitle = GOAL_DETAILS[goal]?.label || 'Déficit Agressivo de Verão (-700 kcal)';
     generateRJonnssonFitPdf({
-      userName: 'Atleta RJonnssonFit',
+      userName: 'Aluno Nutri de Bolso',
       age: numAge,
       weight: numWeight,
       height: numHeight,
@@ -163,7 +163,7 @@ export default function RJonnssonFitPage() {
       <nav className="tactical-navbar">
         <a href="#" className="tactical-logo">
           <Dumbbell className="w-5 h-5 text-[#00f2fe]" />
-          <span>Rjonnsson<strong className="text-white">Fit</strong></span>
+          <span>Nutri<strong className="text-white"> de Bolso</strong></span>
         </a>
 
         {/* Indicador de Etapa Simples & Limpo */}
@@ -435,34 +435,49 @@ export default function RJonnssonFitPage() {
                   </span>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
                   {dietOptions.map((opt, idx) => (
                     <button
                       key={opt.optionNumber}
                       type="button"
                       onClick={() => setDietOptionIndex(idx)}
-                      className={`p-4 rounded-xl border text-left cursor-pointer transition-all ${
+                      className={`relative p-4 rounded-2xl border-2 text-left cursor-pointer transition-all duration-200 flex flex-col justify-between group active:scale-[0.98] ${
                         dietOptionIndex === idx
-                          ? 'bg-[#00f2fe]/10 border-[#00f2fe] shadow-lg shadow-[#00f2fe]/15 ring-1 ring-[#00f2fe]/50'
-                          : 'bg-[#090e18] border-[#1e293b] hover:border-[#00f2fe]/40 opacity-80 hover:opacity-100'
+                          ? 'bg-gradient-to-br from-[#0c1626] to-[#0e1d33] border-[#00f2fe] shadow-[0_0_20px_rgba(0,242,254,0.25)] ring-1 ring-[#00f2fe]'
+                          : 'bg-[#090e18] border-[#1e293b] hover:border-[#00f2fe]/50 hover:bg-[#0c1220] opacity-80 hover:opacity-100 hover:-translate-y-0.5'
                       }`}
                     >
-                      <div className="flex items-center justify-between mb-2">
-                        <span className={`text-[10px] font-mono font-black uppercase px-2 py-0.5 rounded ${
-                          dietOptionIndex === idx ? 'bg-[#00f2fe] text-slate-950' : 'bg-[#151f30] text-slate-400'
+                      <div className="flex items-center justify-between mb-2 w-full">
+                        <span className={`text-[10px] font-mono font-black uppercase px-2.5 py-1 rounded-full flex items-center gap-1.5 transition-all ${
+                          dietOptionIndex === idx
+                            ? 'bg-gradient-to-r from-[#00f2fe] to-[#00ff9d] text-slate-950 font-black shadow-sm'
+                            : 'bg-[#151f32] text-slate-400 group-hover:text-slate-200 border border-[#1e293b]'
                         }`}>
+                          {dietOptionIndex === idx && <Check className="w-3 h-3 stroke-[3]" />}
                           Opção 0{idx + 1}
                         </span>
                         <span className="text-xs font-black text-[#00ff9d] font-mono">
                           ~{targets.targetCalories} kcal
                         </span>
                       </div>
-                      <span className="text-xs font-black text-white block">
+
+                      <span className="text-sm font-black text-white block mt-1 tracking-tight">
                         {opt.title.replace(`Opção ${opt.optionNumber}: `, '')}
                       </span>
-                      <span className="text-[11px] text-slate-400 block mt-1 leading-tight line-clamp-2">
+                      
+                      <span className="text-[11px] text-slate-400 block mt-1 leading-snug line-clamp-2">
                         {opt.tagline}
                       </span>
+
+                      {/* Botão de Status no Rodapé do Card */}
+                      <div className="mt-3 pt-2.5 border-t border-[#1a2538] flex items-center justify-between text-[10px] font-mono">
+                        <span className="text-slate-400">P: {targets.proteinGrams}g</span>
+                        <span className={`font-black uppercase tracking-wider flex items-center gap-1 ${
+                          dietOptionIndex === idx ? 'text-[#00f2fe]' : 'text-slate-500 group-hover:text-slate-300'
+                        }`}>
+                          {dietOptionIndex === idx ? '● SELECIONADO' : '○ SELECIONAR'}
+                        </span>
+                      </div>
                     </button>
                   ))}
                 </div>
@@ -640,46 +655,100 @@ export default function RJonnssonFitPage() {
               {/* 1. Escolha de Ambiente: Academia ou Casa */}
               <div className="form-group">
                 <label>Ambiente de Treinamento:</label>
-                <div className="form-row">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {/* Botão Academia */}
                   <button
                     type="button"
                     onClick={() => {
                       setWorkoutLocation('academia');
                       setSelectedDayIndex(0);
                     }}
-                    className={`p-4 rounded-xl border text-left cursor-pointer flex-1 transition-all flex items-center gap-3.5 ${
+                    className={`relative p-5 rounded-2xl cursor-pointer transition-all duration-200 text-left border-2 flex flex-col justify-between group active:scale-[0.98] ${
                       workoutLocation === 'academia'
-                        ? 'bg-[#00f2fe]/10 border-[#00f2fe] text-white shadow-lg shadow-[#00f2fe]/10'
-                        : 'bg-[#090e18] border-[#1e293b] text-slate-400 hover:border-slate-500'
+                        ? 'bg-gradient-to-br from-[#0c1626] to-[#0f1f38] border-[#00f2fe] shadow-[0_0_25px_rgba(0,242,254,0.25)] ring-1 ring-[#00f2fe]'
+                        : 'bg-[#090e18] border-[#1e293b] hover:border-[#00f2fe]/50 hover:bg-[#0c1220] hover:-translate-y-0.5'
                     }`}
                   >
-                    <div className={`p-2.5 rounded-lg ${workoutLocation === 'academia' ? 'bg-[#00f2fe] text-slate-950' : 'bg-[#151f30] text-slate-300'}`}>
-                      <Building2 className="w-5 h-5" />
+                    <div className="flex items-center justify-between mb-3 w-full">
+                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all ${
+                        workoutLocation === 'academia'
+                          ? 'bg-gradient-to-tr from-[#00f2fe] to-[#00ff9d] text-slate-950 shadow-md shadow-[#00f2fe]/30 font-black'
+                          : 'bg-[#151f32] text-slate-400 group-hover:text-white border border-[#1e293b]'
+                      }`}>
+                        <Building2 className="w-6 h-6" />
+                      </div>
+                      
+                      {/* Pílula Indicadora de Seleção */}
+                      <span className={`px-3 py-1 rounded-full text-[10px] font-mono font-black tracking-wider uppercase transition-all flex items-center gap-1.5 ${
+                        workoutLocation === 'academia'
+                          ? 'bg-[#00f2fe] text-slate-950 shadow-sm'
+                          : 'bg-[#151f32] text-slate-400 border border-[#1e293b] group-hover:border-slate-500'
+                      }`}>
+                        {workoutLocation === 'academia' ? (
+                          <>
+                            <Check className="w-3.5 h-3.5 stroke-[3]" /> SELECIONADO
+                          </>
+                        ) : (
+                          'CLIQUE P/ ESCOLHER'
+                        )}
+                      </span>
                     </div>
+
                     <div>
-                      <span className="font-black text-sm block text-white uppercase">🏢 Treino em Academia</span>
-                      <span className="text-[11px] text-slate-400 block mt-0.5">Musculação com halteres, barras, máquinas e esteira</span>
+                      <span className="font-black text-base block text-white tracking-wide">
+                        🏢 Treino em Academia
+                      </span>
+                      <span className="text-xs text-slate-400 block mt-1 leading-relaxed">
+                        Musculação completa com aparelhos, halteres, barras e cárdio em esteira.
+                      </span>
                     </div>
                   </button>
 
+                  {/* Botão Casa */}
                   <button
                     type="button"
                     onClick={() => {
                       setWorkoutLocation('casa');
                       setSelectedDayIndex(0);
                     }}
-                    className={`p-4 rounded-xl border text-left cursor-pointer flex-1 transition-all flex items-center gap-3.5 ${
+                    className={`relative p-5 rounded-2xl cursor-pointer transition-all duration-200 text-left border-2 flex flex-col justify-between group active:scale-[0.98] ${
                       workoutLocation === 'casa'
-                        ? 'bg-[#00f2fe]/10 border-[#00f2fe] text-white shadow-lg shadow-[#00f2fe]/10'
-                        : 'bg-[#090e18] border-[#1e293b] text-slate-400 hover:border-slate-500'
+                        ? 'bg-gradient-to-br from-[#0c1626] to-[#0f1f38] border-[#00f2fe] shadow-[0_0_25px_rgba(0,242,254,0.25)] ring-1 ring-[#00f2fe]'
+                        : 'bg-[#090e18] border-[#1e293b] hover:border-[#00f2fe]/50 hover:bg-[#0c1220] hover:-translate-y-0.5'
                     }`}
                   >
-                    <div className={`p-2.5 rounded-lg ${workoutLocation === 'casa' ? 'bg-[#00f2fe] text-slate-950' : 'bg-[#151f30] text-slate-300'}`}>
-                      <Home className="w-5 h-5" />
+                    <div className="flex items-center justify-between mb-3 w-full">
+                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all ${
+                        workoutLocation === 'casa'
+                          ? 'bg-gradient-to-tr from-[#00f2fe] to-[#00ff9d] text-slate-950 shadow-md shadow-[#00f2fe]/30 font-black'
+                          : 'bg-[#151f32] text-slate-400 group-hover:text-white border border-[#1e293b]'
+                      }`}>
+                        <Home className="w-6 h-6" />
+                      </div>
+                      
+                      {/* Pílula Indicadora de Seleção */}
+                      <span className={`px-3 py-1 rounded-full text-[10px] font-mono font-black tracking-wider uppercase transition-all flex items-center gap-1.5 ${
+                        workoutLocation === 'casa'
+                          ? 'bg-[#00f2fe] text-slate-950 shadow-sm'
+                          : 'bg-[#151f32] text-slate-400 border border-[#1e293b] group-hover:border-slate-500'
+                      }`}>
+                        {workoutLocation === 'casa' ? (
+                          <>
+                            <Check className="w-3.5 h-3.5 stroke-[3]" /> SELECIONADO
+                          </>
+                        ) : (
+                          'CLIQUE P/ ESCOLHER'
+                        )}
+                      </span>
                     </div>
+
                     <div>
-                      <span className="font-black text-sm block text-white uppercase">🏠 Treino em Casa</span>
-                      <span className="text-[11px] text-slate-400 block mt-0.5">Calistenia funcional com peso do corpo e circuitos HIIT</span>
+                      <span className="font-black text-base block text-white tracking-wide">
+                        🏠 Treino em Casa
+                      </span>
+                      <span className="text-xs text-slate-400 block mt-1 leading-relaxed">
+                        Calistenia funcional, peso do corpo e circuitos HIIT aceleradores.
+                      </span>
                     </div>
                   </button>
                 </div>
@@ -730,18 +799,19 @@ export default function RJonnssonFitPage() {
               {/* 3. Seleção dos Dias de Treino */}
               <div className="form-group">
                 <label>Ficha Dividida ({workoutPlan.days.length} Dias na Semana):</label>
-                <div className="flex gap-2 overflow-x-auto pb-1">
+                <div className="flex gap-2.5 overflow-x-auto pb-2 pt-1">
                   {workoutPlan.days.map((day, idx) => (
                     <button
                       key={day.id}
                       type="button"
                       onClick={() => setSelectedDayIndex(idx)}
-                      className={`px-4 py-2 rounded-lg text-xs font-black uppercase cursor-pointer flex-shrink-0 transition-all font-mono ${
+                      className={`px-5 py-2.5 rounded-xl text-xs font-black uppercase cursor-pointer flex-shrink-0 transition-all font-mono border-2 active:scale-95 flex items-center gap-2 ${
                         selectedDayIndex === idx
-                          ? 'bg-gradient-to-r from-[#00f2fe] to-[#00ff9d] text-slate-950'
-                          : 'bg-[#090e18] text-slate-400 hover:text-white border border-[#1e293b]'
+                          ? 'bg-gradient-to-r from-[#00f2fe] to-[#00ff9d] text-slate-950 border-[#00ff9d] shadow-lg shadow-[#00f2fe]/25 font-black'
+                          : 'bg-[#090e18] text-slate-400 hover:text-white border-[#1e293b] hover:border-[#00f2fe]/50 hover:bg-[#0c1220]'
                       }`}
                     >
+                      {selectedDayIndex === idx && <Check className="w-3.5 h-3.5 stroke-[3]" />}
                       {day.dayLabel}
                     </button>
                   ))}
@@ -843,7 +913,7 @@ export default function RJonnssonFitPage() {
               Protocolo Concluído | <span>Download Liberado</span>
             </h1>
             <p className="subtitle">
-              Seu plano oficial RJonnssonFit com Diagnóstico Metabólico, as 3 Opções de Cardápios na Balança e Ficha de Treino foi finalizado com sucesso!
+              Seu plano oficial Nutri de Bolso com Diagnóstico Metabólico, as 3 Opções de Cardápios na Balança e Ficha de Treino foi finalizado com sucesso!
             </p>
 
             <div className="calc-wrapper text-center space-y-6">
@@ -853,7 +923,7 @@ export default function RJonnssonFitPage() {
 
               <div>
                 <h3 className="text-xl font-black text-white uppercase tracking-tight">
-                  Seu PDF Oficial RJonnssonFit está Pronto!
+                  Seu PDF Oficial Nutri de Bolso está Pronto!
                 </h3>
                 <p className="text-xs text-slate-400 mt-1 max-w-md mx-auto leading-relaxed">
                   O download do documento formatado com as <strong>3 opções de cardápios</strong> e o treino completo começou automaticamente.
@@ -873,7 +943,7 @@ export default function RJonnssonFitPage() {
               {/* Checklist Diário de Compromissos do Verão */}
               <div className="p-6 rounded-xl bg-[#090e18] border border-[#1e293b] text-left space-y-3">
                 <h4 className="text-xs font-black uppercase tracking-wider text-[#00f2fe] border-b border-[#1e293b] pb-2 font-mono">
-                  CHECKLIST DIÁRIO DE DISCIPLINA • PROJETO VERÃO
+                  CHECKLIST DIÁRIO DE DISCIPLINA • NUTRI DE BOLSO
                 </h4>
 
                 <div className="space-y-2">
@@ -918,7 +988,7 @@ export default function RJonnssonFitPage() {
 
       {/* FOOTER */}
       <footer className="footer">
-        &copy; {new Date().getFullYear()} Rjonnssonfit | Cyber-Metabolic Engine • Projeto Verão 2026/2027.
+        &copy; {new Date().getFullYear()} Nutri de Bolso | Sistema Inteligente de Dieta & Treino • Projeto Verão 2026/2027.
       </footer>
     </div>
   );

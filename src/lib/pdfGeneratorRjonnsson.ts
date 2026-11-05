@@ -40,12 +40,12 @@ export function generateRJonnssonFitPdf(data: RJonnssonPdfData): void {
   doc.setTextColor(255, 255, 255);
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(16);
-  doc.text('RJONNSSONFIT', 14, 13);
+  doc.text('NUTRI DE BOLSO', 14, 13);
 
   doc.setFontSize(9);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(200, 220, 210);
-  doc.text('PROTOCOLO OFICIAL DE ALTA PERFORMANCE • PROJETO VERÃO', 14, 19);
+  doc.text('SISTEMA INTELIGENTE DE PRESCRIÇÃO NUTRICIONAL & TREINO', 14, 19);
 
   doc.setFontSize(7.5);
   doc.setTextColor(148, 163, 184);
@@ -227,7 +227,7 @@ export function generateRJonnssonFitPdf(data: RJonnssonPdfData): void {
   doc.setTextColor(255, 255, 255);
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(11);
-  doc.text('RJONNSSONFIT | PROTOCOLO DE TREINO & QUEIMA METABÓLICA', 14, 11);
+  doc.text('NUTRI DE BOLSO | PROTOCOLO DE TREINO & QUEIMA METABÓLICA', 14, 11);
 
   currentY = 24;
 
@@ -317,7 +317,7 @@ export function generateRJonnssonFitPdf(data: RJonnssonPdfData): void {
   doc.setFontSize(8.5);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(...navyBrand);
-  doc.text('CHECKLIST DIÁRIO DO PROJETO VERÃO RJONNSSONFIT', 18, currentY + 6);
+  doc.text('CHECKLIST DIÁRIO DE DISCIPLINA • NUTRI DE BOLSO', 18, currentY + 6);
 
   doc.setFontSize(7.5);
   doc.setFont('helvetica', 'normal');
@@ -325,7 +325,7 @@ export function generateRJonnssonFitPdf(data: RJonnssonPdfData): void {
   doc.text('[  ] Ingerir a meta diária de água calculada (35-40ml por kg)', 18, currentY + 12);
   doc.text('[  ] Pesar as proteínas e carboidratos da dieta na balança de cozinha', 18, currentY + 17);
   doc.text('[  ] Concluir o treino de força programado para o dia', 18, currentY + 22);
-  doc.text('[  ] Executar o finalizador de cárdio para acelerar o déficit de 700 kcal', 18, currentY + 27);
+  doc.text('[  ] Executar o finalizador de cárdio para acelerar a queima calórica', 18, currentY + 27);
 
   // Rodapé em todas as páginas
   const pageCount = (doc as any).internal.getNumberOfPages();
@@ -335,12 +335,12 @@ export function generateRJonnssonFitPdf(data: RJonnssonPdfData): void {
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(148, 163, 184);
     doc.text(
-      `RJonnssonFit • Sistema de Prescrição Nutricional & Treinamento • Página ${i} de ${pageCount}`,
+      `Nutri de Bolso • Prescrição Nutricional & Treinamento Inteligente • Página ${i} de ${pageCount}`,
       105,
       292,
       { align: 'center' }
     );
   }
 
-  doc.save(`RJonnssonFit_Plano_Completo_${data.weight}kg.pdf`);
+  doc.save(`NutriDeBolso_Plano_Completo_${data.weight}kg.pdf`);
 }

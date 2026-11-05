@@ -10,8 +10,8 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: 'RJonnssonFit | Plataforma de Metabolismo, Dieta & Treino de Alta Performance',
-  description: 'Calculadora de Taxa Metabólica Basal, Gerador de Dieta com Déficit Agressivo de Verão e Montador de Treino Personalizado (Academia e Casa).',
+  title: 'Nutri de Bolso | Calculadora Metabólica, Dieta Personalizada & Treino',
+  description: 'Nutri de Bolso - 3 opções de cardápios completos pesados na balança e montador de treino personalizado para academia ou casa.',
   manifest: '/manifest.json',
 };
 
