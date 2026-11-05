@@ -38,18 +38,27 @@ export async function POST(req: NextRequest) {
       }, { status: 503 });
     }
 
-    const userData = await redis.get<{
+    // Busca nas chaves: geral, Ticto e Kiwify
+    let userData = await redis.get<{
       email: string;
       name?: string;
       status: string;
       orderId?: string;
-    } | string>(`kiwify:user:${email}`);
+    } | string>(`user:${email}`);
+
+    if (!userData) {
+      userData = await redis.get(`ticto:user:${email}`);
+    }
+
+    if (!userData) {
+      userData = await redis.get(`kiwify:user:${email}`);
+    }
 
     if (!userData) {
       return NextResponse.json({
         authorized: false,
         reason: 'not_found',
-        message: 'Nenhuma compra aprovada encontrada para este e-mail. Adquira sua licença oficial na Kiwify.',
+        message: 'Nenhuma compra aprovada encontrada para este e-mail. Adquira sua licença oficial na Ticto.',
       });
     }
 
