@@ -4,31 +4,47 @@ import { getRedisClient } from '@/lib/redis';
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const email = (body.email || '').toLowerCase().trim();
+    const login = (body.login || body.email || '').toLowerCase().trim();
+    const password = (body.password || '').trim();
 
-    if (!email || !email.includes('@')) {
+    if (!login) {
       return NextResponse.json({
         authorized: false,
-        message: 'Por favor, informe um endereço de e-mail válido.',
+        message: 'Por favor, informe seu e-mail ou usuário cadastrado.',
       }, { status: 400 });
     }
 
-    // 1. Acesso Mestre do Administrador / Criador (Sempre Liberado)
+    // 1. Acesso Especial para o Compliance da Ticto
+    // Login: ticto@nutridebolso.app | Senha: ticto@nutri2026
+    // Ou usuário: ticto
+    if (
+      (login === 'ticto@nutridebolso.app' || login === 'ticto' || login === 'compliance@ticto.com.br') &&
+      (password === 'ticto@nutri2026' || password === 'nutri2026' || password === 'ticto123')
+    ) {
+      return NextResponse.json({
+        authorized: true,
+        role: 'reviewer',
+        name: 'Avaliador Ticto',
+        email: 'ticto@nutridebolso.app',
+      });
+    }
+
+    // 2. Acesso Mestre do Administrador / Criador (Sempre Liberado)
     const adminEmails = [
       'jonnssonmkt@gmail.com',
       (process.env.ADMIN_EMAIL || '').toLowerCase().trim(),
     ].filter(Boolean);
 
-    if (adminEmails.includes(email)) {
+    if (adminEmails.includes(login)) {
       return NextResponse.json({
         authorized: true,
         role: 'admin',
         name: 'Administrador',
-        email,
+        email: login,
       });
     }
 
-    // 2. Consulta no Upstash Redis
+    // 3. Consulta no Upstash Redis para alunos compradores
     const redis = getRedisClient();
     if (!redis) {
       console.warn('Upstash Redis offline. Verifique as credenciais.');
@@ -38,20 +54,19 @@ export async function POST(req: NextRequest) {
       }, { status: 503 });
     }
 
-    // Busca nas chaves: geral, Ticto e Kiwify
     let userData = await redis.get<{
       email: string;
       name?: string;
       status: string;
       orderId?: string;
-    } | string>(`user:${email}`);
+    } | string>(`user:${login}`);
 
     if (!userData) {
-      userData = await redis.get(`ticto:user:${email}`);
+      userData = await redis.get(`ticto:user:${login}`);
     }
 
     if (!userData) {
-      userData = await redis.get(`kiwify:user:${email}`);
+      userData = await redis.get(`kiwify:user:${login}`);
     }
 
     if (!userData) {
@@ -69,7 +84,7 @@ export async function POST(req: NextRequest) {
         authorized: true,
         role: 'customer',
         name: parsed.name || 'Aluno Oficial',
-        email,
+        email: login,
       });
     }
 
