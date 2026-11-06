@@ -3,7 +3,13 @@ import { getRedisClient } from '@/lib/redis';
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
+    let body: any = {};
+    try {
+      body = await req.json();
+    } catch {
+      body = {};
+    }
+
     const login = (body.login || body.email || '').toLowerCase().trim();
     const password = (body.password || '').trim();
 
