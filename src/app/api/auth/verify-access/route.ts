@@ -107,11 +107,12 @@ export async function POST(req: NextRequest) {
       reason: 'inactive',
       message: 'Sua assinatura ou acesso não está ativo no momento.',
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('[Verify Access Error]:', error);
     return NextResponse.json({
       authorized: false,
       message: 'Erro interno ao validar acesso.',
+      detail: String(error?.message || error),
     }, { status: 500 });
   }
 }
