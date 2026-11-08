@@ -2,7 +2,6 @@ import React from 'react';
 import { Composition, registerRoot } from 'remotion';
 import { VslComposition } from './VslComposition';
 import { TOTAL_VSL_DURATION_SEC } from './vslData';
-import { TutorialComposition, TUTORIAL_FPS, TUTORIAL_TOTAL_FRAMES } from './TutorialComposition';
 
 export const RemotionRoot: React.FC = () => {
   const fps = 30;
@@ -27,18 +26,6 @@ export const RemotionRoot: React.FC = () => {
           enableCaptions: true,
           enableSfx: false,
           bgmVolume: 0.08,
-        }}
-      />
-      <Composition
-        id="TutorialNutriDeBolso"
-        component={TutorialComposition}
-        durationInFrames={TUTORIAL_TOTAL_FRAMES}
-        fps={TUTORIAL_FPS}
-        width={1920}
-        height={1080}
-        defaultProps={{
-          appName: 'Nutri de Bolso',
-          accentColor: '#00f2fe',
         }}
       />
     </>
