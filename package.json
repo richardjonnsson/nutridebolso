@@ -11,6 +11,7 @@
     "@remotion/cli": "4.0.521",
     "@remotion/layout-utils": "4.0.521",
     "@remotion/media-utils": "4.0.521",
+    "@remotion/player": "4.0.521",
     "@remotion/tailwind-v4": "4.0.521",
     "@remotion/zod-types": "4.0.521",
     "@upstash/redis": "^1.39.0",
