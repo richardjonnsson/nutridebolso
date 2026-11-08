@@ -34,9 +34,14 @@ import {
   ShieldCheck,
   Utensils,
   Dumbbell,
+  Play,
 } from 'lucide-react';
+import TutorialModal from '@/components/TutorialModal';
 
 export default function RJonnssonFitPage() {
+  // Modal do Tutorial em Vídeo
+  const [isTutorialOpen, setIsTutorialOpen] = useState<boolean>(false);
+
   // Controle de Etapa Linear (1: Calculadora/Dieta, 2: Dieta Pronta, 3: Treino, 4: Sucesso/PDF)
   const [currentStep, setCurrentStep] = useState<number>(1);
 
@@ -166,17 +171,60 @@ export default function RJonnssonFitPage() {
           <span>Nutri<strong className="text-white"> de Bolso</strong></span>
         </a>
 
-        {/* Indicador de Etapa Simples & Limpo */}
-        <div className="text-xs font-bold uppercase tracking-wider flex items-center">
-          <span className="text-[#00f2fe] flex items-center gap-2 font-mono bg-[#00f2fe]/10 border border-[#00f2fe]/25 px-3 py-1.5 rounded-full shadow-sm shadow-[#00f2fe]/10">
-            <span className="w-2 h-2 rounded-full bg-[#00ff9d] animate-pulse" />
-            Etapa {currentStep} de 4
-          </span>
+        {/* Ações da Navbar: Botão de Tutorial & Etapa */}
+        <div className="flex items-center gap-2 sm:gap-3">
+          <button
+            type="button"
+            onClick={() => setIsTutorialOpen(true)}
+            className="flex items-center gap-1.5 sm:gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r from-[#00f2fe]/15 to-[#00ff9d]/15 hover:from-[#00f2fe]/25 hover:to-[#00ff9d]/25 border border-[#00f2fe]/40 text-white text-[11px] sm:text-xs font-bold uppercase tracking-wider font-mono shadow-sm shadow-[#00f2fe]/15 transition-all cursor-pointer active:scale-95"
+            title="Assistir Tutorial em Vídeo"
+          >
+            <Play className="w-3.5 h-3.5 text-[#00ff9d] fill-[#00ff9d]" />
+            <span>Como Usar</span>
+          </button>
+
+          <div className="text-xs font-bold uppercase tracking-wider hidden sm:flex items-center">
+            <span className="text-[#00f2fe] flex items-center gap-2 font-mono bg-[#00f2fe]/10 border border-[#00f2fe]/25 px-3 py-1.5 rounded-full shadow-sm shadow-[#00f2fe]/10">
+              <span className="w-2 h-2 rounded-full bg-[#00ff9d] animate-pulse" />
+              Etapa {currentStep} de 4
+            </span>
+          </div>
         </div>
       </nav>
 
+      {/* MODAL DO TUTORIAL EM VÍDEO (REMOTION) */}
+      <TutorialModal
+        isOpen={isTutorialOpen}
+        onClose={() => setIsTutorialOpen(false)}
+      />
+
       {/* CONTAINER PRINCIPAL CENTRALIZADO (900px) */}
       <main className="tactical-container flex-1">
+        {/* BANNER DINÂMICO DE BOAS-VINDAS / TUTORIAL EM VÍDEO */}
+        <div className="mb-6 p-4 rounded-xl bg-gradient-to-r from-[#0a1426] via-[#091122] to-[#0a1822] border border-[#00f2fe]/30 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-lg shadow-black/40">
+          <div className="flex items-center gap-3 text-center sm:text-left">
+            <div className="w-10 h-10 rounded-xl bg-[#00f2fe]/15 border border-[#00f2fe]/35 text-[#00f2fe] flex items-center justify-center flex-shrink-0 shadow-sm shadow-[#00f2fe]/20">
+              <Play className="w-4 h-4 fill-[#00f2fe]" />
+            </div>
+            <div>
+              <span className="font-bold text-xs sm:text-sm text-white block">
+                Novo por aqui? Assista ao Tutorial Rápido de 1 Minuto
+              </span>
+              <span className="text-[11px] text-slate-400">
+                Aprenda a calcular seus macros, alternar entre os 3 cardápios e baixar seu PDF oficial.
+              </span>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setIsTutorialOpen(true)}
+            className="w-full sm:w-auto px-4 py-2 rounded-lg bg-[#00f2fe] hover:bg-[#00ff9d] text-slate-950 font-black text-xs font-mono uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md shadow-[#00f2fe]/20 flex-shrink-0"
+          >
+            <span>ASSISTIR TUTORIAL</span>
+            <ArrowRight className="w-3.5 h-3.5 stroke-[3]" />
+          </button>
+        </div>
+
         {/* STEPPER TECNOLÓGICO HIGH-TECH DE 4 ETAPAS */}
         <div className="tech-stepper">
           <div className={`step-node ${currentStep >= 1 ? 'active' : ''} ${currentStep === 1 ? 'current' : ''}`}>
