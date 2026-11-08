@@ -1,16 +1,25 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Dumbbell, Eye, EyeOff, Loader2, ArrowRight, Lock } from 'lucide-react';
+import { Dumbbell, Loader2, ArrowRight, Mail, CheckCircle2, ShieldCheck } from 'lucide-react';
 
 export default function LoginPage() {
   const router = useRouter();
-  const [loginInput, setLoginInput] = useState('');
-  const [passwordInput, setPasswordInput] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
+  const [emailInput, setEmailInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+
+  // Captura automática de e-mail via URL se redirecionado direto da Ticto (?email=...)
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const urlEmail = params.get('email') || params.get('e');
+      if (urlEmail) {
+        setEmailInput(urlEmail.trim().toLowerCase());
+      }
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,8 +31,7 @@ export default function LoginPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          login: loginInput,
-          password: passwordInput,
+          login: emailInput.trim().toLowerCase(),
         }),
       });
 
@@ -34,7 +42,7 @@ export default function LoginPage() {
           localStorage.setItem(
             'nutridebolso_user',
             JSON.stringify({
-              email: data.email || loginInput,
+              email: data.email || emailInput,
               name: data.name,
               role: data.role,
               authorizedAt: new Date().toISOString(),
@@ -44,11 +52,11 @@ export default function LoginPage() {
         router.push('/');
       } else {
         setErrorMessage(
-          data.message || 'Acesso não encontrado. Verifique seu login e senha.'
+          data.message || 'Nenhuma compra aprovada encontrada para este e-mail. Verifique se digitou o mesmo e-mail cadastrado na Ticto.'
         );
       }
     } catch {
-      setErrorMessage('Erro de conexão ao verificar acesso. Tente novamente.');
+      setErrorMessage('Erro de conexão ao verificar acesso. Tente novamente em alguns segundos.');
     } finally {
       setIsLoading(false);
     }
@@ -71,14 +79,14 @@ export default function LoginPage() {
         </div>
       </nav>
 
-      {/* CONTAINER TÁTICO CENTRALIZADO (LAYOUT & CORES IDÊNTICOS) */}
-      <main className="tactical-container flex-1 flex flex-col justify-center items-center my-auto py-8">
-        <div className="w-full max-w-[480px]">
+      {/* CONTAINER TÁTICO CENTRALIZADO */}
+      <main className="tactical-container flex-1 flex flex-col justify-center items-center my-auto py-10">
+        <div className="w-full max-w-[460px]">
           
-          {/* Header Centralizado */}
+          {/* Tag de Status */}
           <div className="text-center mb-3">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-mono font-bold tracking-wider uppercase bg-[#00f2fe]/10 text-[#00f2fe] border border-[#00f2fe]/25">
-              <Lock className="w-3 h-3 text-[#00f2fe]" /> ACESSO RESTRITO
+              <ShieldCheck className="w-3.5 h-3.5 text-[#00ff9d]" /> ACESSO LIBERADO VIA TICTO
             </span>
           </div>
 
@@ -87,54 +95,39 @@ export default function LoginPage() {
           </h1>
 
           <p className="subtitle">
-            Informe seu e-mail de compra ou usuário para acessar seu plano de dieta e treinos.
+            Informe o mesmo e-mail que você utilizou ao realizar a compra para acessar instantaneamente seu plano de dieta e treinos.
           </p>
 
           {/* CARD NO FORMATO CALC-WRAPPER DO APP */}
           <div className="calc-wrapper">
             <form onSubmit={handleSubmit}>
-              <div className="form-group">
-                <label>E-mail da Compra ou Usuário:</label>
-                <input
-                  type="text"
-                  required
-                  autoComplete="username"
-                  value={loginInput}
-                  onChange={(e) => setLoginInput(e.target.value)}
-                  placeholder="Ex: seu@email.com ou ticto"
-                />
-              </div>
-
-              <div className="form-group">
-                <label>Senha:</label>
+              <div className="form-group mb-5">
+                <label>E-mail da Compra:</label>
                 <div className="relative">
                   <input
-                    type={showPassword ? 'text' : 'password'}
-                    autoComplete="current-password"
-                    value={passwordInput}
-                    onChange={(e) => setPasswordInput(e.target.value)}
-                    placeholder="••••••••"
-                    style={{ paddingRight: '45px' }}
+                    type="text"
+                    required
+                    autoFocus
+                    autoComplete="email"
+                    value={emailInput}
+                    onChange={(e) => setEmailInput(e.target.value)}
+                    placeholder="Ex: seuemail@gmail.com"
                   />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#64748b] hover:text-[#00f2fe] transition-colors p-1 cursor-pointer"
-                  >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
                 </div>
+                <span className="text-[11px] text-slate-500 font-mono mt-1.5 block">
+                  Insira o e-mail cadastrado na Ticto no momento do pagamento.
+                </span>
               </div>
 
               {errorMessage && (
-                <div className="p-3 mb-4 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-mono text-center">
+                <div className="p-3.5 mb-5 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-mono text-center leading-relaxed">
                   {errorMessage}
                 </div>
               )}
 
               <button
                 type="submit"
-                disabled={isLoading}
+                disabled={isLoading || !emailInput.trim()}
                 className="btn-primary"
               >
                 {isLoading ? (
@@ -150,6 +143,11 @@ export default function LoginPage() {
                 )}
               </button>
             </form>
+
+            <div className="mt-5 pt-4 border-t border-[#1a2538] flex items-center justify-center gap-2 text-[11px] text-slate-400">
+              <CheckCircle2 className="w-3.5 h-3.5 text-[#00ff9d]" />
+              <span>Acesso liberado 100% automático após o pagamento.</span>
+            </div>
           </div>
 
         </div>
