@@ -2,10 +2,12 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Dumbbell, Loader2, ArrowRight, Mail, CheckCircle2, ShieldCheck } from 'lucide-react';
+import { Dumbbell, Loader2, ArrowRight, Mail, CheckCircle2, ShieldCheck, Play } from 'lucide-react';
+import TutorialModal from '@/components/TutorialModal';
 
 export default function LoginPage() {
   const router = useRouter();
+  const [isTutorialOpen, setIsTutorialOpen] = useState(false);
   const [emailInput, setEmailInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
@@ -71,13 +73,31 @@ export default function LoginPage() {
           <span>Nutri<strong className="text-white"> de Bolso</strong></span>
         </div>
 
-        <div className="text-xs font-bold uppercase tracking-wider flex items-center">
-          <span className="text-[#00f2fe] flex items-center gap-2 font-mono bg-[#00f2fe]/10 border border-[#00f2fe]/25 px-3 py-1.5 rounded-full shadow-sm shadow-[#00f2fe]/10">
-            <span className="w-2 h-2 rounded-full bg-[#00ff9d] animate-pulse" />
-            Área de Acesso
-          </span>
+        <div className="flex items-center gap-2 sm:gap-3">
+          <button
+            type="button"
+            onClick={() => setIsTutorialOpen(true)}
+            className="flex items-center gap-1.5 sm:gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r from-[#00f2fe]/15 to-[#00ff9d]/15 hover:from-[#00f2fe]/25 hover:to-[#00ff9d]/25 border border-[#00f2fe]/40 text-white text-[11px] sm:text-xs font-bold uppercase tracking-wider font-mono shadow-sm shadow-[#00f2fe]/15 transition-all cursor-pointer active:scale-95"
+            title="Assistir Tutorial em Vídeo"
+          >
+            <Play className="w-3.5 h-3.5 text-[#00ff9d] fill-[#00ff9d]" />
+            <span>Como Usar</span>
+          </button>
+
+          <div className="text-xs font-bold uppercase tracking-wider hidden sm:flex items-center">
+            <span className="text-[#00f2fe] flex items-center gap-2 font-mono bg-[#00f2fe]/10 border border-[#00f2fe]/25 px-3 py-1.5 rounded-full shadow-sm shadow-[#00f2fe]/10">
+              <span className="w-2 h-2 rounded-full bg-[#00ff9d] animate-pulse" />
+              Área de Acesso
+            </span>
+          </div>
         </div>
       </nav>
+
+      {/* MODAL DO TUTORIAL EM VÍDEO (REMOTION) */}
+      <TutorialModal
+        isOpen={isTutorialOpen}
+        onClose={() => setIsTutorialOpen(false)}
+      />
 
       {/* CONTAINER TÁTICO CENTRALIZADO */}
       <main className="tactical-container flex-1 flex flex-col justify-center items-center my-auto py-10">
