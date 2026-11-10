@@ -54,27 +54,20 @@ export async function POST(req: NextRequest) {
 
     // 3. Consulta no Upstash Redis para alunos compradores
     const redis = getRedisClient();
-    if (!redis) {
-      console.warn('Upstash Redis offline. Verifique as credenciais.');
-      return NextResponse.json({
-        authorized: false,
-        message: 'Serviço de validação temporariamente indisponível. Tente novamente em instantes.',
-      }, { status: 503 });
-    }
+    let userData: any = null;
 
-    let userData = await redis.get<{
-      email: string;
-      name?: string;
-      status: string;
-      orderId?: string;
-    } | string>(`user:${login}`);
-
-    if (!userData) {
-      userData = await redis.get(`ticto:user:${login}`);
-    }
-
-    if (!userData) {
-      userData = await redis.get(`kiwify:user:${login}`);
+    if (redis) {
+      try {
+        userData = await redis.get(`user:${login}`);
+        if (!userData) {
+          userData = await redis.get(`ticto:user:${login}`);
+        }
+        if (!userData) {
+          userData = await redis.get(`kiwify:user:${login}`);
+        }
+      } catch (redisErr) {
+        console.warn('Erro ao consultar Upstash Redis:', redisErr);
+      }
     }
 
     if (!userData) {
