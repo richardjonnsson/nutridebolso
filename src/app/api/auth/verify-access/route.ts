@@ -37,17 +37,30 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // 2. Acesso Mestre do Administrador / Criador (Sempre Liberado)
+    // 2. Acesso Mestre do Administrador e VIPs Liberados Manualmente
     const adminEmails = [
       'jonnssonmkt@gmail.com',
       (process.env.ADMIN_EMAIL || '').toLowerCase().trim(),
     ].filter(Boolean);
+
+    const authorizedVips: Record<string, string> = {
+      'rodrigocruz00@gmail.com': 'Rodrigo Cruz',
+    };
 
     if (adminEmails.includes(login)) {
       return NextResponse.json({
         authorized: true,
         role: 'admin',
         name: 'Administrador',
+        email: login,
+      });
+    }
+
+    if (authorizedVips[login]) {
+      return NextResponse.json({
+        authorized: true,
+        role: 'vip',
+        name: authorizedVips[login],
         email: login,
       });
     }
